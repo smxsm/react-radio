@@ -14,11 +14,15 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
   const [shouldScroll, setShouldScroll] = useState(false);
 
   useEffect(() => {
+    const resetAnimation = () => {
+      span.classList.remove(styles.scroll);
+      void span.offsetWidth;
+    };
+
     clearTimeout(timoutRef.current);
     const div = divRef.current! as HTMLSpanElement;
     const span = spanRef.current! as HTMLSpanElement;
-    span.classList.remove(styles.scroll);
-    void span.offsetWidth;
+    resetAnimation();
     const hidden = div.offsetWidth - span.offsetWidth;
 
     if (hidden > 0) {
@@ -32,8 +36,7 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
 
     const startAnimation = () => {
       timoutRef.current = setTimeout(() => {
-        span.classList.remove(styles.scroll);
-        void span.offsetWidth;
+        resetAnimation();
         span.classList.add(styles.scroll);
         span.addEventListener('animationend', startAnimation);
       }, 8000);

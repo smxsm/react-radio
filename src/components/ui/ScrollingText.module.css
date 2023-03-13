@@ -10,7 +10,6 @@
 
 .scroll {
   animation-name: scroll;
-  animation-duration: 20s;
   animation-iteration-count: 1;
   animation-timing-function: linear;
   animation-direction: normal;

@@ -8,7 +8,7 @@
   padding: 0.8rem;
   border: 1px solid rgb(24, 51, 103);
   border-radius: 0.5rem;
-  transition: all 0.3s ease-in;
+  transition: all 0.2s ease-in;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   overflow: hidden;
@@ -30,14 +30,12 @@
 
 .card:hover {
   cursor: pointer;
-  /* transform: scale(1.1); */
   transition: transform 0s ease-out;
   z-index: 10;
   color: white;
 }
 
 .card:active {
-  /* transform: scale(1.08); */
   transition: transform 0s ease-out;
 }
 
@@ -47,7 +45,6 @@
   color: white;
 }
 
-/* TODO Add loading neon animation */
 .card.loading {
   color: white;
   animation-duration: 0.8s;
