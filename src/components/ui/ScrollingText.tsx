@@ -24,9 +24,9 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
     const div = divRef.current! as HTMLSpanElement;
     const span = spanRef.current! as HTMLSpanElement;
     resetAnimation();
-    span.style.animationDuration = '500ms';
-    span.classList.add(styles['fade-in']);
     const hidden = div.offsetWidth - span.offsetWidth;
+
+    span.style.opacity = '1';
 
     if (hidden > 0) {
       setShouldScroll(false);

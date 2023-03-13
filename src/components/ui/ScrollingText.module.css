@@ -6,17 +6,9 @@
   display: block;
   white-space: nowrap;
   width: fit-content;
-  transition: opacity 200ms;
-}
-
-/* .scrollable-enter {
   opacity: 0;
+  transition: opacity 2s;
 }
-
-.scrollable-enter-active {
-  opacity: 1;
-  transition: opacity 2000ms;
-} */
 
 .scroll {
   animation-name: scroll;
@@ -39,14 +31,5 @@
   }
   to {
     transform: translateX(-50%);
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
