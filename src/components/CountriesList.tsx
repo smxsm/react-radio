@@ -1,19 +1,19 @@
 import { Link } from 'react-router-dom';
-import { useCountries } from '../hooks';
+import { Country, useCountries } from '../hooks';
 import Card from './ui/Card';
 import CardsList from './ui/CardsList';
 
 export default function CountriesList() {
-  const countries: any[] = useCountries();
+  const countries: Country[] = useCountries();
 
   return (
     <CardsList>
       {countries.map((country) => (
-        <Link to={`${country['iso_3166_1']}`} key={country['iso_3166_1']}>
+        <Link to={`${country.code}`} key={country.code}>
           <Card>
-            <img src={`http://flagsapi.com/${country['iso_3166_1']}/flat/64.png`} alt="" />
+            <img src={`http://flagsapi.com/${country.code}/flat/64.png`} alt="" />
             <p>
-              {country.name} ({country.stationcount})
+              {country.name} ({country.stationCount})
             </p>
           </Card>
         </Link>
