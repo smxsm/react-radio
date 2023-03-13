@@ -16,6 +16,7 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
   useEffect(() => {
     const resetAnimation = () => {
       span.classList.remove(styles.scroll);
+      span.classList.remove(styles['fade-in']);
       void span.offsetWidth;
     };
 
@@ -23,6 +24,8 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
     const div = divRef.current! as HTMLSpanElement;
     const span = spanRef.current! as HTMLSpanElement;
     resetAnimation();
+    span.style.animationDuration = '500ms';
+    span.classList.add(styles['fade-in']);
     const hidden = div.offsetWidth - span.offsetWidth;
 
     if (hidden > 0) {
@@ -30,13 +33,13 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
       return;
     }
 
-    const animationDuration = span.offsetWidth / 60;
-    span.style.animationDuration = animationDuration.toFixed(2) + 's';
     setShouldScroll(true);
 
     const startAnimation = () => {
       timoutRef.current = setTimeout(() => {
         resetAnimation();
+        const animationDuration = span.offsetWidth / 60;
+        span.style.animationDuration = animationDuration.toFixed(2) + 's';
         span.classList.add(styles.scroll);
         span.addEventListener('animationend', startAnimation);
       }, 8000);
@@ -49,7 +52,7 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
 
   return (
     <div ref={divRef} className={styles.container}>
-      <span ref={spanRef} className={`${styles.scrollable}${className ? ' ' + className : ''}`}>
+      <span ref={spanRef} className={`${styles.scrollable}${className ? ' ' + className : ''}`} key={text}>
         {text}
         {!shouldScroll ? '' : ' | ' + text + ' | '}
       </span>
