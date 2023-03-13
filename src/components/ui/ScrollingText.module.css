@@ -1,0 +1,26 @@
+.container {
+  overflow: hidden;
+}
+
+.scrollable {
+  display: block;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.scroll {
+  animation-name: scroll;
+  animation-duration: 20s;
+  animation-iteration-count: 1;
+  animation-timing-function: linear;
+  animation-direction: normal;
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

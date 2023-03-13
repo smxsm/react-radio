@@ -1,0 +1,32 @@
+.container {
+  height: 100vh;
+}
+
+.grid-container {
+  display: flex;
+  height: 100vh;
+}
+
+.side-menu {
+  border-right: 1px solid rgb(24, 51, 103);
+  overflow: hidden;
+  padding: 1.4rem 1.4rem;
+  width: 20rem;
+}
+
+.nowplaying-container {
+  border-left: 1px solid rgb(24, 51, 103);
+  padding: 1.4rem 1.4rem;
+}
+
+.main-container {
+  height: 100vh;
+  overflow: auto;
+  flex-grow: 1;
+}
+
+.main-container > main {
+  display: block;
+  /* background-color: var(--background); */
+  padding: 1.4rem 1.4rem;
+}

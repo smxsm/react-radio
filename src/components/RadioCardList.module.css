@@ -1,0 +1,17 @@
+.icon-favorite {
+  position: absolute;
+  width: 2rem;
+  height: 2em;
+  bottom: 0.25rem;
+  right: 0.5rem;
+}
+
+.options {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.form-group label {
+  margin-right: 1rem;
+}
