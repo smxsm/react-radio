@@ -26,8 +26,6 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
     resetAnimation();
     const hidden = div.offsetWidth - span.offsetWidth;
 
-    span.style.opacity = '1';
-
     if (hidden > 0) {
       setShouldScroll(false);
       return;
