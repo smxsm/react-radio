@@ -44,7 +44,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
 
     const matchTrack = async (searchTerm: string): Promise<TrackInfo | null> => {
       try {
-        const cleanedSearchTerm = searchTerm.match(/\w+/g)?.join(' ');
+        const cleanedSearchTerm = searchTerm.match(/\w+(?![^(]*\))/g)?.join(' ');
         if (!cleanedSearchTerm) {
           return null;
         }
