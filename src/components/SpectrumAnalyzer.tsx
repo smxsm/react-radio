@@ -1,54 +1,63 @@
 import { useEffect, useRef } from 'react';
 
 export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const analyser = useRef<AnalyserNode | undefined>();
+  const gainNode = useRef<GainNode | undefined>();
+  const lowShelffFilter = useRef<BiquadFilterNode | undefined>();
+  const highShelffFilter = useRef<BiquadFilterNode | undefined>();
+  const floatDataArray = useRef<Float32Array>(new Float32Array());
+  const barsCount = useRef(0);
+  const barWidth = useRef(0);
 
   useEffect(() => {
-    if (!audioCtx || !source || !canvasRef.current) {
+    if (!audioCtx || !source) {
+      // analyser.current = undefined;
       return;
     }
 
-    const canvas = canvasRef.current! as HTMLCanvasElement;
-    const canvasCtx = canvas.getContext('2d')!;
-    canvasCtx.globalCompositeOperation = 'screen';
+    analyser.current = audioCtx.createAnalyser();
+    gainNode.current = audioCtx.createGain();
+    lowShelffFilter.current = audioCtx.createBiquadFilter();
+    highShelffFilter.current = audioCtx.createBiquadFilter();
 
-    let analyser = audioCtx.createAnalyser();
-    let gainNode = audioCtx.createGain();
-    let lowShelffFilter = audioCtx.createBiquadFilter();
-    let highShelffFilter = audioCtx.createBiquadFilter();
+    lowShelffFilter.current!.type = 'lowshelf';
+    lowShelffFilter.current!.frequency.value = 1000;
+    lowShelffFilter.current!.gain.value = -20;
 
-    lowShelffFilter.type = 'lowshelf';
-    lowShelffFilter.frequency.value = 1000;
-    lowShelffFilter.gain.value = -20;
+    highShelffFilter.current!.type = 'highshelf';
+    highShelffFilter.current!.frequency.value = 8000;
+    highShelffFilter.current!.gain.value = 5;
 
-    highShelffFilter.type = 'highshelf';
-    highShelffFilter.frequency.value = 8000;
-    highShelffFilter.gain.value = 5;
+    gainNode.current!.gain.value = 35;
 
-    gainNode.gain.value = 35;
+    source.connect(lowShelffFilter.current!);
+    lowShelffFilter.current!.connect(highShelffFilter.current!);
+    highShelffFilter.current!.connect(gainNode.current!);
+    gainNode.current!.connect(analyser.current!);
 
-    source.connect(lowShelffFilter);
-    lowShelffFilter.connect(highShelffFilter);
-    highShelffFilter.connect(gainNode);
-    gainNode.connect(analyser);
+    analyser.current!.smoothingTimeConstant = 0.86;
+    analyser.current!.fftSize = 128;
 
-    analyser.smoothingTimeConstant = 0.86;
-    analyser.fftSize = 128;
+    barsCount.current = analyser.current!.frequencyBinCount / 3.2;
+    floatDataArray.current = new Float32Array(analyser.current!.frequencyBinCount);
+  }, [audioCtx, source]);
 
-    const barsCount = analyser.frequencyBinCount / 3.2;
-    const floatDataArray = new Float32Array(analyser.frequencyBinCount);
-
-    const WIDTH = canvas.width - 10;
-    const HEIGHT = canvas.height - 10;
-    const exp = 1.2;
-    const barWidth = Math.round((WIDTH - (barsCount - 1) * 3) / barsCount);
-
+  useEffect(() => {
+    canvasCtxRef.current = canvasRef.current!.getContext('2d')!;
+    canvasCtxRef.current.globalCompositeOperation = 'screen';
     const fpsInterval = 1000 / 60;
     let then = Date.now();
     let elapsed;
     let now;
     let barHeight = 0;
     let x = 5;
+
+    const WIDTH = canvasRef.current!.width - 10;
+    const HEIGHT = canvasRef.current!.height - 10;
+    const exp = 1.2;
+
     draw();
 
     function draw() {
@@ -61,32 +70,31 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
       }
       then = now - (elapsed % fpsInterval);
 
-      analyser.getFloatFrequencyData(floatDataArray);
+      canvasCtxRef.current!.clearRect(0, 0, WIDTH + 10, HEIGHT + 10);
 
-      canvasCtx.clearRect(0, 0, WIDTH + 10, HEIGHT + 10);
+      if (!analyser.current) {
+        return;
+      }
+
+      analyser.current.getFloatFrequencyData(floatDataArray.current);
 
       x = 5;
-      for (let i = 0; i < barsCount; i++) {
-        barHeight = HEIGHT - Math.abs(floatDataArray[i]) ** exp;
+      barWidth.current = Math.round((WIDTH - (barsCount.current - 1) * 3) / barsCount.current);
+      for (let i = 0; i < barsCount.current; i++) {
+        barHeight = HEIGHT - Math.abs(floatDataArray.current[i]) ** exp;
 
         if (barHeight < 0) barHeight = 0;
         if (barHeight > HEIGHT) barHeight = HEIGHT;
 
-        // canvasCtx.fillStyle = '#EAF7FF';
-        // canvasCtx.fillStyle = '#111';
-        // canvasCtx.shadowBlur = 0;
-        // canvasCtx.fillRect(x, 10, barWidth, HEIGHT + 10);
-        canvasCtx.fillStyle = '#ADC5FF';
-        // canvasCtx.fillStyle = 'rgb(48, 110, 232)';
-        canvasCtx.shadowColor = '#EAF7FF';
+        canvasCtxRef.current!.fillStyle = '#ADC5FF';
+        canvasCtxRef.current!.shadowColor = '#EAF7FF';
+        canvasCtxRef.current!.shadowBlur = 25;
+        canvasCtxRef.current!.fillRect(x, HEIGHT - barHeight + 10, barWidth.current, barHeight);
 
-        canvasCtx.shadowBlur = 25;
-        canvasCtx.fillRect(x, HEIGHT - barHeight + 10, barWidth, barHeight);
-
-        x += barWidth + (WIDTH - barsCount * barWidth) / (barsCount - 1);
+        x += barWidth.current + (WIDTH - barsCount.current * barWidth.current) / (barsCount.current - 1);
       }
     }
-  }, [audioCtx, source]);
+  }, []);
 
   return <canvas ref={canvasRef} width="267" height="75" className={`${className}`}></canvas>;
 }

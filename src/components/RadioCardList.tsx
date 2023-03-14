@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+import { PlayerContext } from '../context/PlayerContext';
 import { useStations } from '../hooks';
-import { PlayerControlContext, PlayerStatusContext } from '../PlayerContext';
 import styles from './RadioCardList.module.css';
 import Card from './ui/Card';
 import CardsList from './ui/CardsList';
@@ -21,8 +21,7 @@ export default function RadioCardList() {
     order: searchParams.get('order') || 'desc',
     sort: searchParams.get('sort') || 'popularity',
   });
-  const [{ action }, setPlayerControls] = useContext(PlayerControlContext);
-  const [playerStatus] = useContext(PlayerStatusContext);
+  const playerContext = useContext(PlayerContext);
   const stations: RadioStation[] = useStations(
     { category, value },
     {
@@ -44,7 +43,12 @@ export default function RadioCardList() {
     });
   }, [searchParams]);
 
-  const clickHandler = (station: RadioStation) => () => setPlayerControls({ action: 'play', station });
+  const clickHandler = (station: RadioStation) => () => {
+    if (!playerContext) {
+      return;
+    }
+    playerContext.play(station);
+  };
 
   const optionsChangeHandler = (e: any) => setSearchParams({ ...options, [e.target.name]: e.target.value });
 
@@ -80,13 +84,9 @@ export default function RadioCardList() {
       <CardsList>
         {stations.map((station, i) => (
           <Card
-            loading={playerStatus.station?.listenUrl === station.listenUrl && playerStatus.status === 'loading'}
-            active={playerStatus.station?.listenUrl === station.listenUrl && playerStatus.status === 'playing'}
-            error={
-              playerStatus.station?.listenUrl === station.listenUrl &&
-              playerStatus.status === 'error' &&
-              action === 'stop'
-            }
+            loading={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'loading'}
+            active={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'playing'}
+            error={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'error'}
             onClick={clickHandler(station)}
             key={i + station.listenUrl}
           >
