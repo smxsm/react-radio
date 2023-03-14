@@ -24,11 +24,11 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
     lowShelffFilter.current!.type = 'lowshelf';
     lowShelffFilter.current!.frequency.value = 1000;
-    lowShelffFilter.current!.gain.value = -20;
+    lowShelffFilter.current!.gain.value = -15;
 
     highShelffFilter.current!.type = 'highshelf';
     highShelffFilter.current!.frequency.value = 8000;
-    highShelffFilter.current!.gain.value = 5;
+    highShelffFilter.current!.gain.value = 8;
 
     gainNode.current!.gain.value = 35;
 
@@ -55,7 +55,7 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
     let x = 5;
 
     const WIDTH = canvasRef.current!.width - 10;
-    const HEIGHT = canvasRef.current!.height - 10;
+    const HEIGHT = canvasRef.current!.height;
     const exp = 1.2;
 
     draw();
@@ -70,7 +70,7 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
       }
       then = now - (elapsed % fpsInterval);
 
-      canvasCtxRef.current!.clearRect(0, 0, WIDTH + 10, HEIGHT + 10);
+      canvasCtxRef.current!.clearRect(0, 0, WIDTH + 10, HEIGHT);
 
       if (!analyser.current) {
         return;
@@ -89,7 +89,7 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
         canvasCtxRef.current!.fillStyle = '#ADC5FF';
         canvasCtxRef.current!.shadowColor = '#EAF7FF';
         canvasCtxRef.current!.shadowBlur = 25;
-        canvasCtxRef.current!.fillRect(x, HEIGHT - barHeight + 10, barWidth.current, barHeight);
+        canvasCtxRef.current!.fillRect(x, HEIGHT - barHeight, barWidth.current, barHeight);
 
         x += barWidth.current + (WIDTH - barsCount.current * barWidth.current) / (barsCount.current - 1);
       }
