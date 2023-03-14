@@ -2,12 +2,12 @@ import Hls from 'hls.js';
 import { createContext, PropsWithChildren, useEffect, useRef, useState } from 'react';
 
 export type PlayerContextType = {
-  station: RadioStation | null;
+  station?: RadioStation;
   status: PlayerStatus;
   play: (station: RadioStation) => void;
   stop: () => void;
-  audioContext: AudioContext;
-  sourceNode: AudioNode | null;
+  audioContext?: AudioContext;
+  sourceNode?: AudioNode;
 };
 
 type PlayerStatus = 'error' | 'loading' | 'playing' | 'stopped';
@@ -21,11 +21,11 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   const audioElement2Ref = useRef(new Audio());
   const hlsRef = useRef(new Hls());
   const audioContextRef = useRef(new AudioContext());
-  const audioSourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const audioSourceNodeRef = useRef<MediaElementAudioSourceNode>();
 
-  const [station, setStation] = useState<RadioStation | null>(null);
+  const [station, setStation] = useState<RadioStation>();
   const [status, setStatus] = useState<PlayerStatus>('stopped');
-  const [sourceNode, setSourceNode] = useState<AudioNode | null>(null);
+  const [sourceNode, setSourceNode] = useState<AudioNode>();
 
   useEffect(() => {
     audioSourceNodeRef.current = audioContextRef.current.createMediaElementSource(audioElementRef.current);
@@ -43,6 +43,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   };
 
   const stop = () => {
+    hlsRef.current.stopLoad();
     hlsRef.current.detachMedia();
     resetAudioElements();
     setStatus('stopped');

@@ -1,3 +1,4 @@
+import { unwatchFile } from 'fs';
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 import { PlayerContext } from './PlayerContext';
 
@@ -26,83 +27,94 @@ type TrackInfo = {
 
 type NowPlayingInfoProviderProps = PropsWithChildren & {};
 
+/**
+ * Gets music track metadata from iTunes API.
+ * @param searchTerm The text to search. Will filter special symbols and terms like ft, feat, vs
+ * @returns Returns a Promise resolving to a TrackInfo object or null. Doesn't throw.
+ */
+const matchTrack = async (searchTerm: string): Promise<TrackInfo | null> => {
+  try {
+    const filterTerms = ['ft', 'feat', 'vs'];
+    const cleanedSearchTerm = searchTerm
+      .match(/\w+(?![^(]*\))/g)
+      ?.filter((term) => !filterTerms.includes(term.toLowerCase()))
+      .join(' ');
+    if (!cleanedSearchTerm) {
+      return null;
+    }
+    const res = await fetch(`https://itunes.apple.com/search?term=${cleanedSearchTerm}&enitity=musicTrack`);
+    const data = await res.json();
+    if (!data.resultCount) {
+      return null;
+    }
+    // TODO Implement some kind of matching algorithm instead of taking the first result
+    return {
+      artist: data.results[0].artistName || '',
+      title: data.results[0].trackName || '',
+      album: data.results[0].collectionName || '',
+      releaseDate: new Date(data.results[0].releaseDate) || null,
+      artwork: data.results[0].artworkUrl100,
+    };
+  } catch (err) {
+    return null;
+  }
+};
+
+/**
+ * Gets metadata for a radio stream from a free internet service
+ * @param url The original stream URL
+ * @returns A Promise whose resolved value is a StationMetadata object. Throws on error.
+ */
+const getStationMetadata = async (url: string): Promise<StationMetadata> => {
+  const res = await fetch('https://service.radiolise.com?url=' + url);
+  const data = await res.json();
+  return {
+    contentType: data['content-type'] || '',
+    name: data.name || '',
+    description: data.description || '',
+    genre: data.genre || '',
+    title: data.title || '',
+  };
+};
+
 export const NowPlayingContext = createContext<NowPlayingContextType | null>(null);
 
 export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   const playerContext = useContext(PlayerContext);
   const [nowPlaying, setNowPlaying] = useState<NowPlayingContextType>({});
-
+  const matchedTitleRef = useRef('');
   const intervalRef = useRef<NodeJS.Timer | number>(0);
 
-  useEffect(() => {
-    const clearStationMetadata = () => {
+  const getNowPlayingInfo = async () => {
+    if (!playerContext?.station?.listenUrl) {
+      return;
+    }
+
+    try {
+      const stationMetadata = await getStationMetadata(playerContext.station.listenUrl);
+      const newState: NowPlayingContextType = { station: playerContext?.station, stationMetadata };
+      if (stationMetadata.title && stationMetadata.title !== matchedTitleRef.current) {
+        newState.trackMatch = (await matchTrack(stationMetadata.title)) || undefined;
+        matchedTitleRef.current = stationMetadata.title;
+      }
+      setNowPlaying((state) => ({ ...state, ...newState }));
+    } catch (err) {
       setNowPlaying({});
-    };
-
-    const matchTrack = async (searchTerm: string): Promise<TrackInfo | null> => {
-      try {
-        const cleanedSearchTerm = searchTerm.match(/\w+(?![^(]*\))/g)?.join(' ');
-        if (!cleanedSearchTerm) {
-          return null;
-        }
-        const res = await fetch(`https://itunes.apple.com/search?term=${cleanedSearchTerm}&enitity=musicTrack`);
-        const data = await res.json();
-        if (!data.resultCount) {
-          return null;
-        }
-        // TODO Implement some kind of matching algorithm instead of taking the first result
-        return {
-          artist: data.results[0].artistName || '',
-          title: data.results[0].trackName || '',
-          album: data.results[0].collectionName || '',
-          releaseDate: new Date(data.results[0].releaseDate) || null,
-          artwork: data.results[0].artworkUrl100,
-        };
-      } catch (err) {
-        return null;
-      }
-    };
-
-    const getNowPlayingInfo = async () => {
-      try {
-        const res = await fetch('https://service.radiolise.com?url=' + playerContext?.station?.listenUrl);
-        const data = await res.json();
-        if (data.title !== nowPlaying.stationMetadata?.title) {
-          const trackMatch = await matchTrack(data.title);
-          setNowPlaying({
-            station: playerContext?.station || undefined,
-            stationMetadata: {
-              contentType: data['content-type'] || '',
-              name: data.name || '',
-              description: data.description || '',
-              genre: data.genre || '',
-              title: data.title || '',
-            },
-            trackMatch: trackMatch || undefined,
-          });
-        }
-      } catch (err) {
-        clearStationMetadata();
-      }
-    };
-
-    if (playerContext?.status === 'playing') {
-      clearInterval(intervalRef.current);
-      setNowPlaying({
-        station: playerContext?.station || undefined,
-      });
-      getNowPlayingInfo().then(() => {
-        intervalRef.current = setInterval(() => getNowPlayingInfo(), 12000);
-      });
+    } finally {
+      intervalRef.current = setTimeout(getNowPlayingInfo, 12000);
     }
+  };
 
-    if (playerContext?.status !== 'playing') {
-      clearInterval(intervalRef.current);
-      clearStationMetadata();
-    }
+  if (playerContext?.status === 'playing' && !nowPlaying.station) {
+    clearInterval(intervalRef.current);
+    getNowPlayingInfo();
+  }
 
-    return () => clearInterval(intervalRef.current);
-  }, [playerContext?.status, playerContext?.station?.listenUrl, nowPlaying.stationMetadata?.title]);
+  if (playerContext?.status !== 'playing' && nowPlaying.station) {
+    clearInterval(intervalRef.current);
+    matchedTitleRef.current = '';
+    setNowPlaying({});
+  }
 
   return <NowPlayingContext.Provider value={nowPlaying}>{children}</NowPlayingContext.Provider>;
 }
