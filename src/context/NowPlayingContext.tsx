@@ -36,10 +36,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
 
   useEffect(() => {
     const clearStationMetadata = () => {
-      setNowPlaying((state) => ({
-        ...state,
-        stationMetadata: { contentType: '', name: '', description: '', genre: '', title: '' },
-      }));
+      setNowPlaying({});
     };
 
     const matchTrack = async (searchTerm: string): Promise<TrackInfo | null> => {
@@ -72,8 +69,8 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
         const data = await res.json();
         if (data.title !== nowPlaying.stationMetadata?.title) {
           const trackMatch = await matchTrack(data.title);
-          setNowPlaying((state) => ({
-            ...state,
+          setNowPlaying({
+            station: playerContext?.station || undefined,
             stationMetadata: {
               contentType: data['content-type'] || '',
               name: data.name || '',
@@ -82,7 +79,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
               title: data.title || '',
             },
             trackMatch: trackMatch || undefined,
-          }));
+          });
         }
       } catch (err) {
         clearStationMetadata();
@@ -91,6 +88,9 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
 
     if (playerContext?.status === 'playing') {
       clearInterval(intervalRef.current);
+      setNowPlaying({
+        station: playerContext?.station || undefined,
+      });
       getNowPlayingInfo().then(() => {
         intervalRef.current = setInterval(() => getNowPlayingInfo(), 12000);
       });
