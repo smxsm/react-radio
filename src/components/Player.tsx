@@ -42,7 +42,7 @@ export default function Player(props: any) {
         <img src={nowPlaying.trackMatch?.artwork || nowPlaying.station?.logo || '/radio-no-logo.png'} alt="" />
         <div className={styles['now-playing-info']}>
           <ScrollingText
-            text={nowPlaying?.stationMetadata?.name || nowPlaying.station?.name || ''}
+            text={nowPlaying?.stationMetadata?.name || nowPlaying.station?.name || playerContext?.station?.name || ''}
             className={styles['radio-name']}
           />
           <ScrollingText text={nowPlaying?.stationMetadata?.title || ''} className={styles['track-name']} />
