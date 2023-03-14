@@ -16,7 +16,6 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
   useEffect(() => {
     const resetAnimation = () => {
       span.classList.remove(styles.scroll);
-      span.classList.remove(styles['fade-in']);
       void span.offsetWidth;
     };
 
@@ -39,7 +38,7 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
         const animationDuration = span.offsetWidth / 60;
         span.style.animationDuration = animationDuration.toFixed(2) + 's';
         span.classList.add(styles.scroll);
-        span.addEventListener('animationend', startAnimation);
+        span.onanimationend = startAnimation;
       }, 8000);
     };
 
