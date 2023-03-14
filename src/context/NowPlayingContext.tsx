@@ -1,5 +1,4 @@
-import { unwatchFile } from 'fs';
-import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, PropsWithChildren, useContext, useRef, useState } from 'react';
 import { PlayerContext } from './PlayerContext';
 
 type NowPlayingContextType = {
