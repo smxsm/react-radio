@@ -83,6 +83,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   const [nowPlaying, setNowPlaying] = useState<NowPlayingContextType>({});
   const matchedTitleRef = useRef('');
   const intervalRef = useRef<NodeJS.Timer | number>(0);
+  const currentStationRef = useRef<RadioStation | undefined>();
 
   const getNowPlayingInfo = async () => {
     if (!playerContext?.station?.listenUrl) {
@@ -104,13 +105,22 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
     }
   };
 
-  if (playerContext?.status === 'playing' && !nowPlaying.station) {
+  if (playerContext?.status === 'loading' && currentStationRef.current?.id !== playerContext.station?.id) {
     clearInterval(intervalRef.current);
+    intervalRef.current = 0;
+    currentStationRef.current = playerContext.station;
+    setNowPlaying({ station: playerContext.station });
+  }
+
+  if (playerContext?.status === 'playing' && !intervalRef.current) {
+    clearInterval(intervalRef.current);
+    intervalRef.current = 1;
     getNowPlayingInfo();
   }
 
-  if (playerContext?.status !== 'playing' && nowPlaying.station) {
+  if ((playerContext?.status === 'stopped' || playerContext?.status === 'error') && intervalRef.current) {
     clearInterval(intervalRef.current);
+    intervalRef.current = 0;
     matchedTitleRef.current = '';
     setNowPlaying({});
   }
