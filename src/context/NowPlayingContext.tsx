@@ -81,18 +81,18 @@ export const NowPlayingContext = createContext<NowPlayingContextType | null>(nul
 export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   const playerContext = useContext(PlayerContext);
   const [nowPlaying, setNowPlaying] = useState<NowPlayingContextType>({});
-  const matchedTitleRef = useRef('');
   const intervalRef = useRef<NodeJS.Timer | number>(0);
 
   useEffect(() => {
+    let matchedTrack = '';
     const getNowPlayingInfo = async (url: string | undefined) => {
       if (!url) return;
       try {
         const stationMetadata = await getStationMetadata(url);
         let trackMatch: TrackInfo | undefined;
-        if (stationMetadata.title && stationMetadata.title !== matchedTitleRef.current) {
+        if (stationMetadata.title && stationMetadata.title !== matchedTrack) {
           trackMatch = (await matchTrack(stationMetadata.title)) || undefined;
-          matchedTitleRef.current = stationMetadata.title;
+          matchedTrack = stationMetadata.title;
         }
         setNowPlaying((state) => ({ ...state, stationMetadata, trackMatch }));
       } catch (err) {}
