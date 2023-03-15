@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useRef, useState } from 'react';
+import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 import { PlayerContext } from './PlayerContext';
 
 type NowPlayingContextType = {
@@ -41,7 +41,7 @@ const matchTrack = async (searchTerm: string): Promise<TrackInfo | null> => {
     if (!cleanedSearchTerm) {
       return null;
     }
-    const res = await fetch(`https://itunes.apple.com/search?term=${cleanedSearchTerm}&enitity=musicTrack`);
+    const res = await fetch(`https://itunes.apple.com/search?term=${cleanedSearchTerm}&entity=musicTrack`);
     const data = await res.json();
     if (!data.resultCount) {
       return null;
@@ -83,47 +83,37 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   const [nowPlaying, setNowPlaying] = useState<NowPlayingContextType>({});
   const matchedTitleRef = useRef('');
   const intervalRef = useRef<NodeJS.Timer | number>(0);
-  const currentStationRef = useRef<RadioStation | undefined>();
 
-  const getNowPlayingInfo = async () => {
-    if (!playerContext?.station?.listenUrl) {
+  useEffect(() => {
+    const getNowPlayingInfo = async (url: string | undefined) => {
+      if (!url) return;
+      try {
+        const stationMetadata = await getStationMetadata(url);
+        let trackMatch: TrackInfo | undefined;
+        if (stationMetadata.title && stationMetadata.title !== matchedTitleRef.current) {
+          trackMatch = (await matchTrack(stationMetadata.title)) || undefined;
+          matchedTitleRef.current = stationMetadata.title;
+        }
+        setNowPlaying((state) => ({ ...state, stationMetadata, trackMatch }));
+      } catch (err) {}
+    };
+
+    clearInterval(intervalRef.current);
+
+    if (playerContext?.status === 'stopped' || playerContext?.status === 'error') {
+      setNowPlaying({});
       return;
     }
 
-    try {
-      const stationMetadata = await getStationMetadata(playerContext.station.listenUrl);
-      const newState: NowPlayingContextType = { station: playerContext?.station, stationMetadata };
-      if (stationMetadata.title && stationMetadata.title !== matchedTitleRef.current) {
-        newState.trackMatch = (await matchTrack(stationMetadata.title)) || undefined;
-        matchedTitleRef.current = stationMetadata.title;
-      }
-      setNowPlaying((state) => ({ ...state, ...newState }));
-    } catch (err) {
-      setNowPlaying({});
-    } finally {
-      intervalRef.current = setTimeout(getNowPlayingInfo, 12000);
+    setNowPlaying({ station: playerContext?.station });
+
+    if (playerContext?.status === 'playing') {
+      getNowPlayingInfo(playerContext.station?.listenUrl);
+      intervalRef.current = setInterval(() => getNowPlayingInfo(playerContext.station?.listenUrl), 12000);
     }
-  };
 
-  if (playerContext?.status === 'loading' && currentStationRef.current?.id !== playerContext.station?.id) {
-    clearInterval(intervalRef.current);
-    intervalRef.current = 0;
-    currentStationRef.current = playerContext.station;
-    setNowPlaying({ station: playerContext.station });
-  }
-
-  if (playerContext?.status === 'playing' && !intervalRef.current) {
-    clearInterval(intervalRef.current);
-    intervalRef.current = 1;
-    getNowPlayingInfo();
-  }
-
-  if ((playerContext?.status === 'stopped' || playerContext?.status === 'error') && intervalRef.current) {
-    clearInterval(intervalRef.current);
-    intervalRef.current = 0;
-    matchedTitleRef.current = '';
-    setNowPlaying({});
-  }
+    return () => clearInterval(intervalRef.current);
+  }, [playerContext?.station, playerContext?.status]);
 
   return <NowPlayingContext.Provider value={nowPlaying}>{children}</NowPlayingContext.Provider>;
 }
