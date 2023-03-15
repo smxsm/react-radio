@@ -89,12 +89,12 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
       if (!url) return;
       try {
         const stationMetadata = await getStationMetadata(url);
-        let trackMatch: TrackInfo | undefined;
+        const newState: NowPlayingContextType = { stationMetadata };
         if (stationMetadata.title && stationMetadata.title !== matchedTrack) {
-          trackMatch = (await matchTrack(stationMetadata.title)) || undefined;
+          newState.trackMatch = (await matchTrack(stationMetadata.title)) || undefined;
           matchedTrack = stationMetadata.title;
         }
-        setNowPlaying((state) => ({ ...state, stationMetadata, trackMatch }));
+        setNowPlaying((state) => ({ ...state, ...newState }));
       } catch (err) {}
     };
 
