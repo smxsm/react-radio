@@ -24,10 +24,10 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
     lowShelffFilter.current!.type = 'lowshelf';
     lowShelffFilter.current!.frequency.value = 1000;
-    lowShelffFilter.current!.gain.value = -15;
+    lowShelffFilter.current!.gain.value = -20;
 
     highShelffFilter.current!.type = 'highshelf';
-    highShelffFilter.current!.frequency.value = 8000;
+    highShelffFilter.current!.frequency.value = 10000;
     highShelffFilter.current!.gain.value = 8;
 
     gainNode.current!.gain.value = 35;
@@ -88,7 +88,7 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
         canvasCtxRef.current!.fillStyle = '#ADC5FF';
         canvasCtxRef.current!.shadowColor = '#EAF7FF';
-        canvasCtxRef.current!.shadowBlur = 25;
+        // canvasCtxRef.current!.shadowBlur = 25;
         canvasCtxRef.current!.fillRect(x, HEIGHT - barHeight, barWidth.current, barHeight);
 
         x += barWidth.current + (WIDTH - barsCount.current * barWidth.current) / (barsCount.current - 1);
