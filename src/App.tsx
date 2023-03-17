@@ -8,12 +8,14 @@ import GenresList from './components/GenresList';
 import Home from './components/Home';
 import { PlayerProvider } from './context/PlayerContext';
 import { NowPlayingProvider } from './context/NowPlayingContext';
+import { MediaSessionAPI } from './components/MediaSessionAPI';
 
 function App() {
   return (
     <>
       <PlayerProvider>
         <NowPlayingProvider>
+          <MediaSessionAPI />
           <div className={styles.container}>
             <div className={styles['grid-container']}>
               <BrowserRouter>
