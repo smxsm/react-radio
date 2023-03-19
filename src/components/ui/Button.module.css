@@ -1,0 +1,74 @@
+.btn {
+  background-color: rgb(15, 23, 42);
+  border: 1px solid rgb(24, 51, 103);
+  border-radius: 0.5rem;
+  color: inherit;
+  outline: none;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem 1.6rem;
+  cursor: pointer;
+  transition: all 0.2s ease-ii, transform 0s ease-in;
+  /* transition:  */
+}
+
+.btn:hover {
+  color: white;
+  transition: all 0.2s ease-in;
+}
+
+.btn:focus {
+  border-color: rgb(48, 110, 232);
+  box-shadow: 0px 0px 2rem rgba(23, 92, 230, 0.7);
+  color: white;
+}
+
+.btn:enabled:active {
+  border-width: 1px;
+  transform: scale(0.98);
+  transition: transform 0s ease-in-out;
+}
+
+.btn:disabled {
+  background-color: var(--background);
+  color: hsl(246, 6%, 45%);
+  cursor: not-allowed;
+}
+
+.loading {
+  animation-duration: 0.8s;
+  animation-name: loading;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-delay: 0.2s;
+}
+
+.error {
+  animation-duration: 0.2s;
+  animation-name: error;
+  animation-iteration-count: 3;
+}
+
+@keyframes loading {
+  from {
+    box-shadow: 0px 0px 1rem rgba(23, 92, 230, 0.1);
+    border-color: rgb(24, 51, 103);
+  }
+  to {
+    box-shadow: 0px 0px 2rem rgba(23, 92, 230, 0.7);
+    border-color: rgb(48, 110, 232);
+  }
+}
+
+@keyframes error {
+  from {
+    box-shadow: 0px 0px 1rem rgba(23, 92, 230, 0.1);
+    border-color: rgb(24, 51, 103);
+  }
+  to {
+    box-shadow: 0px 0px 2rem rgba(23, 92, 230, 0.7);
+    border-color: rgb(48, 110, 232);
+  }
+}

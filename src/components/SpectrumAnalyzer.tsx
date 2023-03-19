@@ -13,7 +13,6 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
   useEffect(() => {
     if (!audioCtx || !source) {
-      // analyser.current = undefined;
       return;
     }
 
@@ -88,7 +87,7 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
         canvasCtxRef.current!.fillStyle = '#ADC5FF';
         canvasCtxRef.current!.shadowColor = '#EAF7FF';
-        // canvasCtxRef.current!.shadowBlur = 25;
+        canvasCtxRef.current!.shadowBlur = 25;
         canvasCtxRef.current!.fillRect(x, HEIGHT - barHeight, barWidth.current, barHeight);
 
         x += barWidth.current + (WIDTH - barsCount.current * barWidth.current) / (barsCount.current - 1);

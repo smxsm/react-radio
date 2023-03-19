@@ -1,0 +1,18 @@
+.signout-item {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  height: 4.2rem;
+  overflow: hidden;
+  margin: 0 -3rem;
+  padding: 0 3rem;
+  border-color: rgb(48, 110, 232);
+  transition: all 0.2s ease-out;
+}
+
+.signout-item:hover {
+  color: white;
+  cursor: pointer;
+}

@@ -8,10 +8,14 @@
 }
 
 .side-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
   border-right: 1px solid rgb(24, 51, 103);
   overflow: hidden;
   padding: 1.4rem 1.4rem;
   width: 20rem;
+  flex-shrink: 0;
 }
 
 .nowplaying-container {

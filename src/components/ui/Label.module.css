@@ -1,0 +1,13 @@
+.label {
+  display: block;
+}
+
+.label:not(.disabled):hover {
+  color: white;
+  cursor: pointer;
+}
+
+.disabled {
+  color: hsl(246, 6%, 45%);
+  cursor: not-allowed;
+}

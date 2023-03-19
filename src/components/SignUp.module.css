@@ -1,0 +1,30 @@
+.signup-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 1rem;
+  max-width: 40rem;
+  margin: 2rem auto;
+}
+
+.form-title {
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+.signup-form {
+  display: grid;
+  grid-template-columns: max-content auto;
+  align-items: center;
+  column-gap: 1.4rem;
+  row-gap: 0.5rem;
+}
+
+.validation-error {
+  grid-column: 2/3;
+}
+
+.form-actions {
+  grid-column: 1/3;
+}
