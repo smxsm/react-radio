@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { PlayerContext } from '../context/PlayerContext';
 import { useStations } from '../hooks';
 import styles from './RadioCardList.module.css';
+import Button from './ui/Button';
 import Card from './ui/Card';
 import CardsList from './ui/CardsList';
 
@@ -18,6 +19,7 @@ export default function RadioCardList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [options, setOptions] = useState({
     limit: searchParams.get('limit') || '40',
+    offset: searchParams.get('offset') || '0',
     order: searchParams.get('order') || 'desc',
     sort: searchParams.get('sort') || 'popularity',
   });
@@ -26,10 +28,13 @@ export default function RadioCardList() {
     { category, value },
     {
       limit: +options.limit || 0,
+      offset: +options.offset || 0,
       sort: options.sort,
       order: options.order,
     }
   );
+  const offset = +options.offset || 0;
+  const limit = +options.limit || 0;
 
   useEffect(() => {
     document.title = `Radio Stations (${value})`;
@@ -38,6 +43,7 @@ export default function RadioCardList() {
   useEffect(() => {
     setOptions({
       limit: searchParams.get('limit') || '40',
+      offset: searchParams.get('offset') || '0',
       order: searchParams.get('order') || 'desc',
       sort: searchParams.get('sort') || 'popularity',
     });
@@ -51,6 +57,8 @@ export default function RadioCardList() {
   };
 
   const optionsChangeHandler = (e: any) => setSearchParams({ ...options, [e.target.name]: e.target.value });
+  const previousClickHandler = () => setSearchParams({ ...options, offset: offset - limit + '' });
+  const nextClickHandler = () => setSearchParams({ ...options, offset: offset + limit + '' });
 
   return (
     <>
@@ -81,6 +89,7 @@ export default function RadioCardList() {
           </select>
         </div>
       </div>
+
       <CardsList>
         {stations.map((station, i) => (
           <Card
@@ -111,6 +120,15 @@ export default function RadioCardList() {
           </Card>
         ))}
       </CardsList>
+
+      <div className={styles.pagination}>
+        <Button disabled={offset === 0} onClick={previousClickHandler}>
+          Previous
+        </Button>
+        <Button disabled={stations.length < +options.limit} onClick={nextClickHandler}>
+          Next
+        </Button>
+      </div>
     </>
   );
 }

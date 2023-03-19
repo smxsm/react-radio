@@ -7,6 +7,7 @@ type StationsFilter = {
 
 type ListOptions = {
   limit?: number;
+  offset?: number;
   sort?: string;
   order?: string;
 };
@@ -24,7 +25,7 @@ const routeToApiSort: { [key: string]: string } = {
 
 export function useStations(
   { category = '', value }: StationsFilter,
-  { limit = 60, sort = '', order = 'asc' }: ListOptions
+  { limit = 60, offset = 0, sort = '', order = 'asc' }: ListOptions
 ) {
   const [stations, setStations] = useState([]);
 
@@ -37,7 +38,7 @@ export function useStations(
 
     apiUrl += `?order=${routeToApiSort[sort] || 'name'}${order === 'desc' ? '&reverse=true' : ''}&limit=${
       limit > 0 && limit < 301 ? limit : 60
-    }`;
+    }&offset=${offset}`;
 
     fetch(apiUrl)
       .then((res) => res.json())
@@ -51,7 +52,7 @@ export function useStations(
           }))
         )
       );
-  }, [category, value, limit, sort, order]);
+  }, [category, value, limit, sort, order, offset]);
 
   return stations;
 }
