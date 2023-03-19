@@ -56,7 +56,8 @@ export default function RadioCardList() {
     playerContext.play(station);
   };
 
-  const optionsChangeHandler = (e: any) => setSearchParams({ ...options, [e.target.name]: e.target.value });
+  const optionsChangeHandler = (e: any) =>
+    setSearchParams({ ...options, [e.target.name]: e.target.value, offset: '0' });
   const previousClickHandler = () => setSearchParams({ ...options, offset: offset - limit + '' });
   const nextClickHandler = () => setSearchParams({ ...options, offset: offset + limit + '' });
 
