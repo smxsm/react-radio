@@ -13,6 +13,7 @@ import UserMenu from './components/UserMenu';
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import { UserProvider } from './context/UserContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -32,8 +33,22 @@ function App() {
                     <Player />
                     <main>
                       <Routes>
-                        <Route path="/auth/signin" element={<SignIn />} />
-                        <Route path="/auth/signup" element={<SignUp />} />
+                        <Route
+                          path="/auth/signin"
+                          element={
+                            <ProtectedRoute isLoggedIn={false}>
+                              <SignIn />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/auth/signup"
+                          element={
+                            <ProtectedRoute isLoggedIn={false}>
+                              <SignUp />
+                            </ProtectedRoute>
+                          }
+                        />
                         <Route path="/" element={<Home />} />
                         <Route path="/stations" element={<RadioCardList />} />
                         <Route path="/stations/countries" element={<CountriesList />} />
