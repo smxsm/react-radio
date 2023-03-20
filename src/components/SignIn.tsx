@@ -81,7 +81,13 @@ export default function SignIn() {
 
         <div className={styles['signin-options']}>
           <div className={styles['remember-group']}>
-            <Input type="checkbox" id="remember" disabled={status === 'loading'} {...register('remember')} />
+            <Input
+              type="checkbox"
+              id="remember"
+              disabled={status === 'loading'}
+              defaultChecked={true}
+              {...register('remember')}
+            />
             <Label htmlFor="remember" disabled={status === 'loading'}>
               Remember me
             </Label>
