@@ -28,3 +28,7 @@
 .form-actions {
   grid-column: 1/3;
 }
+
+.form-actions button {
+  width: 100%;
+}

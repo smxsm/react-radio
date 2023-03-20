@@ -29,6 +29,10 @@
   grid-column: 1/3;
 }
 
+.form-actions button {
+  width: 100%;
+}
+
 .signin-options {
   grid-column: 1/3;
   display: flex;
