@@ -50,7 +50,7 @@ function App() {
                           }
                         />
                         <Route path="/" element={<Home />} />
-                        <Route path="/stations" element={<RadioCardList />} />
+                        <Route path="/stations/all" element={<RadioCardList />} />
                         <Route path="/stations/countries" element={<CountriesList />} />
                         <Route path="/stations/genres" element={<GenresList />} />
                         <Route path="/stations/:category?/:value?" element={<RadioCardList />} />
