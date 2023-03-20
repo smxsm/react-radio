@@ -3,6 +3,8 @@ import useSupabase from '../hooks/useSupabase';
 
 type UserContextType = {
   user: any;
+  loading: boolean;
+  error: Error | null;
   signup: (email: string, firstName: string, lastName: string, password: string) => Promise<void>;
   signin: (email: string, password: string, saveSession: boolean) => Promise<void>;
   signout: () => Promise<void>;
@@ -22,76 +24,91 @@ export const UserContext = createContext<UserContextType | null>(null);
 export function UserProvider({ children }: UserProviderProps) {
   const supabase = useSupabase();
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     supabase.auth
       .setSession(JSON.parse(localStorage.getItem('session') || '{}'))
-      .then(() => {
-        supabase.auth.refreshSession().then(({ data }) => {
-          if (!data) {
-            throw new Error('No user');
-          }
-
-          supabase
-            .from('profiles')
-            .select('*')
-            .then(({ data, error }) => {
-              if (error || !data.length) {
-                throw new Error('Could not get user data');
-              }
-              setUser({
-                id: data[0].id,
-                email: data[0].email,
-                firstName: data[0]['first_name'],
-                lastName: data[0]['last_name'],
-              });
-            });
+      .then(() => supabase.auth.refreshSession())
+      .then(() => supabase.from('profiles').select('*'))
+      .then(({ data }) => {
+        if (!data) {
+          return;
+        }
+        setUser({
+          id: data[0].id,
+          email: data[0].email,
+          firstName: data[0]['first_name'],
+          lastName: data[0]['last_name'],
         });
       })
-      .catch(console.error);
+      .finally(() => setLoading(false));
   }, [supabase]);
 
   const signup = async (email: string, firstName: string, lastName: string, password: string) => {
-    const signUpResult = await supabase.auth.signUp({ email, password });
-    if (signUpResult.error) {
-      throw signUpResult.error;
-    }
-
-    const profileInsertResult = await supabase.from('profiles').insert({
-      id: signUpResult.data.user!.id,
-      email,
-      first_name: firstName,
-      last_name: lastName,
-    });
-    if (profileInsertResult.error) {
-      throw signUpResult.error;
-    }
+    setLoading(true);
+    supabase.auth
+      .signUp({ email, password })
+      .then(({ data, error }) => {
+        if (error) throw error;
+        return data;
+      })
+      .then(({ user }) =>
+        supabase.from('profiles').insert({
+          id: user!.id,
+          email,
+          first_name: firstName,
+          last_name: lastName,
+        })
+      )
+      .then(({ error }) => {
+        if (error) throw error;
+      })
+      .then(() => signin(email, password, true))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
   };
 
   const signin = async (email: string, password: string, saveSession: boolean) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      throw error;
-    }
+    setLoading(true);
+    supabase.auth
+      .signInWithPassword({ email, password })
+      .then(({ data, error }) => {
+        if (error) throw error;
 
-    const profile = await supabase.from('profiles').select('*');
-    setUser({
-      id: profile.data![0].id,
-      email: profile.data![0].email,
-      firstName: profile.data![0]['first_name'],
-      lastName: profile.data![0]['last_name'],
-    });
-
-    if (saveSession) {
-      localStorage.setItem('session', JSON.stringify(data.session));
-    }
+        if (saveSession) {
+          localStorage.setItem('session', JSON.stringify(data.session));
+        }
+        return supabase.from('profiles').select('*');
+      })
+      .then(({ data, error }) => {
+        if (error) throw error;
+        setUser({
+          id: data![0].id,
+          email: data![0].email,
+          firstName: data![0]['first_name'],
+          lastName: data![0]['last_name'],
+        });
+      })
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
   };
 
   const signout = async () => {
-    const { error } = await supabase.auth.signOut();
-    localStorage.removeItem('session');
-    setUser(null);
+    setLoading(true);
+    supabase.auth
+      .signOut()
+      .then(({ error }) => {
+        localStorage.removeItem('session');
+        setUser(null);
+        if (error) throw error;
+      })
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
   };
 
-  return <UserContext.Provider value={{ user, signup, signin, signout }}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider value={{ user, loading, error, signup, signin, signout }}>{children}</UserContext.Provider>
+  );
 }
