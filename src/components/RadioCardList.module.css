@@ -17,9 +17,6 @@
 }
 
 .pagination {
-  display: grid;
-  grid-template-columns: 12rem 12rem;
-  gap: 1rem;
   max-width: fit-content;
   margin: 2rem auto;
 }

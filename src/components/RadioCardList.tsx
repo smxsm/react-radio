@@ -2,8 +2,8 @@ import { useContext, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { PlayerContext } from '../context/PlayerContext';
 import { useStations } from '../hooks';
+import Pagination from './Pagination';
 import styles from './RadioCardList.module.css';
-import Button from './ui/Button';
 import Card from './ui/Card';
 import CardsList from './ui/CardsList';
 
@@ -21,10 +21,13 @@ export default function RadioCardList() {
     limit: searchParams.get('limit') || '40',
     offset: searchParams.get('offset') || '0',
     order: searchParams.get('order') || 'desc',
-    sort: searchParams.get('sort') || 'popularity',
+    sort: searchParams.get('sort') || 'trending',
   });
   const playerContext = useContext(PlayerContext);
-  const stations: RadioStation[] = useStations(
+  const {
+    data: { totalCount, stations },
+    loading,
+  } = useStations(
     { category, value },
     {
       limit: +options.limit || 0,
@@ -33,6 +36,7 @@ export default function RadioCardList() {
       order: options.order,
     }
   );
+
   const offset = +options.offset || 0;
   const limit = +options.limit || 0;
 
@@ -45,7 +49,7 @@ export default function RadioCardList() {
       limit: searchParams.get('limit') || '40',
       offset: searchParams.get('offset') || '0',
       order: searchParams.get('order') || 'desc',
-      sort: searchParams.get('sort') || 'popularity',
+      sort: searchParams.get('sort') || 'trending',
     });
   }, [searchParams]);
 
@@ -58,8 +62,11 @@ export default function RadioCardList() {
 
   const optionsChangeHandler = (e: any) =>
     setSearchParams({ ...options, [e.target.name]: e.target.value, offset: '0' });
-  const previousClickHandler = () => setSearchParams({ ...options, offset: offset - limit + '' });
-  const nextClickHandler = () => setSearchParams({ ...options, offset: offset + limit + '' });
+  const pageChangeHandler = (page: number) => setSearchParams({ ...options, offset: (page - 1) * limit + '' });
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <>
@@ -68,7 +75,7 @@ export default function RadioCardList() {
           <label htmlFor="sort">Sort by</label>
           <select name="sort" id="sort" value={options.sort} onChange={optionsChangeHandler}>
             <option value="name">Name</option>
-            <option value="popularity">Popularity</option>
+            <option value="popularity">Popular</option>
             <option value="trending">Trending</option>
           </select>
         </div>
@@ -122,14 +129,12 @@ export default function RadioCardList() {
         ))}
       </CardsList>
 
-      <div className={styles.pagination}>
-        <Button disabled={offset === 0} onClick={previousClickHandler}>
-          Previous
-        </Button>
-        <Button disabled={stations.length < +options.limit} onClick={nextClickHandler}>
-          Next
-        </Button>
-      </div>
+      <Pagination
+        pages={Math.ceil(totalCount / limit)}
+        current={Math.floor(offset / limit + 1)}
+        className={styles.pagination}
+        onPageChange={pageChangeHandler}
+      ></Pagination>
     </>
   );
 }

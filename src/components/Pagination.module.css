@@ -1,0 +1,9 @@
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.page-btn {
+  flex-grow: 0;
+  width: fit-content;
+}
