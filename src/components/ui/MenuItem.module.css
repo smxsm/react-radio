@@ -5,7 +5,7 @@
   text-decoration: none;
   text-transform: uppercase;
   font-weight: normal;
-  height: 4.2rem;
+  height: 3.6rem;
   overflow: hidden;
   margin: 0 -3rem;
   padding: 0 3rem;
@@ -20,6 +20,7 @@
 .active {
   border-top: 1px solid rgb(48, 110, 232);
   border-bottom: 1px solid rgb(48, 110, 232);
+  border-right: 1px solid rgb(48, 110, 232);
   box-shadow: 0px 0px 20px rgba(23, 92, 230, 0.7);
   color: white;
 }
