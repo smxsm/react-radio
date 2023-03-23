@@ -54,7 +54,7 @@ export function useStations(
     }
     setLoading(true);
 
-    // We are getting server statistic for the total stations count
+    // We need the server statistic to get total stations count
     let statsUrl = `${apiUrl}/stats`;
     let stationsUrl = `${apiUrl}/stations`;
 
