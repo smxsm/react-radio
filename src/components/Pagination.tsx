@@ -26,7 +26,6 @@ export default function Pagination({
 
   let firstBtn = active - Math.floor(btnCount / 2);
   let lastBtn = firstBtn + btnCount - 1;
-  console.log(firstBtn, lastBtn);
   if (firstBtn < 1) {
     firstBtn = 1;
     lastBtn = firstBtn + btnCount - 1;
@@ -35,7 +34,6 @@ export default function Pagination({
     lastBtn = pages;
     firstBtn = lastBtn - btnCount + 1;
   }
-  console.log(firstBtn, lastBtn);
 
   const buttons = Array.from({ length: lastBtn - firstBtn + 1 }, (_, i) => i + firstBtn);
 
