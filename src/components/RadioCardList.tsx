@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { PlayerContext } from '../context/PlayerContext';
-import { useStations } from '../hooks';
+import { useStations } from '../hooks/useStations';
 import Pagination from './Pagination';
 import styles from './RadioCardList.module.css';
 import Card from './ui/Card';
@@ -15,54 +15,36 @@ interface RadioStation {
 }
 
 export default function RadioCardList() {
-  const { category, value } = useParams();
+  const filter = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [options, setOptions] = useState({
-    limit: searchParams.get('limit') || '40',
-    offset: searchParams.get('offset') || '0',
-    order: searchParams.get('order') || 'desc',
-    sort: searchParams.get('sort') || 'trending',
-  });
+  const searchParamsState = Object.fromEntries(searchParams.entries());
+  const { totalCount, stations, loading } = useStations(filter, searchParamsState);
   const playerContext = useContext(PlayerContext);
-  const {
-    data: { totalCount, stations },
-    loading,
-  } = useStations(
-    { category, value },
-    {
-      limit: +options.limit || 0,
-      offset: +options.offset || 0,
-      sort: options.sort,
-      order: options.order,
-    }
-  );
 
-  const offset = +options.offset || 0;
-  const limit = +options.limit || 0;
+  const offset = +(searchParamsState.offset || '0');
+  const limit = +(searchParamsState.limit || '40');
 
   useEffect(() => {
-    document.title = `Radio Stations (${value})`;
-  }, [value]);
-
-  useEffect(() => {
-    setOptions({
-      limit: searchParams.get('limit') || '40',
-      offset: searchParams.get('offset') || '0',
-      order: searchParams.get('order') || 'desc',
-      sort: searchParams.get('sort') || 'trending',
-    });
-  }, [searchParams]);
+    document.title = `Radio Stations (${filter.value})`;
+  }, [filter.value]);
 
   const clickHandler = (station: RadioStation) => () => {
-    if (!playerContext) {
-      return;
+    if (playerContext) {
+      playerContext.play(station);
     }
-    playerContext.play(station);
   };
 
-  const optionsChangeHandler = (e: any) =>
-    setSearchParams({ ...options, [e.target.name]: e.target.value, offset: '0' });
-  const pageChangeHandler = (page: number) => setSearchParams({ ...options, offset: (page - 1) * limit + '' });
+  const optionsChangeHandler = (e: any) => {
+    const state = Object.fromEntries(searchParams.entries());
+    const { name, value } = e.target;
+    setSearchParams({ ...state, [name]: value, offset: '0' });
+  };
+
+  const pageChangeHandler = (page: number) => {
+    const state = Object.fromEntries(searchParams.entries());
+    const nextOffset = (page - 1) * limit + '';
+    setSearchParams({ ...state, offset: nextOffset });
+  };
 
   if (loading) {
     return <p>Loading...</p>;
@@ -73,7 +55,7 @@ export default function RadioCardList() {
       <div className={styles['options']}>
         <div className={styles['form-group']}>
           <label htmlFor="sort">Sort by</label>
-          <select name="sort" id="sort" value={options.sort} onChange={optionsChangeHandler}>
+          <select name="sort" id="sort" value={searchParams.get('sort') || 'trending'} onChange={optionsChangeHandler}>
             <option value="name">Name</option>
             <option value="popularity">Popular</option>
             <option value="trending">Trending</option>
@@ -81,14 +63,14 @@ export default function RadioCardList() {
         </div>
         <div className={styles['form-group']}>
           <label htmlFor="order">Order</label>
-          <select name="order" id="order" value={options.order} onChange={optionsChangeHandler}>
+          <select name="order" id="order" value={searchParams.get('order') || 'desc'} onChange={optionsChangeHandler}>
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
           </select>
         </div>
         <div className={styles['form-group']}>
           <label htmlFor="limit">Limit</label>
-          <select name="limit" id="limit" value={options.limit} onChange={optionsChangeHandler}>
+          <select name="limit" id="limit" value={searchParams.get('limit') || '40'} onChange={optionsChangeHandler}>
             <option value="20">20</option>
             <option value="40">40</option>
             <option value="60">60</option>
