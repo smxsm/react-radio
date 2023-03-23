@@ -27,7 +27,7 @@ export default function UserMenu() {
     );
   }
   return (
-    <Menu>
+    <Menu className={styles['user-menu']}>
       <MenuItem href="/auth/signin">
         <FontAwesomeIcon icon={faRightToBracket} />
         Sign In

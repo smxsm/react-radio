@@ -26,8 +26,8 @@ function App() {
               <div className={styles['grid-container']}>
                 <BrowserRouter>
                   <div className={styles['side-menu']}>
-                    <UserMenu />
                     <StationsMenu />
+                    <UserMenu />
                   </div>
                   <div className={styles['main-container']}>
                     <Player />
