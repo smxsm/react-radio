@@ -53,12 +53,13 @@ export function useStations(
 
   // Select a random server
   useEffect(() => {
-    fetch(`https://de1.api.radio-browser.info/json/servers`)
+    fetch(`https://nl1.api.radio-browser.info/json/servers`)
       .then<RadioBrowserApiServers[]>((res) => res.json())
       .then((servers) => {
         const randomHost = servers[Math.floor(Math.random() * servers.length)].name;
         setApiUrl(`https://${randomHost}/json`);
-      });
+      })
+      .catch(() => setApiUrl('https://nl1.api.radio-browser.info/json/servers'));
   }, []);
 
   // Fetch stations
