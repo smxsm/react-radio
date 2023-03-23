@@ -12,6 +12,10 @@ const genres = [
   { name: 'World', tag: 'world' },
   { name: 'Dance', tag: 'dance' },
   { name: 'House', tag: 'house' },
+  { name: '70s', tag: '70s' },
+  { name: '80s', tag: '80s' },
+  { name: '90s', tag: '90s' },
+  { name: '00s', tag: '00s' },
 ];
 
 export default function GenresList() {
