@@ -13,8 +13,8 @@ type StationsFilter = {
 };
 
 type ListOptions = {
-  limit?: number;
-  offset?: number;
+  limit?: string | number;
+  offset?: string | number;
   sort?: string;
   order?: string;
 };
@@ -40,12 +40,12 @@ const routeToApiSort: { [key: string]: string } = {
 export function useStations(
   { category = '', value }: StationsFilter,
   { limit = 60, offset = 0, sort = '', order = 'asc' }: ListOptions
-): { data: { totalCount: number; stations: RadioStation[] }; error: Error | null; loading: boolean } {
+): { totalCount: number; stations: RadioStation[]; error: Error | null; loading: boolean } {
   const apiUrl = useRadioApiRandomServer();
   const [totalCount, setTotalCount] = useState(0);
-  const [stations, setStations] = useState([]);
+  const [stations, setStations] = useState<RadioStation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
 
   // Fetch stations
   useEffect(() => {
@@ -66,7 +66,7 @@ export function useStations(
     }
 
     stationsUrl += `?order=${routeToApiSort[sort] || 'name'}${order === 'desc' ? '&reverse=true' : ''}&limit=${
-      limit > 0 && limit < 301 ? limit : 60
+      +limit > 0 && +limit < 301 ? limit : 60
     }&offset=${offset}`;
 
     fetch(statsUrl)
@@ -91,5 +91,5 @@ export function useStations(
       .finally(() => setLoading(false));
   }, [apiUrl, category, value, limit, sort, order, offset]);
 
-  return { data: { totalCount, stations }, error, loading };
+  return { loading, totalCount, stations, error };
 }
