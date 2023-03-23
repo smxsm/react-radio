@@ -1,10 +1,18 @@
 import { Link } from 'react-router-dom';
-import { Country, useCountries } from '../hooks';
+import { useCountries } from '../hooks/useCountries';
 import Card from './ui/Card';
 import CardsList from './ui/CardsList';
 
 export default function CountriesList() {
-  const countries: Country[] = useCountries();
+  const { loading, countries, error } = useCountries();
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>{error.message}</p>;
+  }
 
   return (
     <CardsList>
