@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useRadioApiRandomServer from './useRadioApiRadomServer';
 
 export type Country = {
   name: string;
@@ -7,6 +8,7 @@ export type Country = {
 };
 
 export function useCountries() {
+  const apiUrl = useRadioApiRandomServer();
   const [countries, setCountries] = useState([]);
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export function useCountries() {
 
         setCountries(countries);
       });
-  }, []);
+  }, [apiUrl]);
 
   return countries;
 }

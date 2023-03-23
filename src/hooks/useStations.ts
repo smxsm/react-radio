@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-
-type RadioBrowserApiServers = {
-  ip: string;
-  name: string;
-};
+import useRadioApiRandomServer from './useRadioApiRadomServer';
 
 type EndpointStats = {
   name?: string;
@@ -45,22 +41,11 @@ export function useStations(
   { category = '', value }: StationsFilter,
   { limit = 60, offset = 0, sort = '', order = 'asc' }: ListOptions
 ): { data: { totalCount: number; stations: RadioStation[] }; error: Error | null; loading: boolean } {
-  const [apiUrl, setApiUrl] = useState('');
+  const apiUrl = useRadioApiRandomServer();
   const [totalCount, setTotalCount] = useState(0);
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Select a random server
-  useEffect(() => {
-    fetch(`https://nl1.api.radio-browser.info/json/servers`)
-      .then<RadioBrowserApiServers[]>((res) => res.json())
-      .then((servers) => {
-        const randomHost = servers[Math.floor(Math.random() * servers.length)].name;
-        setApiUrl(`https://${randomHost}/json`);
-      })
-      .catch(() => setApiUrl('https://nl1.api.radio-browser.info/json/servers'));
-  }, []);
 
   // Fetch stations
   useEffect(() => {
