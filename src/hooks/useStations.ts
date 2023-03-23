@@ -19,13 +19,6 @@ type ListOptions = {
   order?: string;
 };
 
-type RadioStation = {
-  id: string;
-  name: string;
-  logo: string;
-  listenUrl: string;
-};
-
 const routeToApiCategory: any = {
   countries: { stationsEndpoint: 'bycountrycodeexact', statsEndpoint: 'countries' },
   genres: { stationsEndpoint: 'bytag', statsEndpoint: 'tags' },
