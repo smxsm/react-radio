@@ -9,9 +9,12 @@ export type Country = {
 
 export function useCountries() {
   const apiUrl = useRadioApiRandomServer();
-  const [countries, setCountries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [countries, setCountries] = useState<Country[]>([]);
 
   useEffect(() => {
+    setLoading(true);
     fetch('https://at1.api.radio-browser.info/json/countries?order=name')
       .then((res) => res.json())
       .then((data) => {
@@ -24,8 +27,10 @@ export function useCountries() {
           .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
 
         setCountries(countries);
-      });
+      })
+      .catch(setError)
+      .finally(() => setLoading(false));
   }, [apiUrl]);
 
-  return countries;
+  return { loading, countries, error };
 }
