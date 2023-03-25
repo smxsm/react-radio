@@ -1,5 +1,10 @@
 import { IcecastReadableStream } from 'https://unpkg.com/icecast-metadata-js';
 
+const responseHeaders = new Headers({
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': 'https://radio.ivanoff.dev, http://localhost:3000',
+});
+
 const getIcecastMetadata = async (response: Response, icyMetaInt: number) =>
   new Promise((resolve) => {
     new IcecastReadableStream(response, {
@@ -24,9 +29,9 @@ const edge = async (req: Request) => {
     const icyMetaInt = parseInt(res.headers.get('Icy-MetaInt') || '16000');
 
     const data = await getIcecastMetadata(res, icyMetaInt);
-    return new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json' } });
+    return new Response(JSON.stringify(data), { headers: responseHeaders });
   } catch (err) {
-    return new Response(JSON.stringify({}), { headers: { 'content-type': 'application/json' } });
+    return new Response(JSON.stringify({}), { headers: responseHeaders });
   }
 };
 
