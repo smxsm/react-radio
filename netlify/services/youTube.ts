@@ -1,7 +1,7 @@
 import { config } from 'https://deno.land/x/dotenv/mod.ts';
 
 const API_URL = 'https://www.googleapis.com/youtube/v3/search';
-const API_KEY = config()['YOUTUBE_API_KEY'] || '';
+const API_KEY = config()['YOUTUBE_API_KEY'] || Deno.env.get('YOUTUBE_API_KEY') || '';
 
 export default async function youTubeSearch(searchTerm: string) {
   if (!searchTerm) return null;
