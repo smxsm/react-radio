@@ -65,7 +65,7 @@ const matchTrack = async (searchTerm: string): Promise<TrackInfo | null> => {
  * @returns A Promise whose resolved value is a StationMetadata object. Throws on error.
  */
 const getStationMetadata = async (url: string): Promise<StationMetadata> => {
-  const res = await fetch('https://service.radiolise.com?url=' + url);
+  const res = await fetch('https://radio.ivanoff.dev/station-metadata?url=' + url);
   const data = await res.json();
   return {
     contentType: data['content-type'] || '',
