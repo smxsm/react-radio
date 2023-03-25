@@ -15,12 +15,15 @@ export default function SearchParamSelect({ optionsList, label, name, defaultVal
 
   return (
     <div className={styles.formGroup}>
-      <label htmlFor={name}>{label}</label>
+      <label htmlFor={name} className={styles.label}>
+        {label}
+      </label>
       <select
         name={name}
         id={name}
         value={searchParams.get(name) || ''}
         onChange={(e) => setSearchParams({ ...Object.fromEntries(searchParams.entries()), [name]: e.target.value })}
+        className={styles.select}
       >
         {optionsList.map(([label, value]) => (
           <option value={value} key={value}>

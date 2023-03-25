@@ -1,4 +1,29 @@
 .formGroup {
   display: flex;
+  align-items: center;
   gap: 1rem;
+}
+
+.select {
+  background-color: rgb(15, 23, 42);
+  border: 1px solid rgb(24, 51, 103);
+  border-radius: 0.5rem;
+  color: inherit;
+  outline: none;
+  padding: 0.25rem 0.5rem;
+  transition: all 0.2s ease-in;
+}
+
+.select:hover {
+  color: white;
+  transition: all 0s;
+}
+
+.label {
+  transition: all 0.2s ease-in;
+}
+
+.label:not(.disabled):hover {
+  color: white;
+  transition: all 0s;
 }

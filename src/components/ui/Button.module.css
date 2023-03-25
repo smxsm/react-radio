@@ -14,7 +14,7 @@
 
 .btn:hover {
   color: white;
-  transition: all 0.2s ease-in;
+  transition: all 0s;
 }
 
 .btn:focus {
