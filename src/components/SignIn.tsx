@@ -96,7 +96,7 @@ export default function SignIn() {
         </div>
       </form>
 
-      <div className={styles['hr-label']}>
+      {/* <div className={styles['hr-label']}>
         <span>or</span>
       </div>
 
@@ -111,7 +111,7 @@ export default function SignIn() {
       <Button type="button" className={styles['btn-signin-provider']}>
         <FontAwesomeIcon icon={faFacebookF} className={styles['signin-provider-logo']} />
         <span>Sign in with Facebook</span>
-      </Button>
+      </Button> */}
     </section>
   );
 }
