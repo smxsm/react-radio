@@ -45,39 +45,6 @@ type TrackInfo = {
 type NowPlayingInfoProviderProps = PropsWithChildren & {};
 
 /**
- * Gets music track metadata from iTunes API.
- * @param searchTerm The text to search. Will filter special symbols and terms like ft, feat, vs
- * @returns Returns a Promise resolving to a TrackInfo object or null. Doesn't throw.
- */
-// const matchTrack = async (searchTerm: string): Promise<TrackInfo | null> => {
-//   try {
-//     const filterTerms = ['ft', 'feat', 'vs'];
-//     const cleanedSearchTerm = searchTerm
-//       .match(/\w+(?![^(]*\))/g)
-//       ?.filter((term) => !filterTerms.includes(term.toLowerCase()))
-//       .join(' ');
-//     if (!cleanedSearchTerm) {
-//       return null;
-//     }
-//     const res = await fetch(`https://itunes.apple.com/search?term=${cleanedSearchTerm}&entity=musicTrack`);
-//     const data = await res.json();
-//     if (!data.resultCount) {
-//       return null;
-//     }
-//     // TODO Implement some kind of matching algorithm instead of taking the first result
-//     return {
-//       artist: data.results[0].artistName || '',
-//       title: data.results[0].trackName || '',
-//       album: data.results[0].collectionName || '',
-//       releaseDate: new Date(data.results[0].releaseDate) || null,
-//       artwork: data.results[0].artworkUrl100,
-//     };
-//   } catch (err) {
-//     return null;
-//   }
-// };
-
-/**
  * Gets metadata for a radio stream from a free internet service
  * @param url The original stream URL
  * @returns A Promise whose resolved value is a StationMetadata object. Throws on error.
@@ -96,17 +63,11 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   const intervalRef = useRef<NodeJS.Timer | number>(0);
 
   useEffect(() => {
-    // let matchedTrack = '';
     const getNowPlayingInfo = async (url: string | undefined) => {
       if (!url) return;
       try {
         const stationMetadata = await getStationMetadata(url);
-        const newState: NowPlayingContextType = { stationMetadata };
-        // if (stationMetadata.title && stationMetadata.title !== matchedTrack) {
-        //   newState.trackMatch = (await matchTrack(stationMetadata.title)) || undefined;
-        //   matchedTrack = stationMetadata.title;
-        // }
-        setNowPlaying((state) => ({ ...state, ...newState }));
+        setNowPlaying((state) => ({ ...state, stationMetadata }));
       } catch (err) {}
     };
 
