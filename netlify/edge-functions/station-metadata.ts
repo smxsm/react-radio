@@ -1,4 +1,4 @@
-import getIcecastMetadata from '../services/streamMetadata';
+import getIcecastMetadata from '../services/streamMetadata.ts';
 
 const edge = async (req: Request) => {
   const url = new URL(req.url).searchParams.get('url') || '';
