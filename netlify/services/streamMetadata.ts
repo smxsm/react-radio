@@ -29,7 +29,7 @@ export default async function getIcecastMetadata(response: Response, icyMetaInt:
   return new Promise((resolve) => {
     new IcecastReadableStream(response, {
       onMetadata: ({ metadata }) => {
-        resolve({ title: metadata.StreamTitle || metadata.TITLE, ...icyHeaders });
+        resolve({ title: (metadata.StreamTitle || metadata.TITLE).trim(), ...icyHeaders });
       },
       metadataTypes: ['icy', 'ogg'],
       icyMetaInt: icyMetaInt,
