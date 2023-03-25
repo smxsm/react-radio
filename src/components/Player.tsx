@@ -12,24 +12,17 @@ export default function Player(props: any) {
   const playerContext = useContext(PlayerContext);
   const nowPlaying = useContext(NowPlayingContext)!;
 
-  const clickHandler = () => {
-    if (!playerContext) {
-      return;
-    }
-    playerContext.stop();
-  };
-
   return (
-    <div
-      className={`${styles.player}${playerContext?.status === 'loading' ? ' ' + styles.loading : ''}`}
-      onClick={clickHandler}
-    >
+    <div className={`${styles.player}${playerContext?.status === 'loading' ? ' ' + styles.loading : ''}`}>
       <div className={styles['media-controls']}>
         <div className={styles['button-container']}>
           <button className={styles['media-button']}>
             <FontAwesomeIcon icon={faStepBackward} className={styles['media-button-icon']} />
           </button>
-          <button className={`${styles['media-button']} ${styles['media-button-play']}`}>
+          <button
+            className={`${styles['media-button']} ${styles['media-button-play']}`}
+            onClick={() => playerContext?.stop()}
+          >
             <FontAwesomeIcon icon={faPlay} className={styles['media-button-icon']} />
           </button>
           <button className={styles['media-button']}>
@@ -39,13 +32,21 @@ export default function Player(props: any) {
       </div>
 
       <div className={styles['now-playing-container']}>
-        <img src={nowPlaying.trackMatch?.artwork || nowPlaying.station?.logo || '/radio-no-logo.png'} alt="" />
+        <img
+          src={nowPlaying.stationMetadata?.trackMatch?.artwork || nowPlaying.station?.logo || '/radio-no-logo.png'}
+          alt=""
+        />
         <div className={styles['now-playing-info']}>
           <ScrollingText
-            text={nowPlaying?.stationMetadata?.name || nowPlaying.station?.name || ''}
+            text={nowPlaying?.stationMetadata?.icyName || nowPlaying.station?.name || ''}
             className={styles['radio-name']}
           />
           <ScrollingText text={nowPlaying?.stationMetadata?.title || ''} className={styles['track-name']} />
+          <div>
+            <a target="_blank" href={nowPlaying.stationMetadata?.trackMatch?.appleMusicUrl}>
+              <img src="/apple-music.svg" alt="Apple Musc" />
+            </a>
+          </div>
         </div>
         <SpectrumAnalyzer
           source={playerContext?.sourceNode}

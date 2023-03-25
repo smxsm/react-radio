@@ -14,12 +14,12 @@ export function MediaSessionAPI() {
     navigator.mediaSession.playbackState = 'playing';
 
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: nowPlaying?.trackMatch?.title || nowPlaying?.stationMetadata?.title,
-      artist: nowPlaying?.trackMatch?.artist,
-      album: nowPlaying?.stationMetadata?.name || nowPlaying?.station?.name,
+      title: nowPlaying?.stationMetadata?.trackMatch?.title || nowPlaying?.stationMetadata?.title,
+      artist: nowPlaying?.stationMetadata?.trackMatch?.artist,
+      album: nowPlaying?.stationMetadata?.icyName || nowPlaying?.station?.name,
       artwork: [
         {
-          src: nowPlaying?.trackMatch?.artwork || nowPlaying?.station?.logo || '',
+          src: nowPlaying?.stationMetadata?.trackMatch?.artwork || nowPlaying?.station?.logo || '',
         },
       ],
     });

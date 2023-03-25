@@ -8,11 +8,28 @@ type NowPlayingContextType = {
 };
 
 type StationMetadata = {
-  name: string;
-  description: string;
-  genres: string[];
+  icyGenre: string[];
+  icyAudioInfo: icyAudioInfo;
+  icyName: string;
+  icyDescription: string;
+  icyUrl: string;
+  icyBr: number;
+  icySr: number;
+  icyLogo: string;
+  icyCountryCode: string;
+  icyCountrySubdivisionCode: string;
+  icyLanguageCodes: string[];
+  icyGeoLatLong: string;
+  contentType: string;
   title: string;
-  match?: TrackInfo;
+  trackMatch?: TrackInfo;
+};
+
+type icyAudioInfo = {
+  bitRate: number;
+  quality: number;
+  channels: number;
+  sampleRate: number;
 };
 
 type TrackInfo = {
@@ -21,6 +38,8 @@ type TrackInfo = {
   album: string;
   releaseDate: Date | null;
   artwork: string;
+  appleMusicUrl?: string;
+  youTubeUrl?: string;
 };
 
 type NowPlayingInfoProviderProps = PropsWithChildren & {};
@@ -66,12 +85,7 @@ const matchTrack = async (searchTerm: string): Promise<TrackInfo | null> => {
 const getStationMetadata = async (url: string): Promise<StationMetadata> => {
   const res = await fetch('https://radio.ivanoff.dev/station-metadata?url=' + url);
   const data = await res.json();
-  return {
-    name: data.icyName || '',
-    description: data.icyDescription || '',
-    genres: data.icyGenre || [],
-    title: data.title || '',
-  };
+  return data;
 };
 
 export const NowPlayingContext = createContext<NowPlayingContextType | null>(null);
@@ -82,16 +96,16 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   const intervalRef = useRef<NodeJS.Timer | number>(0);
 
   useEffect(() => {
-    let matchedTrack = '';
+    // let matchedTrack = '';
     const getNowPlayingInfo = async (url: string | undefined) => {
       if (!url) return;
       try {
         const stationMetadata = await getStationMetadata(url);
         const newState: NowPlayingContextType = { stationMetadata };
-        if (stationMetadata.title && stationMetadata.title !== matchedTrack) {
-          newState.trackMatch = (await matchTrack(stationMetadata.title)) || undefined;
-          matchedTrack = stationMetadata.title;
-        }
+        // if (stationMetadata.title && stationMetadata.title !== matchedTrack) {
+        //   newState.trackMatch = (await matchTrack(stationMetadata.title)) || undefined;
+        //   matchedTrack = stationMetadata.title;
+        // }
         setNowPlaying((state) => ({ ...state, ...newState }));
       } catch (err) {}
     };

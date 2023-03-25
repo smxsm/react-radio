@@ -1,7 +1,16 @@
 import getIcecastMetadata from '../services/streamMetadata.ts';
 import iTunesSearch from '../services/iTunes.ts';
+import youTubeSearch from '../services/youTube.ts';
 
 let cache = new Map();
+
+function cleanTitleForSearch(title: string) {
+  const filterTerms = ['ft', 'feat', 'vs'];
+  return title
+    .match(/\w+(?![^(]*\))/g)
+    ?.filter((term) => !filterTerms.includes(term.toLowerCase()))
+    .join(' ');
+}
 
 const edge = async (req: Request) => {
   const url = new URL(req.url).searchParams.get('url') || '';
@@ -24,15 +33,20 @@ const edge = async (req: Request) => {
     }
 
     if (!data.trackMatch) {
-      data.trackMatch = {};
-      const trackMatch = await iTunesSearch(data.title);
+      const searchTerm = cleanTitleForSearch(data.title);
+      const trackMatch = await iTunesSearch(searchTerm);
       if (trackMatch) {
+        data.trackMatch = {};
         data.trackMatch.artist = trackMatch.artist;
         data.trackMatch.title = trackMatch.title;
         data.trackMatch.album = trackMatch.album;
         data.trackMatch.releaseDate = trackMatch.releaseDate;
         data.trackMatch.artwork = trackMatch.artwork;
         data.trackMatch.appleMusicUrl = trackMatch.appleMusicUrl;
+        const youTubeUrl = await youTubeSearch(searchTerm);
+        if (youTubeUrl) {
+          data.trackMatch.youTubeUrl = youTubeUrl;
+        }
       }
     }
 

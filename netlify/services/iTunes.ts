@@ -9,15 +9,10 @@ type TrackInfo = {
 
 export default async function iTunesSearch(searchTerm: string): Promise<TrackInfo | null> {
   try {
-    const filterTerms = ['ft', 'feat', 'vs'];
-    const cleanedSearchTerm = searchTerm
-      .match(/\w+(?![^(]*\))/g)
-      ?.filter((term) => !filterTerms.includes(term.toLowerCase()))
-      .join(' ');
-    if (!cleanedSearchTerm) {
+    if (!searchTerm) {
       return null;
     }
-    const res = await fetch(`https://itunes.apple.com/search?term=${cleanedSearchTerm}&entity=musicTrack`);
+    const res = await fetch(`https://itunes.apple.com/search?term=${searchTerm}&entity=musicTrack`);
     const data = await res.json();
     if (!data.resultCount) {
       return null;
