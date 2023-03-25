@@ -12,8 +12,13 @@ export default function Player(props: any) {
   const playerContext = useContext(PlayerContext);
   const nowPlaying = useContext(NowPlayingContext)!;
 
+  let classes = styles.player;
+  if (playerContext?.status === 'loading') classes += ' ' + styles.loading;
+  if (playerContext?.status === 'error') classes += ' ' + styles.error;
+  if (playerContext?.status === 'playing') classes += ' ' + styles.active;
+
   return (
-    <div className={`${styles.player}${playerContext?.status === 'loading' ? ' ' + styles.loading : ''}`}>
+    <div className={classes}>
       <div className={styles['media-controls']}>
         <div className={styles['button-container']}>
           <button className={styles['media-button']}>
