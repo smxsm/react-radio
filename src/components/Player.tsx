@@ -43,7 +43,7 @@ export default function Player(props: any) {
           />
           <ScrollingText text={nowPlaying?.stationMetadata?.title || ''} className={styles['track-name']} />
           <div>
-            <a target="_blank" href={nowPlaying.stationMetadata?.trackMatch?.appleMusicUrl}>
+            <a target="_blank" rel="noreferrer" href={nowPlaying.stationMetadata?.trackMatch?.appleMusicUrl}>
               <img src="/apple-music.svg" alt="Apple Musc" />
             </a>
           </div>
