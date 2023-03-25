@@ -5,9 +5,9 @@ type UserContextType = {
   user: any;
   loading: boolean;
   error: Error | null;
-  signup: (email: string, firstName: string, lastName: string, password: string) => Promise<void>;
-  signin: (email: string, password: string, saveSession: boolean) => Promise<void>;
-  signout: () => Promise<void>;
+  signup: (email: string, firstName: string, lastName: string, password: string) => void;
+  signin: (email: string, password: string, saveSession: boolean) => void;
+  signout: () => void;
 };
 
 type User = {
@@ -24,18 +24,19 @@ export const UserContext = createContext<UserContextType | null>(null);
 export function UserProvider({ children }: UserProviderProps) {
   const supabase = useSupabase();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    const session = JSON.parse(localStorage.getItem('session') || 'null');
+    if (!session) return;
+    setLoading(true);
     supabase.auth
-      .setSession(JSON.parse(localStorage.getItem('session') || '{}'))
+      .setSession(session)
       .then(() => supabase.auth.refreshSession())
       .then(() => supabase.from('profiles').select('*'))
       .then(({ data }) => {
-        if (!data) {
-          return;
-        }
+        if (!data?.length) return;
         setUser({
           id: data[0].id,
           email: data[0].email,
@@ -46,7 +47,8 @@ export function UserProvider({ children }: UserProviderProps) {
       .finally(() => setLoading(false));
   }, [supabase]);
 
-  const signup = async (email: string, firstName: string, lastName: string, password: string) => {
+  const signup = (email: string, firstName: string, lastName: string, password: string) => {
+    setError(null);
     setLoading(true);
     supabase.auth
       .signUp({ email, password })
@@ -66,11 +68,12 @@ export function UserProvider({ children }: UserProviderProps) {
         if (error) throw error;
       })
       .then(() => signin(email, password, true))
-      .catch((error) => setError(error))
+      .catch(setError)
       .finally(() => setLoading(false));
   };
 
-  const signin = async (email: string, password: string, saveSession: boolean) => {
+  const signin = (email: string, password: string, saveSession: boolean) => {
+    setError(null);
     setLoading(true);
     supabase.auth
       .signInWithPassword({ email, password })
@@ -83,19 +86,16 @@ export function UserProvider({ children }: UserProviderProps) {
         return supabase.from('profiles').select('*');
       })
       .then(({ data, error }) => {
-        if (error) throw error;
-        setUser({
-          id: data![0].id,
-          email: data![0].email,
-          firstName: data![0]['first_name'],
-          lastName: data![0]['last_name'],
-        });
+        if (error || !data || !data.length) throw error || new Error('Error loading profile information');
+        const { id, email, first_name: firstName, last_name: lastName } = data[0];
+        setUser({ id, email, firstName, lastName });
       })
-      .catch((error) => setError(error))
+      .catch(setError)
       .finally(() => setLoading(false));
   };
 
-  const signout = async () => {
+  const signout = () => {
+    setError(null);
     setLoading(true);
     supabase.auth
       .signOut()
@@ -104,7 +104,7 @@ export function UserProvider({ children }: UserProviderProps) {
         setUser(null);
         if (error) throw error;
       })
-      .catch((error) => setError(error))
+      .catch(setError)
       .finally(() => setLoading(false));
   };
 

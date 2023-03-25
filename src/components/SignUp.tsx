@@ -1,13 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useContext, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { z } from 'zod';
 import { UserContext } from '../context/UserContext';
 import styles from './SignUp.module.css';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import Label from './ui/Label';
+import Spinner from './ui/Spinner';
 
 const signUpDataSchema = z.object({
   email: z.string().trim().email('Invalid e-mail address'),
@@ -18,21 +19,18 @@ const signUpDataSchema = z.object({
 });
 
 export default function SignUp() {
-  const { signup } = useContext(UserContext)!;
+  const { user, signup, loading, error } = useContext(UserContext)!;
   const { register, handleSubmit, formState } = useForm({ mode: 'onTouched', resolver: zodResolver(signUpDataSchema) });
-  const [status, setStatus] = useState<'' | 'error' | 'loading'>('');
-  const navigate = useNavigate();
+  const [signingUp, setSigningUp] = useState(false);
 
-  const submitHandler = async ({ email, firstName, lastName, password }: FieldValues) => {
-    setStatus('loading');
-    try {
-      await signup(email, firstName, lastName, password).then(() => {
-        navigate('/');
-      });
-    } catch (err) {
-      setStatus('error');
-    }
+  const submitHandler = ({ email, firstName, lastName, password }: FieldValues) => {
+    setSigningUp(true);
+    signup(email, firstName, lastName, password);
   };
+
+  if (user) return <Navigate to="/" />;
+
+  if (!user && loading && !signingUp) return <Spinner className={styles.spinner} />;
 
   return (
     <section className={styles['signup-section']}>
@@ -45,19 +43,13 @@ export default function SignUp() {
       </div>
 
       <form className={styles['signup-form']} onSubmit={handleSubmit(submitHandler)}>
-        <Label htmlFor="email" disabled={status === 'loading'}>
+        <Label htmlFor="email" disabled={loading}>
           E-Mail
         </Label>
-        <Input
-          type="email"
-          id="email"
-          {...register('email')}
-          error={!!formState.errors.email}
-          disabled={status === 'loading'}
-        />
+        <Input type="email" id="email" {...register('email')} error={!!formState.errors.email} disabled={loading} />
         <p className={styles['validation-error']}>{formState.errors['email']?.message as string}</p>
 
-        <Label htmlFor="firstName" disabled={status === 'loading'}>
+        <Label htmlFor="firstName" disabled={loading}>
           First name
         </Label>
         <Input
@@ -65,11 +57,11 @@ export default function SignUp() {
           id="firstName"
           {...register('firstName')}
           error={!!formState.errors.firstName}
-          disabled={status === 'loading'}
+          disabled={loading}
         />
         <p className={styles['validation-error']}>{formState.errors['firstName']?.message as string}</p>
 
-        <Label htmlFor="lastName" disabled={status === 'loading'}>
+        <Label htmlFor="lastName" disabled={loading}>
           Last name
         </Label>
         <Input
@@ -77,11 +69,11 @@ export default function SignUp() {
           id="lastName"
           {...register('lastName')}
           error={!!formState.errors.lastName}
-          disabled={status === 'loading'}
+          disabled={loading}
         />
         <p className={styles['validation-error']}>{formState.errors['lastName']?.message as string}</p>
 
-        <Label htmlFor="password" disabled={status === 'loading'}>
+        <Label htmlFor="password" disabled={loading}>
           Password
         </Label>
         <Input
@@ -89,11 +81,11 @@ export default function SignUp() {
           id="password"
           {...register('password')}
           error={!!formState.errors.password}
-          disabled={status === 'loading'}
+          disabled={loading}
         />
         <p className={styles['validation-error']}>{formState.errors['password']?.message as string}</p>
 
-        <Label htmlFor="repass" disabled={status === 'loading'}>
+        <Label htmlFor="repass" disabled={loading}>
           Confirm password
         </Label>
         <Input
@@ -101,17 +93,12 @@ export default function SignUp() {
           id="rePass"
           {...register('rePass')}
           error={!!formState.errors.rePass}
-          disabled={status === 'loading'}
+          disabled={loading}
         />
         <p className={styles['validation-error']}>{formState.errors['rePass']?.message as string}</p>
 
         <div className={styles['form-actions']}>
-          <Button
-            type="submit"
-            loading={status === 'loading'}
-            error={status === 'error'}
-            disabled={status === 'loading'}
-          >
+          <Button type="submit" loading={loading} error={!!error} disabled={loading}>
             Create account
           </Button>
         </div>

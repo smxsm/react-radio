@@ -83,3 +83,7 @@
 .btn-signin-provider span {
   flex-grow: 1;
 }
+
+.spinner {
+  margin: 2rem auto;
+}
