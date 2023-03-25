@@ -5,7 +5,7 @@ const responseHeaders = new Headers({
   'Access-Control-Allow-Origin': 'https://radio.ivanoff.dev, http://localhost:3000',
 });
 
-const getIcecastMetadata = async (response: Response, icyMetaInt: number) =>
+const getIcecastMetadata = async (response: Response, icyMetaInt: number) => {
   new Promise((resolve) => {
     new IcecastReadableStream(response, {
       onMetadata: ({ metadata: { StreamTitle: title } }) => {
@@ -16,9 +16,11 @@ const getIcecastMetadata = async (response: Response, icyMetaInt: number) =>
       icyMetaInt,
     });
   });
+};
 
 const edge = async (req: Request) => {
   const url = new URL(req.url).searchParams.get('url') || '';
+  console.log(req.headers.get('Origin'));
   try {
     const res = await fetch(url, {
       method: 'GET',
