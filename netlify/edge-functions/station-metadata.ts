@@ -3,12 +3,9 @@ import { IcecastReadableStream } from 'https://unpkg.com/icecast-metadata-js';
 const getIcecastMetadata = async (response: Response, icyMetaInt: number) =>
   new Promise((resolve) => {
     new IcecastReadableStream(response, {
-      onMetadata: ({ metadata: { StreamTitle: title } }) => {
-        resolve({ title });
-      },
-      onError: () => resolve({}),
+      onMetadata: ({ metadata }) => resolve({ title: metadata.StreamTitle || metadata.TITLE }),
       metadataTypes: ['icy', 'ogg'],
-      icyMetaInt,
+      icyMetaInt: icyMetaInt,
     });
   });
 
@@ -21,13 +18,9 @@ const edge = async (req: Request) => {
   }
 
   try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Icy-MetaData': '1',
-      },
-    });
-    const icyMetaInt = parseInt(res.headers.get('Icy-MetaInt') || '16000');
+    const signal = AbortSignal.timeout(5000);
+    const res = await fetch(url, { method: 'GET', headers: { 'Icy-MetaData': '1' }, signal });
+    const icyMetaInt = parseInt(res.headers.get('Icy-MetaInt') || '');
 
     const data = await getIcecastMetadata(res, icyMetaInt);
     return new Response(JSON.stringify(data), { headers: responseHeaders });
