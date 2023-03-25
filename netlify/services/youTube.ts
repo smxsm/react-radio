@@ -4,6 +4,7 @@ const API_KEY = Deno.env.get('YOUTUBE_API_KEY') || '';
 export default async function youTubeSearch(searchTerm: string) {
   if (!searchTerm) return null;
   try {
+    console.log('calling youtube');
     const res = await fetch(`${API_URL}?key=${API_KEY}&type=video&q=${searchTerm}`);
     const data = await res.json();
     if (!data.items?.length) {
