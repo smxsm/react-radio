@@ -16,7 +16,7 @@ const edge = async (req: Request) => {
   const url = new URL(req.url).searchParams.get('url') || '';
   const responseHeaders = new Headers({ 'Content-Type': 'application/json' });
   const origin = req.headers.get('Origin') || '';
-  if (/https?:\/\/localhost:?\d{0,5}/.test(origin)) {
+  if (new URL(req.url).origin === origin || /https?:\/\/localhost:?\d{0,5}/.test(origin)) {
     responseHeaders.append('Access-Control-Allow-Origin', origin);
   }
 
