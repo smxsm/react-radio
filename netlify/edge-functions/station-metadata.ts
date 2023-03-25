@@ -1,6 +1,6 @@
 import { IcecastReadableStream } from 'https://unpkg.com/icecast-metadata-js';
 
-const getIcecastMetadata = async (response: Response, icyMetaInt: number) => {
+const getIcecastMetadata = async (response: Response, icyMetaInt: number) =>
   new Promise((resolve) => {
     new IcecastReadableStream(response, {
       onMetadata: ({ metadata: { StreamTitle: title } }) => {
@@ -11,7 +11,6 @@ const getIcecastMetadata = async (response: Response, icyMetaInt: number) => {
       icyMetaInt,
     });
   });
-};
 
 const edge = async (req: Request) => {
   const url = new URL(req.url).searchParams.get('url') || '';
