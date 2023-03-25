@@ -6,16 +6,6 @@
   right: 0.5rem;
 }
 
-.options {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.form-group label {
-  margin-right: 1rem;
-}
-
 .pagination {
   max-width: fit-content;
   margin: 2rem auto;

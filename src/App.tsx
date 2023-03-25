@@ -1,4 +1,4 @@
-import RadioCardList from './components/RadioCardList';
+import StationsCardList from './components/StationsCardList';
 import styles from './App.module.css';
 import Player from './components/Player';
 import StationsMenu from './components/StationsMenu';
@@ -50,10 +50,10 @@ function App() {
                           }
                         />
                         <Route path="/" element={<Home />} />
-                        <Route path="/stations/all" element={<RadioCardList />} />
+                        <Route path="/stations/all" element={<StationsCardList />} />
                         <Route path="/stations/countries" element={<CountriesList />} />
                         <Route path="/stations/genres" element={<GenresList />} />
-                        <Route path="/stations/:category?/:value?" element={<RadioCardList />} />
+                        <Route path="/stations/:category?/:value?" element={<StationsCardList />} />
                       </Routes>
                     </main>
                   </div>

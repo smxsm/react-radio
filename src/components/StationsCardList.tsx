@@ -8,8 +8,9 @@ import CardsList from './ui/CardsList';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-regular-svg-icons';
 
-import styles from './RadioCardList.module.css';
+import styles from './StationsCardList.module.css';
 import Spinner from './ui/Spinner';
+import StationsListOptions from './StationsListOptions';
 
 interface RadioStation {
   id: string;
@@ -25,17 +26,12 @@ const parseSearchParams = ({ limit, offset, sort, order }: any) => ({
   order: order || 'desc',
 });
 
-export default function RadioCardList() {
+export default function StationsCardList() {
   const filter = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchParamsState = parseSearchParams(Object.fromEntries(searchParams.entries()));
   const { totalCount, stations, loading } = useStations(filter, searchParamsState);
   const playerContext = useContext(PlayerContext);
-
-  const optionsChangeHandler = (e: any) => {
-    const { name, value } = e.target;
-    setSearchParams({ ...(searchParamsState as any), [name]: value, offset: '0' });
-  };
 
   const pageChangeHandler = (page: number) => {
     const nextOffset = (page - 1) * searchParamsState.limit + '';
@@ -54,34 +50,7 @@ export default function RadioCardList() {
 
   return (
     <>
-      <div className={styles['options']}>
-        <div className={styles['form-group']}>
-          <label htmlFor="sort">Sort by</label>
-          <select name="sort" id="sort" value={searchParamsState.sort} onChange={optionsChangeHandler}>
-            <option value="name">Name</option>
-            <option value="popularity">Popular</option>
-            <option value="trending">Trending</option>
-          </select>
-        </div>
-        <div className={styles['form-group']}>
-          <label htmlFor="order">Order</label>
-          <select name="order" id="order" value={searchParamsState.order} onChange={optionsChangeHandler}>
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
-        </div>
-        <div className={styles['form-group']}>
-          <label htmlFor="limit">Limit</label>
-          <select name="limit" id="limit" value={searchParamsState.limit} onChange={optionsChangeHandler}>
-            <option value="20">20</option>
-            <option value="40">40</option>
-            <option value="60">60</option>
-            <option value="80">80</option>
-            <option value="100">100</option>
-          </select>
-        </div>
-      </div>
-
+      <StationsListOptions />
       <CardsList>
         {stations.map((station, i) => (
           <Card
