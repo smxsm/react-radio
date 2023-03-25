@@ -1,5 +1,12 @@
 .user-menu {
+  width: 100%;
+  margin: 0 auto;
   margin-top: auto;
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
 }
 
 .signout-item {

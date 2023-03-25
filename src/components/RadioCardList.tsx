@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-regular-svg-icons';
 
 import styles from './RadioCardList.module.css';
+import Spinner from './ui/Spinner';
 
 interface RadioStation {
   id: string;
@@ -47,8 +48,8 @@ export default function RadioCardList() {
     }
   };
 
-  if (loading) {
-    return <p>Loading...</p>;
+  if (loading && !stations.length) {
+    return <Spinner className={styles.spinner} />;
   }
 
   return (
@@ -84,6 +85,7 @@ export default function RadioCardList() {
       <CardsList>
         {stations.map((station, i) => (
           <Card
+            disabled={loading}
             loading={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'loading'}
             active={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'playing'}
             error={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'error'}
@@ -91,7 +93,11 @@ export default function RadioCardList() {
             key={i + station.listenUrl}
           >
             <figure>
-              <img src={station.logo || '/radio-no-logo.png'} alt="" className={styles['card-img']} />
+              <img
+                src={!loading && station.logo ? station.logo : '/radio-no-logo.png'}
+                alt=""
+                className={styles['card-img']}
+              />
             </figure>
             <p className={styles['card-title']}>{station.name}</p>
             <FontAwesomeIcon icon={faHeart} className={styles['icon-favorite']} />

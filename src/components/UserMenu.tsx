@@ -5,10 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
 import { Menu } from './ui/Menu';
 import MenuItem from './ui/MenuItem';
+import Spinner from './ui/Spinner';
 import styles from './UserMenu.module.css';
 
 export default function UserMenu() {
-  const { user, signout } = useContext(UserContext)!;
+  const { user, loading, signout } = useContext(UserContext)!;
   const navigate = useNavigate();
 
   const signOutClickHandler = () => {
@@ -16,9 +17,12 @@ export default function UserMenu() {
     // navigate('/');
   };
 
+  if (loading) {
+    return <Spinner className={`${styles['user-menu']} ${styles.spinner}`} />;
+  }
   if (user) {
     return (
-      <Menu>
+      <Menu className={styles['user-menu']}>
         <div className={styles['signout-item']} onClick={signOutClickHandler}>
           <FontAwesomeIcon icon={faRightFromBracket} />
           Sign Out
