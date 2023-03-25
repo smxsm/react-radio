@@ -1,10 +1,5 @@
 import { IcecastReadableStream } from 'https://unpkg.com/icecast-metadata-js';
 
-const responseHeaders = new Headers({
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': 'https://radio.ivanoff.dev, http://localhost:3000',
-});
-
 const getIcecastMetadata = async (response: Response, icyMetaInt: number) => {
   new Promise((resolve) => {
     new IcecastReadableStream(response, {
@@ -20,7 +15,12 @@ const getIcecastMetadata = async (response: Response, icyMetaInt: number) => {
 
 const edge = async (req: Request) => {
   const url = new URL(req.url).searchParams.get('url') || '';
-  console.log(req.headers.get('Origin'));
+  const responseHeaders = new Headers({ 'Content-Type': 'application/json' });
+  const origin = req.headers.get('Origin') || '';
+  if (/https?:\/\/localhost:?\d{0,5}/.test(origin)) {
+    responseHeaders.append('Access-Control-Allow-Origin', origin);
+  }
+
   try {
     const res = await fetch(url, {
       method: 'GET',
