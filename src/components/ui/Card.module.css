@@ -7,7 +7,9 @@
   height: 8rem;
   padding: 0.8rem;
   border: 1px solid rgb(24, 51, 103);
+  background-color: rgb(15, 23, 42);
   border-radius: 0.5rem;
+  opacity: 1;
   transition: all 0.2s ease-in;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
@@ -28,7 +30,7 @@
   background-color: white;
 }
 
-.card:hover {
+.card:not(.disabled):hover {
   cursor: pointer;
   transition: transform 0s ease-out;
   z-index: 10;
@@ -61,6 +63,19 @@
   animation-iteration-count: 6;
   animation-direction: alternate;
 }
+
+.card.disabled {
+  opacity: 0.5;
+  transition: all 0.2s linear 0.2s;
+}
+
+/* .card.disabled::after {
+  content: '';
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+} */
 
 @keyframes breeth {
   from {

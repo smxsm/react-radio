@@ -5,6 +5,7 @@ type CardProps = PropsWithChildren & {
   active?: boolean;
   loading?: boolean;
   error?: boolean;
+  disabled?: boolean;
   className?: string;
   onClick?: MouseEventHandler;
 };
@@ -13,6 +14,7 @@ export default function Card({
   active = false,
   loading = false,
   error = false,
+  disabled = false,
   className,
   children,
   onClick,
@@ -21,12 +23,13 @@ export default function Card({
   if (active) classes += ' ' + styles.active;
   if (loading) classes += ' ' + styles.loading;
   if (error) classes += ' ' + styles.error;
+  if (disabled) classes += ' ' + styles.disabled;
   if (className) {
     classes += ' ' + className;
   }
 
   return (
-    <article className={classes} onClick={onClick}>
+    <article className={classes} onClick={!disabled ? onClick : undefined}>
       {children}
     </article>
   );

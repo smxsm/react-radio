@@ -10,10 +10,11 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { Menu } from './ui/Menu';
 import MenuItem from './ui/MenuItem';
+import styles from './StationsMenu.module.css';
 
 export default function StationsMenu() {
   return (
-    <Menu>
+    <Menu className={styles.stationsMenu}>
       <MenuItem href="/">
         <FontAwesomeIcon icon={faHome} />
         Home
