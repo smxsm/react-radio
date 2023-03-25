@@ -57,6 +57,7 @@ const edge = async (req: Request) => {
 
     return new Response(JSON.stringify(data), { headers: responseHeaders });
   } catch (err) {
+    console.log(err);
     return new Response(JSON.stringify({}), { headers: responseHeaders });
   }
 };
