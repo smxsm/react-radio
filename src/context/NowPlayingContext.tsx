@@ -49,33 +49,33 @@ type NowPlayingInfoProviderProps = PropsWithChildren & {};
  * @param searchTerm The text to search. Will filter special symbols and terms like ft, feat, vs
  * @returns Returns a Promise resolving to a TrackInfo object or null. Doesn't throw.
  */
-const matchTrack = async (searchTerm: string): Promise<TrackInfo | null> => {
-  try {
-    const filterTerms = ['ft', 'feat', 'vs'];
-    const cleanedSearchTerm = searchTerm
-      .match(/\w+(?![^(]*\))/g)
-      ?.filter((term) => !filterTerms.includes(term.toLowerCase()))
-      .join(' ');
-    if (!cleanedSearchTerm) {
-      return null;
-    }
-    const res = await fetch(`https://itunes.apple.com/search?term=${cleanedSearchTerm}&entity=musicTrack`);
-    const data = await res.json();
-    if (!data.resultCount) {
-      return null;
-    }
-    // TODO Implement some kind of matching algorithm instead of taking the first result
-    return {
-      artist: data.results[0].artistName || '',
-      title: data.results[0].trackName || '',
-      album: data.results[0].collectionName || '',
-      releaseDate: new Date(data.results[0].releaseDate) || null,
-      artwork: data.results[0].artworkUrl100,
-    };
-  } catch (err) {
-    return null;
-  }
-};
+// const matchTrack = async (searchTerm: string): Promise<TrackInfo | null> => {
+//   try {
+//     const filterTerms = ['ft', 'feat', 'vs'];
+//     const cleanedSearchTerm = searchTerm
+//       .match(/\w+(?![^(]*\))/g)
+//       ?.filter((term) => !filterTerms.includes(term.toLowerCase()))
+//       .join(' ');
+//     if (!cleanedSearchTerm) {
+//       return null;
+//     }
+//     const res = await fetch(`https://itunes.apple.com/search?term=${cleanedSearchTerm}&entity=musicTrack`);
+//     const data = await res.json();
+//     if (!data.resultCount) {
+//       return null;
+//     }
+//     // TODO Implement some kind of matching algorithm instead of taking the first result
+//     return {
+//       artist: data.results[0].artistName || '',
+//       title: data.results[0].trackName || '',
+//       album: data.results[0].collectionName || '',
+//       releaseDate: new Date(data.results[0].releaseDate) || null,
+//       artwork: data.results[0].artworkUrl100,
+//     };
+//   } catch (err) {
+//     return null;
+//   }
+// };
 
 /**
  * Gets metadata for a radio stream from a free internet service
