@@ -23,16 +23,16 @@ const edge = async (req: Request) => {
       throw new Error('No metadata collected');
     }
 
-    if (!data.match) {
-      data.match = {};
-      const match = await iTunesSearch(data.title);
-      if (match) {
-        data.match.artist = match.artist;
-        data.match.title = match.title;
-        data.match.album = match.album;
-        data.match.releaseDate = match.releaseDate;
-        data.match.artwork = match.artwork;
-        data.match.streamLinks = { appleMusic: match.appleMusicUrl };
+    if (!data.trackMatch) {
+      data.trackMatch = {};
+      const trackMatch = await iTunesSearch(data.title);
+      if (trackMatch) {
+        data.trackMatch.artist = trackMatch.artist;
+        data.trackMatch.title = trackMatch.title;
+        data.trackMatch.album = trackMatch.album;
+        data.trackMatch.releaseDate = trackMatch.releaseDate;
+        data.trackMatch.artwork = trackMatch.artwork;
+        data.trackMatch.streamLinks = { appleMusic: trackMatch.appleMusicUrl };
       }
     }
 
