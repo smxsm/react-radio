@@ -32,7 +32,7 @@ const edge = async (req: Request) => {
         data.trackMatch.album = trackMatch.album;
         data.trackMatch.releaseDate = trackMatch.releaseDate;
         data.trackMatch.artwork = trackMatch.artwork;
-        data.trackMatch.streamLinks = { appleMusic: trackMatch.appleMusicUrl };
+        data.trackMatch.appleMusicUrl = trackMatch.appleMusicUrl;
       }
     }
 
