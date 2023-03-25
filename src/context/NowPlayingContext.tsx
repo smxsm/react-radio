@@ -8,10 +8,9 @@ type NowPlayingContextType = {
 };
 
 type StationMetadata = {
-  contentType: string;
   name: string;
   description: string;
-  genre: string;
+  genres: string[];
   title: string;
   match?: TrackInfo;
 };
@@ -68,10 +67,9 @@ const getStationMetadata = async (url: string): Promise<StationMetadata> => {
   const res = await fetch('https://radio.ivanoff.dev/station-metadata?url=' + url);
   const data = await res.json();
   return {
-    contentType: data['content-type'] || '',
-    name: data.name || '',
-    description: data.description || '',
-    genre: data.genre || '',
+    name: data.icyName || '',
+    description: data.icyDescription || '',
+    genres: data.icyGenre || [],
     title: data.title || '',
   };
 };
@@ -109,7 +107,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
 
     if (playerContext?.status === 'playing') {
       getNowPlayingInfo(playerContext.station?.listenUrl);
-      intervalRef.current = setInterval(() => getNowPlayingInfo(playerContext.station?.listenUrl), 12000);
+      intervalRef.current = setInterval(() => getNowPlayingInfo(playerContext.station?.listenUrl), 5000);
     }
 
     return () => clearInterval(intervalRef.current);
