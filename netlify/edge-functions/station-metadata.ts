@@ -19,8 +19,12 @@ const edge = async (req: Request) => {
     const streamMetadata = await getIcecastMetadata(res, icyMetaInt);
     const data = { ...cache.get(streamMetadata.title), ...streamMetadata };
 
+    if (!data.title) {
+      throw new Error('No metadata collected');
+    }
+
     if (!data.match) {
-      console.log('No track info. Searching iTunes...');
+      data.match = {};
       const match = await iTunesSearch(data.title);
       if (match) {
         data.match.artist = match.artist;
@@ -28,7 +32,7 @@ const edge = async (req: Request) => {
         data.match.album = match.album;
         data.match.releaseDate = match.releaseDate;
         data.match.artwork = match.artwork;
-        data.streamLinks.appleMusic = match.appleMusicUrl;
+        data.match.streamLinks = { appleMusic: match.appleMusicUrl };
       }
     }
 
@@ -36,8 +40,6 @@ const edge = async (req: Request) => {
     if (cache.size > 100) {
       cache.delete(cache.keys()[0]);
     }
-
-    console.log(`Cache now has ${cache.size} items`);
 
     return new Response(JSON.stringify(data), { headers: responseHeaders });
   } catch (err) {
