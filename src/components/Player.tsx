@@ -42,11 +42,30 @@ export default function Player(props: any) {
             className={styles['radio-name']}
           />
           <ScrollingText text={nowPlaying?.stationMetadata?.title || ''} className={styles['track-name']} />
-          <div>
-            <a target="_blank" rel="noreferrer" href={nowPlaying.stationMetadata?.trackMatch?.appleMusicUrl}>
-              <img src="/apple-music.svg" alt="Apple Musc" />
-            </a>
-          </div>
+          {nowPlaying.stationMetadata?.trackMatch && (
+            <div className={styles.musicLinks}>
+              {nowPlaying.stationMetadata.trackMatch.appleMusicUrl && (
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  href={nowPlaying.stationMetadata?.trackMatch?.appleMusicUrl}
+                  onClick={() => playerContext?.stop()}
+                >
+                  <img src="/apple-music.svg" alt="Apple Musc" />
+                </a>
+              )}
+              {nowPlaying.stationMetadata.trackMatch.youTubeUrl && (
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  href={nowPlaying.stationMetadata?.trackMatch?.youTubeUrl}
+                  onClick={() => playerContext?.stop()}
+                >
+                  <img src="/youtube.png" alt="Apple Musc" />
+                </a>
+              )}
+            </div>
+          )}
         </div>
         <SpectrumAnalyzer
           source={playerContext?.sourceNode}

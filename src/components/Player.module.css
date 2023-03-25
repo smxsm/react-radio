@@ -129,15 +129,20 @@
   /* margin: 4px 0; */
 }
 
-.now-playing-info img {
-  width: 18px;
-  height: 18px;
-}
-
 .track-name {
   color: white;
   text-transform: uppercase;
   font-size: 18px;
+}
+
+.musicLinks {
+  display: flex;
+  gap: 10px;
+}
+
+.musicLinks img {
+  width: 20px;
+  height: 20px;
 }
 
 img {
