@@ -19,23 +19,6 @@ export default function Player(props: any) {
 
   return (
     <div className={classes}>
-      <div className={styles['media-controls']}>
-        <div className={styles['button-container']}>
-          <button className={styles['media-button']}>
-            <FontAwesomeIcon icon={faStepBackward} className={styles['media-button-icon']} />
-          </button>
-          <button
-            className={`${styles['media-button']} ${styles['media-button-play']}`}
-            onClick={() => playerContext?.stop()}
-          >
-            <FontAwesomeIcon icon={faPlay} className={styles['media-button-icon']} />
-          </button>
-          <button className={styles['media-button']}>
-            <FontAwesomeIcon icon={faStepForward} className={styles['media-button-icon']} />
-          </button>
-        </div>
-      </div>
-
       <div className={styles['now-playing-container']}>
         <img
           src={nowPlaying.stationMetadata?.trackMatch?.artwork || nowPlaying.station?.logo || '/radio-no-logo.png'}
@@ -72,11 +55,29 @@ export default function Player(props: any) {
             </div>
           )}
         </div>
+
         <SpectrumAnalyzer
           source={playerContext?.sourceNode}
           audioCtx={playerContext?.audioContext}
           className={styles.visualizer}
         />
+      </div>
+
+      <div className={styles['media-controls']}>
+        <div className={styles['button-container']}>
+          <button className={styles['media-button']}>
+            <FontAwesomeIcon icon={faStepBackward} className={styles['media-button-icon']} />
+          </button>
+          <button
+            className={`${styles['media-button']} ${styles['media-button-play']}`}
+            onClick={() => playerContext?.stop()}
+          >
+            <FontAwesomeIcon icon={faPlay} className={styles['media-button-icon']} />
+          </button>
+          <button className={styles['media-button']}>
+            <FontAwesomeIcon icon={faStepForward} className={styles['media-button-icon']} />
+          </button>
+        </div>
       </div>
     </div>
   );
