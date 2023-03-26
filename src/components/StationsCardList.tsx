@@ -49,9 +49,9 @@ export default function StationsCardList() {
   }
 
   return (
-    <>
+    <div className={styles.container}>
       <StationsListOptions />
-      <CardsList>
+      <CardsList className={styles.cardsList}>
         {stations.map((station, i) => (
           <Card
             disabled={loading}
@@ -74,12 +74,14 @@ export default function StationsCardList() {
         ))}
       </CardsList>
 
-      <Pagination
-        pages={Math.ceil(totalCount / searchParamsState.limit)}
-        current={Math.floor(searchParamsState.offset / searchParamsState.limit + 1)}
-        className={styles.pagination}
-        onPageChange={pageChangeHandler}
-      ></Pagination>
-    </>
+      {totalCount > searchParamsState.limit && (
+        <Pagination
+          pages={Math.ceil(totalCount / searchParamsState.limit)}
+          current={Math.floor(searchParamsState.offset / searchParamsState.limit + 1)}
+          className={styles.pagination}
+          onPageChange={pageChangeHandler}
+        ></Pagination>
+      )}
+    </div>
   );
 }

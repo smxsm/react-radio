@@ -107,3 +107,30 @@ h2 {
   font-size: 3rem;
   font-weight: 600;
 }
+
+/* ===== Scrollbar CSS ===== */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #0f172a #13111c;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: hsl(222, 47%, 18%);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(24, 51, 103);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(48, 110, 232);
+  border-radius: 4px;
+}

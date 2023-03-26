@@ -12,6 +12,7 @@
   flex-direction: column;
   gap: 4rem;
   border-right: 1px solid rgb(24, 51, 103);
+  background-color: var(--background);
   overflow: hidden;
   padding: 1.4rem 1.4rem;
   width: 20rem;
@@ -25,13 +26,17 @@
 }
 
 .main-container {
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  overflow: auto;
+  /* overflow: auto; */
   flex-grow: 1;
 }
 
 .main-container > main {
   display: block;
   /* background-color: var(--background); */
+  flex-grow: 1;
   padding: 1.4rem 1.4rem;
+  overflow: auto;
 }
