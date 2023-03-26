@@ -1,0 +1,21 @@
+.searchForm {
+  position: relative;
+}
+
+.input {
+  width: 100%;
+}
+
+.btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+
+.btn:focus {
+  box-shadow: none;
+  color: inherit;
+}

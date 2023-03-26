@@ -13,6 +13,7 @@ import UserMenu from './components/UserMenu';
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import { UserProvider } from './context/UserContext';
+import SearchForm from './components/SearchForm';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
               <div className={styles['grid-container']}>
                 <BrowserRouter>
                   <div className={styles['side-menu']}>
+                    <SearchForm />
                     <StationsMenu />
                     <UserMenu />
                   </div>

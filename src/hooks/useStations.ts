@@ -22,6 +22,7 @@ type ListOptions = {
 const routeToApiCategory: any = {
   countries: { stationsEndpoint: 'bycountrycodeexact', statsEndpoint: 'countries' },
   genres: { stationsEndpoint: 'bytag', statsEndpoint: 'tags' },
+  search: { stationsEndpoint: 'search', statsEndpoint: '' },
 };
 
 const routeToApiSort: { [key: string]: string } = {
@@ -49,28 +50,38 @@ export function useStations(
 
     // We need the server statistic to get total stations count
     let statsUrl = `${apiUrl}/stats`;
-    let stationsUrl = `${apiUrl}/stations`;
+    let stationsUrl = new URL(`${apiUrl}/stations`);
 
     if (category && value) {
       const { statsEndpoint, stationsEndpoint } = routeToApiCategory[category];
-      stationsUrl += `/${stationsEndpoint}/${value}`;
-      // Instead of server stats get stats about the particular endpoint to get total stations count from
-      statsUrl = `${apiUrl}/${statsEndpoint}/${value}`;
+      stationsUrl.pathname += `/${stationsEndpoint}`;
+      if (category === 'search') {
+        stationsUrl.searchParams.append('name', value);
+      } else {
+        stationsUrl.pathname += `/${value}`;
+        // Instead of server stats get stats about the particular endpoint to get total stations count from
+        statsUrl = `${apiUrl}/${statsEndpoint}/${value}`;
+      }
     }
 
-    stationsUrl += `?order=${routeToApiSort[sort] || 'name'}${order === 'desc' ? '&reverse=true' : ''}&limit=${
-      +limit > 0 && +limit < 301 ? limit : 60
-    }&offset=${offset}`;
+    stationsUrl.searchParams.append('order', routeToApiSort[sort] || 'name');
+    stationsUrl.searchParams.append('reverse', order === 'desc' ? 'true' : 'false');
+    stationsUrl.searchParams.append('limit', +limit > 0 && +limit < 301 ? limit.toString() : '60');
+    stationsUrl.searchParams.append('offset', offset.toString());
 
-    fetch(statsUrl)
+    if (category !== 'search') {
+      fetch(statsUrl)
+        .then((res) => res.json())
+        // If we are using global server stats we are getting an object instead of array
+        .then<EndpointStats[]>((data) => (Array.isArray(data) ? data : [data]))
+        .then((stats) => stats.reduce((sum, { stationcount, stations }) => sum + (stationcount || stations || 0), 0))
+        .then(setTotalCount)
+        .catch();
+    }
+
+    fetch(stationsUrl)
       .then((res) => res.json())
-      // If we are using global server stats we are getting an object instead of array
-      .then<EndpointStats[]>((data) => (Array.isArray(data) ? data : [data]))
-      .then((stats) => stats.reduce((sum, { stationcount, stations }) => sum + (stationcount || stations || 0), 0))
-      .then(setTotalCount)
-      .then(() => fetch(stationsUrl))
-      .then((res) => res.json())
-      .then((data) =>
+      .then((data) => {
         setStations(
           data.map(({ stationuuid, name, favicon, url_resolved }: any) => ({
             id: stationuuid,
@@ -78,8 +89,11 @@ export function useStations(
             logo: favicon,
             listenUrl: url_resolved,
           }))
-        )
-      )
+        );
+        if (category === 'search') {
+          setTotalCount(data.length);
+        }
+      })
       .catch(setError)
       .finally(() => setLoading(false));
   }, [apiUrl, category, value, limit, sort, order, offset]);
