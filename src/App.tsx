@@ -37,7 +37,8 @@ function App() {
                         <Route path="/" element={<Home />} />
                         <Route path="/stations/all" element={<StationsCardList />} />
                         <Route path="/stations/countries" element={<CountriesList />} />
-                        <Route path="/stations/genres" element={<GenresList />} />
+                        <Route path="/stations/music/genres" element={<GenresList />} />
+                        <Route path="/stations/music/:category?/:value?" element={<StationsCardList />} />
                         <Route path="/stations/:category?/:value?" element={<StationsCardList />} />
                       </Routes>
                     </main>

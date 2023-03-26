@@ -23,7 +23,7 @@ export default function StationsMenu() {
         <FontAwesomeIcon icon={faListUl} />
         All Stations
       </MenuItem>
-      <MenuItem href="/stations/genres" active>
+      <MenuItem href="/stations/music/genres" active>
         <FontAwesomeIcon icon={faMusic} />
         Music
       </MenuItem>
