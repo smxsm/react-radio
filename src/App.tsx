@@ -33,7 +33,6 @@ function App() {
                     <UserMenu />
                   </div>
                   <div className={styles['main-container']}>
-                    <Player />
                     <main>
                       <Routes>
                         <Route path="/auth/signin" element={<SignIn />} />
@@ -50,6 +49,7 @@ function App() {
                       </Routes>
                     </main>
                   </div>
+                  <Player />
                   {/* <aside className={styles['nowplaying-container']}>Playing </aside> */}
                 </BrowserRouter>
               </div>

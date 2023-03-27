@@ -20,34 +20,9 @@ export default function Player(props: any) {
   return (
     <div className={classes}>
       <div className={styles['now-playing-container']}>
-        <img src={matchedTrack?.artwork || station?.logo || '/radio-no-logo.png'} alt="" />
         <div className={styles['now-playing-info']}>
           <ScrollingText text={stationMetadata?.icyName || station?.name || ''} className={styles['radio-name']} />
           <ScrollingText text={stationMetadata?.title || ''} className={styles['track-name']} />
-          {matchedTrack && (
-            <div className={styles.musicLinks}>
-              {matchedTrack.appleMusicUrl && (
-                <a
-                  target="_blank"
-                  rel="noreferrer"
-                  href={matchedTrack.appleMusicUrl}
-                  onClick={() => playerContext?.stop()}
-                >
-                  <img src="/apple-music.svg" alt="Apple Musc" />
-                </a>
-              )}
-              {matchedTrack.youTubeUrl && (
-                <a
-                  target="_blank"
-                  rel="noreferrer"
-                  href={matchedTrack.youTubeUrl}
-                  onClick={() => playerContext?.stop()}
-                >
-                  <img src="/youtube.png" alt="Apple Musc" />
-                </a>
-              )}
-            </div>
-          )}
         </div>
 
         <SpectrumAnalyzer
@@ -73,6 +48,27 @@ export default function Player(props: any) {
           </button>
         </div>
       </div>
+
+      <img
+        src={matchedTrack?.artwork.replace('100x100', '600x600') || station?.logo || '/radio-no-logo.png'}
+        alt=""
+        className={styles.artwork}
+      />
+
+      {matchedTrack && (
+        <div className={styles.musicLinks}>
+          {matchedTrack.appleMusicUrl && (
+            <a target="_blank" rel="noreferrer" href={matchedTrack.appleMusicUrl} onClick={() => playerContext?.stop()}>
+              <img src="/apple-music.svg" alt="Apple Musc" />
+            </a>
+          )}
+          {matchedTrack.youTubeUrl && (
+            <a target="_blank" rel="noreferrer" href={matchedTrack.youTubeUrl} onClick={() => playerContext?.stop()}>
+              <img src="/youtube.png" alt="Apple Musc" />
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }
