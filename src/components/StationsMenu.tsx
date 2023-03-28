@@ -12,18 +12,24 @@ import {
 import { Menu } from './ui/Menu';
 import MenuItem from './ui/MenuItem';
 import styles from './StationsMenu.module.css';
+import { useContext } from 'react';
+import { UserContext } from '../context/UserContext';
 
 export default function StationsMenu() {
+  const { user } = useContext(UserContext)!;
+
   return (
     <Menu className={styles.stationsMenu}>
       <MenuItem href="/">
         <FontAwesomeIcon icon={faHome} />
         Home
       </MenuItem>
-      <MenuItem href="/stations/custom">
-        <FontAwesomeIcon icon={faFolder} />
-        My Stations
-      </MenuItem>
+      {user && (
+        <MenuItem href="/stations/custom">
+          <FontAwesomeIcon icon={faFolder} />
+          My Stations
+        </MenuItem>
+      )}
       <MenuItem href="/stations/all">
         <FontAwesomeIcon icon={faListUl} />
         All Stations
