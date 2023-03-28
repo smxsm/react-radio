@@ -14,6 +14,8 @@ import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import { UserProvider } from './context/UserContext';
 import SearchForm from './components/SearchForm';
+import AddCustomStation from './components/AddCustomStation';
+import CustomStations from './components/CustomStations';
 
 function App() {
   return (
@@ -37,6 +39,8 @@ function App() {
                         <Route path="/auth/signin" element={<SignIn />} />
                         <Route path="/auth/signup" element={<SignUp />} />
                         <Route path="/" element={<Home />} />
+                        <Route path="/stations/custom" element={<CustomStations />} />
+                        <Route path="/stations/custom/add" element={<AddCustomStation />} />
                         <Route path="/stations/all" element={<StationsCardList />} />
                         <Route path="/stations/countries" element={<CountriesList />} />
                         <Route path="/stations/music/genres" element={<GenresList />} />

@@ -1,0 +1,26 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.btnAdd {
+  place-self: flex-end;
+  display: flex;
+  gap: 1rem;
+}
+
+.cardsList {
+  overflow: auto;
+  padding-right: 10px;
+  flex-grow: 1;
+  place-content: flex-start;
+}
+
+.icon-favorite {
+  position: absolute;
+  width: 1.6rem;
+  height: 1.6em;
+  bottom: 0.25rem;
+  right: 0.5rem;
+}

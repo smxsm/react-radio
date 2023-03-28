@@ -7,6 +7,7 @@ import {
   faTableTennis,
   faListUl,
   faGlobeAmericas,
+  faFolder,
 } from '@fortawesome/free-solid-svg-icons';
 import { Menu } from './ui/Menu';
 import MenuItem from './ui/MenuItem';
@@ -18,6 +19,10 @@ export default function StationsMenu() {
       <MenuItem href="/">
         <FontAwesomeIcon icon={faHome} />
         Home
+      </MenuItem>
+      <MenuItem href="/stations/custom">
+        <FontAwesomeIcon icon={faFolder} />
+        My Stations
       </MenuItem>
       <MenuItem href="/stations/all">
         <FontAwesomeIcon icon={faListUl} />
