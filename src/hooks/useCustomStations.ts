@@ -24,10 +24,7 @@ export default function useCustomStations() {
   const addCustomStation = useCallback(
     async ({ name, logo, listenUrl }: CustomStation) => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('user_stations')
-        .upsert({ name, logo, listen_url: listenUrl })
-        .select();
+      const { error } = await supabase.from('user_stations').upsert({ name, logo, listen_url: listenUrl }).select();
       if (error) {
         setError(new Error(error.message));
         setLoading(false);
