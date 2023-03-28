@@ -7,11 +7,13 @@ import Card from './ui/Card';
 import CardsList from './ui/CardsList';
 import Button from './ui/Button';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 import styles from './CustomStations.module.css';
+import { UserContext } from '../context/UserContext';
 
 export default function CustomStation() {
+  const { user, loading: userLoading } = useContext(UserContext)!;
   const { stations, loading } = useCustomStations();
   const playerContext = useContext(PlayerContext);
   const navigate = useNavigate();
@@ -21,6 +23,10 @@ export default function CustomStation() {
       playerContext.play(station);
     }
   };
+
+  if (!user && !userLoading) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <section className={styles.section}>

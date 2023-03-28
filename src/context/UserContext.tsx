@@ -24,12 +24,12 @@ export const UserContext = createContext<UserContextType | null>(null);
 export function UserProvider({ children }: UserProviderProps) {
   const supabase = useSupabase();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const session = JSON.parse(localStorage.getItem('session') || 'null');
-    if (!session) return;
+    if (!session) return setLoading(false);
     setLoading(true);
     supabase.auth
       .setSession(session)

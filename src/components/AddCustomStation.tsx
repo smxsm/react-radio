@@ -1,7 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useContext } from 'react';
 import { useForm, FieldValues } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { UserContext } from '../context/UserContext';
 import useCustomStations, { CustomStation } from '../hooks/useCustomStations';
 
 import styles from './AddCustomStation.module.css';
@@ -16,6 +18,7 @@ const customStationValues = z.object({
 });
 
 export default function AddCustomStation() {
+  const { user, loading: userLoading } = useContext(UserContext)!;
   const { loading, error, addCustomStation } = useCustomStations();
   const navigate = useNavigate();
   const { register, handleSubmit, formState } = useForm({
@@ -30,6 +33,10 @@ export default function AddCustomStation() {
       }
     });
   };
+
+  if (!user && !userLoading) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <section className={styles.section}>
