@@ -1,0 +1,56 @@
+.card > figure {
+  position: relative;
+}
+
+.card:hover .btnPlay {
+  opacity: 1;
+  transition: all 0s;
+}
+
+.btnPlay {
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.4rem;
+  padding: 1rem;
+  aspect-ratio: 1/1;
+  color: var(--color);
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  transition: all 0.2s ease-in;
+}
+
+.btnPlay:hover {
+  color: white;
+  cursor: pointer;
+}
+
+.title {
+  flex-grow: 1;
+  align-self: flex-start;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-flow: column-reverse;
+  height: 100%;
+  opacity: 0;
+}
+
+.actionIcon {
+  display: block;
+  font-size: 1.6rem;
+  color: var(--color);
+}
+
+.actionIcon:hover {
+  color: white;
+}
+
+.card:hover > .actions {
+  opacity: 1;
+}
