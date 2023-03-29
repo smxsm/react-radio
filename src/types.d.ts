@@ -3,4 +3,5 @@ type RadioStation = {
   name: string;
   logo: string;
   listenUrl: string;
+  isOwner?: boolean;
 };
