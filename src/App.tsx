@@ -41,6 +41,7 @@ function App() {
                         <Route path="/" element={<Home />} />
                         <Route path="/stations/custom" element={<CustomStations />} />
                         <Route path="/stations/custom/add" element={<AddCustomStation />} />
+                        <Route path="/stations/custom/edit/:id" element={<AddCustomStation />} />
                         <Route path="/stations/all" element={<StationsCardList />} />
                         <Route path="/stations/countries" element={<CountriesList />} />
                         <Route path="/stations/music/genres" element={<GenresList />} />
