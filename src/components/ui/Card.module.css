@@ -27,7 +27,6 @@
   border-radius: 0.5rem;
   aspect-ratio: 1/1;
   object-fit: contain;
-  /* background-color: white; */
 }
 
 .card:not(.disabled):hover {
