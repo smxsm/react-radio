@@ -9,6 +9,7 @@ import styles from './StationsCardList.module.css';
 import Spinner from './ui/Spinner';
 import StationsListOptions from './StationsListOptions';
 import RadioStationCard from './RadioStationCard';
+import useCustomStations from '../hooks/useCustomStations';
 
 interface RadioStation {
   id: string;
@@ -28,15 +29,27 @@ export default function StationsCardList() {
   const filter = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchParamsState = parseSearchParams(Object.fromEntries(searchParams.entries()));
-  const { totalCount, stations, loading } = useStations(filter, searchParamsState);
+  const { totalCount, stations, loading: loadingStations } = useStations(filter, searchParamsState);
   const playerContext = useContext(PlayerContext);
+  const { addCustomStation, getCustomStations, loading: addingCustomStation } = useCustomStations();
+
+  const loading = loadingStations || addingCustomStation;
+
+  const playHandler = (station: RadioStation) => playerContext?.play(station);
+
+  const addHandler = (station: RadioStation) =>
+    getCustomStations(station.id)
+      .then((result) =>
+        result.length
+          ? window.confirm(`${station.name} is already in your library. Are you sure you want to replace it?`)
+          : true
+      )
+      .then((result) => (result ? addCustomStation(station) : false));
 
   const pageChangeHandler = (page: number) => {
     const nextOffset = (page - 1) * searchParamsState.limit + '';
     setSearchParams({ ...(searchParamsState as any), offset: nextOffset });
   };
-
-  const playHandler = (station: RadioStation) => playerContext?.play(station);
 
   if (loading && !stations.length) {
     return <Spinner className={styles.spinner} />;
@@ -47,7 +60,13 @@ export default function StationsCardList() {
       <StationsListOptions />
       <CardsList className={styles.cardsList}>
         {stations.map((station, i) => (
-          <RadioStationCard disabled={loading} station={station} key={i + station.listenUrl} onPlay={playHandler} />
+          <RadioStationCard
+            disabled={loading}
+            station={station}
+            key={i + station.listenUrl}
+            onPlay={playHandler}
+            onAdd={addHandler}
+          />
         ))}
       </CardsList>
 
