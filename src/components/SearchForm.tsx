@@ -13,9 +13,10 @@ export default function SearchForm() {
   const valueChangeHandler = (e: React.FormEvent<HTMLInputElement>) => setValue(e.currentTarget.value);
   const submitHandler = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!value) return;
+    const searchTerm = value.trim();
+    if (searchTerm.length < 3) return;
 
-    navigate(`/stations/search/${encodeURIComponent(value)}`);
+    navigate(`/stations/search/${encodeURIComponent(searchTerm)}`);
     setValue('');
   };
 
