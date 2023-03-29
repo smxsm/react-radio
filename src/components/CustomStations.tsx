@@ -1,32 +1,37 @@
-import { faHeart } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useContext } from 'react';
-import { PlayerContext } from '../context/PlayerContext';
-import useCustomStations from '../hooks/useCustomStations';
-import Card from './ui/Card';
-import CardsList from './ui/CardsList';
-import Button from './ui/Button';
+import { useContext, useEffect } from 'react';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Navigate, useNavigate } from 'react-router-dom';
 
-import styles from './CustomStations.module.css';
+import Button from './ui/Button';
+import CardsList from './ui/CardsList';
+import RadioStationCard from './RadioStationCard';
+
 import { UserContext } from '../context/UserContext';
+import { PlayerContext } from '../context/PlayerContext';
+import useCustomStations from '../hooks/useCustomStations';
+
+import styles from './CustomStations.module.css';
 
 export default function CustomStation() {
   const { user, loading: userLoading } = useContext(UserContext)!;
-  const { stations, loading } = useCustomStations();
   const playerContext = useContext(PlayerContext);
+  const { getCustomStations, deleteCustomStation, stations, loading: stationsLoading } = useCustomStations();
   const navigate = useNavigate();
 
-  const clickHandler = (station: RadioStation) => () => {
-    if (playerContext) {
-      playerContext.play(station);
-    }
-  };
+  useEffect(() => {
+    getCustomStations();
+  }, [user, getCustomStations]);
 
   if (!user && !userLoading) {
     return <Navigate to="/" />;
   }
+
+  const playHandler = (station: RadioStation) => playerContext?.play(station);
+  const editHandler = ({ id }: RadioStation) => navigate(`edit/${id}`);
+  const deleteHandler = ({ id, name }: RadioStation) =>
+    window.confirm(`Are you sure you want to delete ${name}?`) &&
+    deleteCustomStation(id).then(() => getCustomStations());
 
   return (
     <section className={styles.section}>
@@ -36,24 +41,14 @@ export default function CustomStation() {
       </Button>
       <CardsList className={styles.cardsList}>
         {stations.map((station, i) => (
-          <Card
-            disabled={loading}
-            loading={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'loading'}
-            active={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'playing'}
-            error={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'error'}
-            onClick={clickHandler(station)}
+          <RadioStationCard
+            station={station}
+            disabled={stationsLoading}
             key={i + station.listenUrl}
-          >
-            <figure>
-              <img
-                src={!loading && station.logo ? station.logo : '/radio-no-logo.png'}
-                alt=""
-                className={styles['card-img']}
-              />
-            </figure>
-            <p className={styles['card-title']}>{station.name}</p>
-            <FontAwesomeIcon icon={faHeart} className={styles['icon-favorite']} />
-          </Card>
+            onPlay={playHandler}
+            onEdit={editHandler}
+            onDelete={deleteHandler}
+          />
         ))}
       </CardsList>
     </section>

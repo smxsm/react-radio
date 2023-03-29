@@ -1,30 +1,41 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
-import { UserContext } from '../context/UserContext';
+import { useCallback, useState } from 'react';
 import useSupabase from './useSupabase';
-
-export type CustomStation = {
-  name: string;
-  logo: string;
-  listenUrl: string;
-};
 
 export default function useCustomStations() {
   const supabase = useSupabase();
-  const { user } = useContext(UserContext)!;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [stations, setStations] = useState<RadioStation[]>([]);
 
-  const getCustomStations = useCallback(async () => {
-    const { data, error } = await supabase.from('user_stations').select('*');
-    if (error) throw error;
-    return data;
-  }, [supabase]);
+  const getCustomStations = useCallback(
+    async (id = '') => {
+      setLoading(true);
+      let query = supabase.from('user_stations').select('*');
+      if (id) {
+        query = query.eq('id', id);
+      }
+      const { data, error } = await query;
+      if (error) {
+        setError(new Error(error.message));
+      }
+      setStations(
+        data?.map<RadioStation>(({ id, name, logo, listen_url }) => ({
+          id,
+          name,
+          logo,
+          listenUrl: listen_url,
+          isOwner: true,
+        })) || []
+      );
+      setLoading(false);
+    },
+    [supabase]
+  );
 
   const addCustomStation = useCallback(
-    async ({ name, logo, listenUrl }: CustomStation) => {
+    async ({ id, name, logo, listenUrl }: RadioStation) => {
       setLoading(true);
-      const { error } = await supabase.from('user_stations').upsert({ name, logo, listen_url: listenUrl }).select();
+      const { error } = await supabase.from('user_stations').upsert({ id, name, logo, listen_url: listenUrl }).select();
       if (error) {
         setError(new Error(error.message));
         setLoading(false);
@@ -36,15 +47,16 @@ export default function useCustomStations() {
     [supabase]
   );
 
-  useEffect(() => {
-    getCustomStations()
-      .then((stations) =>
-        stations.map<RadioStation>(({ id, name, logo, listen_url }) => ({ id, name, listenUrl: listen_url, logo }))
-      )
-      .then(setStations)
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, [getCustomStations, user]);
+  const deleteCustomStation = useCallback(
+    async (id: string) => {
+      setLoading(true);
+      const { error } = await supabase.from('user_stations').delete().eq('id', id);
+      if (error) {
+        setError(new Error(error.message));
+      }
+    },
+    [supabase]
+  );
 
-  return { loading, error, stations, addCustomStation };
+  return { loading, error, stations, getCustomStations, addCustomStation, deleteCustomStation };
 }
