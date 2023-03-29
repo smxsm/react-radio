@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { useForm, FieldValues } from 'react-hook-form';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
 import { UserContext } from '../context/UserContext';
-import useCustomStations, { CustomStation } from '../hooks/useCustomStations';
+import useCustomStations from '../hooks/useCustomStations';
 
-import styles from './AddCustomStation.module.css';
+import styles from './UpsertCustomStation.module.css';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import Label from './ui/Label';
@@ -17,17 +17,33 @@ const customStationValues = z.object({
   listenUrl: z.string().url('Invalid URL'),
 });
 
-export default function AddCustomStation() {
+export default function UpsertCustomStation() {
+  const { id } = useParams();
   const { user, loading: userLoading } = useContext(UserContext)!;
-  const { loading, error, addCustomStation } = useCustomStations();
+  const { loading, error, getCustomStations, addCustomStation, stations } = useCustomStations();
   const navigate = useNavigate();
-  const { register, handleSubmit, formState } = useForm({
+  const { register, handleSubmit, formState, setValue } = useForm({
     mode: 'onTouched',
     resolver: zodResolver(customStationValues),
   });
 
+  useEffect(() => {
+    if (!id) return;
+
+    getCustomStations(id);
+  }, [id, getCustomStations]);
+
+  useEffect(() => {
+    if (!stations.length) return;
+
+    const { name, logo, listenUrl } = stations[0];
+    setValue('name', name);
+    setValue('logo', logo);
+    setValue('listenUrl', listenUrl);
+  }, [stations, setValue]);
+
   const submitHandler = (values: FieldValues) => {
-    addCustomStation(values as CustomStation).then((result) => {
+    addCustomStation({ ...values, id } as RadioStation).then((result) => {
       if (result) {
         navigate('/stations/custom');
       }
@@ -41,7 +57,8 @@ export default function AddCustomStation() {
   return (
     <section className={styles.section}>
       <div className={styles.formTitle}>
-        <h2>Add your station</h2>
+        {!id && <h2>Add your station</h2>}
+        {id && <h2>Edit your station</h2>}
         {error && <p>{error.message}</p>}
       </div>
 
@@ -69,8 +86,11 @@ export default function AddCustomStation() {
         <p className={styles.validationError}>{formState.errors['listenUrl']?.message as string}</p>
 
         <div className={styles.formActions}>
+          <Button type="button" disabled={loading} onClick={() => navigate(-1)}>
+            Cancel
+          </Button>
           <Button type="submit" loading={loading} error={!!error} disabled={loading}>
-            Add
+            {id ? 'Confirm' : 'Add'}
           </Button>
         </div>
       </form>

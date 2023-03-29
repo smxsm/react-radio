@@ -27,6 +27,8 @@
 
 .formActions {
   grid-column: 1/3;
+  display: flex;
+  gap: 1rem;
 }
 
 .formActions button {
