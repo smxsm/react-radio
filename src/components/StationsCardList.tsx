@@ -11,6 +11,7 @@ import { faHeart } from '@fortawesome/free-regular-svg-icons';
 import styles from './StationsCardList.module.css';
 import Spinner from './ui/Spinner';
 import StationsListOptions from './StationsListOptions';
+import RadioStationCard from './RadioStationCard';
 
 interface RadioStation {
   id: string;
@@ -38,11 +39,7 @@ export default function StationsCardList() {
     setSearchParams({ ...(searchParamsState as any), offset: nextOffset });
   };
 
-  const clickHandler = (station: RadioStation) => () => {
-    if (playerContext) {
-      playerContext.play(station);
-    }
-  };
+  const playHandler = (station: RadioStation) => playerContext?.play(station);
 
   if (loading && !stations.length) {
     return <Spinner className={styles.spinner} />;
@@ -53,24 +50,7 @@ export default function StationsCardList() {
       <StationsListOptions />
       <CardsList className={styles.cardsList}>
         {stations.map((station, i) => (
-          <Card
-            disabled={loading}
-            loading={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'loading'}
-            active={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'playing'}
-            error={playerContext?.station?.listenUrl === station.listenUrl && playerContext.status === 'error'}
-            onClick={clickHandler(station)}
-            key={i + station.listenUrl}
-          >
-            <figure>
-              <img
-                src={!loading && station.logo ? station.logo : '/radio-no-logo.png'}
-                alt=""
-                className={styles['card-img']}
-              />
-            </figure>
-            <p className={styles['card-title']}>{station.name}</p>
-            <FontAwesomeIcon icon={faHeart} className={styles['icon-favorite']} />
-          </Card>
+          <RadioStationCard disabled={loading} station={station} key={i + station.listenUrl} onPlay={playHandler} />
         ))}
       </CardsList>
 
