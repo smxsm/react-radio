@@ -17,17 +17,20 @@ export default function useCustomStations() {
       const { data, error } = await query;
       if (error) {
         setError(new Error(error.message));
+        setLoading(false);
+        return [];
       }
-      setStations(
+      const stations =
         data?.map<RadioStation>(({ id, name, logo, listen_url }) => ({
           id,
           name,
           logo,
           listenUrl: listen_url,
           isOwner: true,
-        })) || []
-      );
+        })) || [];
+      setStations(stations);
       setLoading(false);
+      return stations;
     },
     [supabase]
   );
@@ -42,6 +45,7 @@ export default function useCustomStations() {
         return false;
       }
 
+      setLoading(false);
       return true;
     },
     [supabase]
