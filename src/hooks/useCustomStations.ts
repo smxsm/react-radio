@@ -8,12 +8,16 @@ export default function useCustomStations() {
   const [stations, setStations] = useState<RadioStation[]>([]);
 
   const getCustomStations = useCallback(
-    async (id = '') => {
+    async (id = '', sort = 'created_at', ascending = true) => {
       setLoading(true);
       let query = supabase.from('user_stations').select('*');
       if (id) {
         query = query.eq('id', id);
       }
+      if (sort !== 'created_at' && sort !== 'name') {
+        sort = 'created_at';
+      }
+      query = query.order(sort, { ascending });
       const { data, error } = await query;
       if (error) {
         setError(new Error(error.message));

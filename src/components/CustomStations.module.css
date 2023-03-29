@@ -4,10 +4,18 @@
   gap: 2rem;
 }
 
+.optionsContaienr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 10px;
+}
+
 .btnAdd {
   place-self: flex-end;
   display: flex;
   gap: 1rem;
+  padding: 0.25rem 1.4rem;
 }
 
 .cardsList {
