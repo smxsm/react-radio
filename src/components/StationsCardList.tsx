@@ -3,10 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { PlayerContext } from '../context/PlayerContext';
 import { useStations } from '../hooks/useStations';
 import Pagination from './Pagination';
-import Card from './ui/Card';
 import CardsList from './ui/CardsList';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart } from '@fortawesome/free-regular-svg-icons';
 
 import styles from './StationsCardList.module.css';
 import Spinner from './ui/Spinner';
