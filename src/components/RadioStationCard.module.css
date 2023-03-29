@@ -36,7 +36,6 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  flex-flow: column-reverse;
   height: 100%;
   opacity: 0;
 }
