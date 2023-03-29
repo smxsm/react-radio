@@ -5,6 +5,7 @@ import { useContext } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
 import Card from './ui/Card';
 import styles from './RadioStationCard.module.css';
+import { UserContext } from '../context/UserContext';
 
 type RadioStationCardProps = {
   station: RadioStation;
@@ -24,6 +25,7 @@ export default function RadioStationCard({
   onDelete,
 }: RadioStationCardProps) {
   const playerContext = useContext(PlayerContext)!;
+  const { user } = useContext(UserContext)!;
 
   return (
     <Card
@@ -45,7 +47,7 @@ export default function RadioStationCard({
       <div className={styles.actions}>
         {!disabled && (
           <>
-            {!station.isOwner && onAdd && (
+            {user && !station.isOwner && onAdd && (
               <FontAwesomeIcon
                 icon={faPlus}
                 className={styles.actionIcon}
