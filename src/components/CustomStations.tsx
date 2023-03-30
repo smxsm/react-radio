@@ -30,7 +30,7 @@ export default function CustomStation() {
     return <Navigate to="/" />;
   }
 
-  const playHandler = (station: RadioStation) => playerContext?.play(station);
+  const playHandler = (index: number) => () => playerContext?.play(stations, index);
   const editHandler = ({ id }: RadioStation) => navigate(`edit/${id}`);
   const deleteHandler = ({ id, name }: RadioStation) =>
     window.confirm(`Are you sure you want to delete ${name}?`) &&
@@ -51,7 +51,7 @@ export default function CustomStation() {
             station={station}
             disabled={stationsLoading}
             key={i + station.listenUrl}
-            onPlay={playHandler}
+            onPlay={playHandler(i)}
             onEdit={editHandler}
             onDelete={deleteHandler}
           />
