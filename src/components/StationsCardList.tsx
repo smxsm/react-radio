@@ -35,7 +35,7 @@ export default function StationsCardList() {
 
   const loading = loadingStations || addingCustomStation;
 
-  const playHandler = (station: RadioStation) => playerContext?.play(station);
+  const playHandler = (station: RadioStation) => playerContext?.play([station]);
 
   const addHandler = (station: RadioStation) =>
     getCustomStations(station.id)
