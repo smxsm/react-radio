@@ -9,7 +9,7 @@ import { PlayerContext } from '../context/PlayerContext';
 import { NowPlayingContext } from '../context/NowPlayingContext';
 
 export default function Player(props: any) {
-  const playerContext = useContext(PlayerContext);
+  const playerContext = useContext(PlayerContext)!;
   const nowPlaying = useContext(NowPlayingContext)!;
 
   let classes = styles.player;
@@ -65,16 +65,16 @@ export default function Player(props: any) {
 
       <div className={styles['media-controls']}>
         <div className={styles['button-container']}>
-          <button className={styles['media-button']}>
+          <button className={styles['media-button']} onClick={() => playerContext.previous()}>
             <FontAwesomeIcon icon={faStepBackward} className={styles['media-button-icon']} />
           </button>
           <button
             className={`${styles['media-button']} ${styles['media-button-play']}`}
-            onClick={() => playerContext?.stop()}
+            onClick={() => (playerContext.status !== 'stopped' ? playerContext.stop() : playerContext.play())}
           >
             <FontAwesomeIcon icon={faPlay} className={styles['media-button-icon']} />
           </button>
-          <button className={styles['media-button']}>
+          <button className={styles['media-button']} onClick={() => playerContext.next()}>
             <FontAwesomeIcon icon={faStepForward} className={styles['media-button-icon']} />
           </button>
         </div>
