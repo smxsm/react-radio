@@ -3,11 +3,15 @@ import { createContext, PropsWithChildren, useEffect, useRef, useState } from 'r
 
 export type PlayerContextType = {
   station?: RadioStation;
+  queue: RadioStation[];
+  queueCurrentIndex: number;
   status: PlayerStatus;
-  play: (station: RadioStation) => void;
-  stop: () => void;
   audioContext?: AudioContext;
   sourceNode?: AudioNode;
+  play: (stations?: RadioStation[] | null, index?: number) => void;
+  previous: () => void;
+  next: () => void;
+  stop: () => void;
 };
 
 type PlayerStatus = 'error' | 'loading' | 'playing' | 'stopped';
@@ -23,6 +27,8 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   const audioContextRef = useRef(new AudioContext());
   const audioSourceNodeRef = useRef<MediaElementAudioSourceNode>();
 
+  const [queue, setQueue] = useState<RadioStation[]>([]);
+  const [queueCurrentIndex, setQueueCurrentIndex] = useState(0);
   const [station, setStation] = useState<RadioStation>();
   const [status, setStatus] = useState<PlayerStatus>('stopped');
   const [sourceNode, setSourceNode] = useState<AudioNode>();
@@ -49,8 +55,37 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
     setStatus('stopped');
   };
 
-  const play = (station: RadioStation) => {
+  const previous = () => {
+    if (queue.length < 2) return;
+    let index = queueCurrentIndex - 1;
+    if (index === -1) {
+      index = queue.length - 1;
+    }
+    play(null, index);
+  };
+
+  const next = () => {
+    if (queue.length < 2) return;
+    let index = queueCurrentIndex + 1;
+    if (index === queue.length) {
+      index = 0;
+    }
+    play(null, index);
+  };
+
+  const play = (stations: RadioStation[] | null | undefined, index = queueCurrentIndex) => {
+    let station = queue[index];
+    if (stations) {
+      setQueue(stations);
+      if (index >= stations.length) {
+        index = 0;
+      }
+      station = stations[index];
+    }
+    if (!station) return;
+
     stop();
+    setQueueCurrentIndex(index);
     setStation(station);
     setStatus('loading');
 
@@ -86,7 +121,20 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   };
 
   return (
-    <PlayerContext.Provider value={{ station, status, play, stop, audioContext: audioContextRef.current, sourceNode }}>
+    <PlayerContext.Provider
+      value={{
+        station,
+        queue,
+        queueCurrentIndex,
+        status,
+        play,
+        previous,
+        next,
+        stop,
+        audioContext: audioContextRef.current,
+        sourceNode,
+      }}
+    >
       {children}
     </PlayerContext.Provider>
   );
