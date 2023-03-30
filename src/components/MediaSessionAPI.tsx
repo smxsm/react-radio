@@ -19,7 +19,10 @@ export function MediaSessionAPI() {
       album: nowPlaying?.stationMetadata?.icyName || nowPlaying?.station?.name,
       artwork: [
         {
-          src: nowPlaying?.stationMetadata?.trackMatch?.artwork || nowPlaying?.station?.logo || '',
+          src:
+            nowPlaying?.stationMetadata?.trackMatch?.artwork.replace('100x100', '600x600') ||
+            nowPlaying?.station?.logo ||
+            '',
         },
       ],
     });
