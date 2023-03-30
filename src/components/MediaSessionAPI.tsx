@@ -7,11 +7,16 @@ export function MediaSessionAPI() {
   const nowPlaying = useContext(NowPlayingContext);
 
   useEffect(() => {
-    if (!navigator.mediaSession || status !== 'playing') {
+    if (!('mediaSession' in navigator) || status !== 'playing') {
       return;
     }
 
     navigator.mediaSession.playbackState = 'playing';
+
+    navigator.mediaSession.setActionHandler('play', () => play());
+    navigator.mediaSession.setActionHandler('stop', () => stop());
+    navigator.mediaSession.setActionHandler('previoustrack', () => previous());
+    navigator.mediaSession.setActionHandler('nexttrack', () => next());
 
     navigator.mediaSession.metadata = new MediaMetadata({
       title: nowPlaying?.stationMetadata?.trackMatch?.title || nowPlaying?.stationMetadata?.title,
@@ -27,10 +32,7 @@ export function MediaSessionAPI() {
       ],
     });
 
-    navigator.mediaSession.setActionHandler('play', () => play());
-    navigator.mediaSession.setActionHandler('stop', () => stop());
-    navigator.mediaSession.setActionHandler('previoustrack', () => previous());
-    navigator.mediaSession.setActionHandler('nexttrack', () => next());
+    navigator.mediaSession.setPositionState({ duration: 0, playbackRate: 1 });
   }, [nowPlaying, status, play, stop, next, previous]);
 
   return null;
