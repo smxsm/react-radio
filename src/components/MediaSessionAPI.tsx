@@ -3,11 +3,11 @@ import { NowPlayingContext } from '../context/NowPlayingContext';
 import { PlayerContext } from '../context/PlayerContext';
 
 export function MediaSessionAPI() {
-  const playerContext = useContext(PlayerContext);
+  const { status, play, stop, previous, next } = useContext(PlayerContext)!;
   const nowPlaying = useContext(NowPlayingContext);
 
   useEffect(() => {
-    if (!navigator.mediaSession || playerContext?.status !== 'playing') {
+    if (!navigator.mediaSession || status !== 'playing') {
       return;
     }
 
@@ -23,7 +23,12 @@ export function MediaSessionAPI() {
         },
       ],
     });
-  }, [nowPlaying, playerContext?.status]);
+
+    navigator.mediaSession.setActionHandler('play', () => play());
+    navigator.mediaSession.setActionHandler('stop', () => stop());
+    navigator.mediaSession.setActionHandler('previoustrack', () => previous());
+    navigator.mediaSession.setActionHandler('nexttrack', () => next());
+  }, [nowPlaying, status, play, stop, next, previous]);
 
   return null;
 }
