@@ -89,6 +89,10 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
     setStation(station);
     setStatus('loading');
 
+    if (audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+
     audioElementRef.current.src = station.listenUrl;
     // Try playing the stream
     audioElementRef.current
