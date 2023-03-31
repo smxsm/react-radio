@@ -14,8 +14,9 @@ export function useCountries() {
   const [countries, setCountries] = useState<Country[]>([]);
 
   useEffect(() => {
+    if (!apiUrl) return;
     setLoading(true);
-    fetch('https://at1.api.radio-browser.info/json/countries?order=name')
+    fetch(`${apiUrl}/countries?order=name`)
       .then((res) => res.json())
       .then((data) => {
         const countries = data
