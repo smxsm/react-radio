@@ -92,7 +92,11 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
       return;
     }
 
-    setStation(playerContext?.station);
+    if (playerContext?.station?.listenUrl !== station?.listenUrl) {
+      setStationMetadata(undefined);
+      setMatchedTrack(undefined);
+      setStation(playerContext?.station);
+    }
 
     if (playerContext?.status === 'playing') {
       getNowPlayingInfo(playerContext.station?.listenUrl);
@@ -100,7 +104,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [playerContext?.station, playerContext?.status]);
+  }, [playerContext?.station, playerContext?.status, station?.listenUrl]);
 
   // Add matched track to history
   useEffect(() => {
