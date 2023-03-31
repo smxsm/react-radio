@@ -35,7 +35,6 @@ export function MediaSessionAPI() {
   }, [previous]);
 
   useEffect(() => {
-    console.log('setting next');
     if (!('mediaSession' in navigator)) return;
     if (!next) return;
     navigator.mediaSession.setActionHandler('nexttrack', () => next());
