@@ -1,7 +1,10 @@
+import { createClient } from 'https://deno.land/x/supabase/mod.ts';
+
 import getIcecastMetadata from '../services/streamMetadata.ts';
 import iTunesSearch from '../services/iTunes.ts';
 import youTubeSearch from '../services/youTube.ts';
 
+const supabase = createClient('https://iddsgsocgqklrqeuykzn.supabase.co', Deno.env.get('SUPABASE_KEY'));
 let cache = new Map();
 
 function cleanTitleForSearch(title: string) {
@@ -42,6 +45,27 @@ const edge = async (req: Request) => {
         data.trackMatch.album = trackMatch.album;
         data.trackMatch.releaseDate = trackMatch.releaseDate;
         data.trackMatch.artwork = trackMatch.artwork;
+
+        const { data: supabaseResult, error } = await supabase
+          .from('track_match')
+          .upsert(
+            {
+              text: searchTerm,
+              artist: trackMatch.artist,
+              title: trackMatch.title,
+              album: trackMatch.album,
+              artwork: trackMatch.artwork,
+              release_date: trackMatch.releaseDate,
+            },
+            { onConflict: 'text' }
+          )
+          .select();
+
+        console.log('Error:');
+        console.log(error);
+        console.log('Supabase result');
+        console.log(supabaseResult);
+
         data.trackMatch.appleMusicUrl = trackMatch.appleMusicUrl;
         const youTubeUrl = await youTubeSearch(searchTerm);
         if (youTubeUrl) {
