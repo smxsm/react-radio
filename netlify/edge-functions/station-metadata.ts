@@ -59,7 +59,7 @@ const edge = async (req: Request) => {
         data.trackMatch.artist = supabaseResult[0].artist;
         data.trackMatch.title = supabaseResult[0].title;
         data.trackMatch.album = supabaseResult[0].album;
-        data.trackMatch.releaseDate = supabaseResult[0].releaseDate;
+        data.trackMatch.releaseDate = supabaseResult[0].release_date;
         data.trackMatch.artwork = supabaseResult[0].artwork;
 
         data.trackMatch.appleMusicUrl = trackMatch.appleMusicUrl;
