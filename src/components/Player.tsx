@@ -7,12 +7,12 @@ import SpectrumAnalyzer from './SpectrumAnalyzer';
 import ScrollingText from './ui/ScrollingText';
 import { PlayerContext } from '../context/PlayerContext';
 import { NowPlayingContext } from '../context/NowPlayingContext';
+import Card from './ui/Card';
 
 export default function Player(props: any) {
   const playerContext = useContext(PlayerContext)!;
   const { station, stationMetadata, matchedTrack, history } = useContext(NowPlayingContext)!;
 
-  const currentTrack = history?.length && history[0];
   let classes = styles.player;
   if (playerContext?.status === 'loading') classes += ' ' + styles.loading;
   if (playerContext?.status === 'error') classes += ' ' + styles.error;
@@ -57,13 +57,12 @@ export default function Player(props: any) {
       />
 
       <div className={styles.trackInfo}>
-        {currentTrack && (
+        {matchedTrack && (
           <>
-            {/* <p className={styles.trackTitle}>{currentTrack?.title}</p> */}
-            <ScrollingText text={currentTrack.title} className={styles.trackTitle} />
-            <ScrollingText text={currentTrack.artist} className={styles.trackArtist} />
+            <ScrollingText text={matchedTrack.title} className={styles.trackTitle} />
+            <ScrollingText text={matchedTrack.artist} className={styles.trackArtist} />
             <ScrollingText
-              text={`${currentTrack?.album} (${currentTrack?.releaseDate?.getFullYear()})`}
+              text={`${matchedTrack.album} (${matchedTrack.releaseDate?.getFullYear()})`}
               className={styles.trackAlbum}
             />
           </>
@@ -81,6 +80,24 @@ export default function Player(props: any) {
             <a target="_blank" rel="noreferrer" href={matchedTrack.youTubeUrl} onClick={() => playerContext?.stop()}>
               <img src="/youtube.png" alt="Apple Musc" />
             </a>
+          )}
+        </div>
+      )}
+
+      {history && (
+        <div className={styles.history}>
+          {history.map((entry) =>
+            entry.status === 'playing' ? null : (
+              <Card key={entry.id} className={styles.historyCard}>
+                <figure>
+                  <img src={entry.artwork}></img>
+                </figure>
+                <div className={styles.historyTrackInfo}>
+                  <p className={styles.historyCardTitle}>{entry.title}</p>
+                  <p className={styles.historyCardTitle}>{entry.artist}</p>
+                </div>
+              </Card>
+            )
           )}
         </div>
       )}

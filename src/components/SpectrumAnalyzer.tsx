@@ -51,9 +51,9 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
     let elapsed;
     let now;
     let barHeight = 0;
-    let x = 5;
+    let x = 0;
 
-    const WIDTH = canvasRef.current!.width - 10;
+    const WIDTH = canvasRef.current!.width;
     const HEIGHT = canvasRef.current!.height;
     const exp = 1.2;
 
@@ -77,7 +77,7 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
       analyser.current.getFloatFrequencyData(floatDataArray.current);
 
-      x = 5;
+      x = 0;
       barWidth.current = Math.round((WIDTH - (barsCount.current - 1) * 3) / barsCount.current);
       for (let i = 0; i < barsCount.current; i++) {
         barHeight = HEIGHT - Math.abs(floatDataArray.current[i]) ** exp;
@@ -87,7 +87,7 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
         canvasCtxRef.current!.fillStyle = '#ADC5FF';
         canvasCtxRef.current!.shadowColor = '#EAF7FF';
-        canvasCtxRef.current!.shadowBlur = 25;
+        canvasCtxRef.current!.shadowBlur = 15;
         canvasCtxRef.current!.fillRect(x, HEIGHT - barHeight, barWidth.current, barHeight);
 
         x += barWidth.current + (WIDTH - barsCount.current * barWidth.current) / (barsCount.current - 1);
@@ -95,5 +95,5 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
     }
   }, []);
 
-  return <canvas ref={canvasRef} width="267" height="75" className={`${className}`}></canvas>;
+  return <canvas ref={canvasRef} width="257" height="75" className={`${className}`}></canvas>;
 }
