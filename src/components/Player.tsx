@@ -10,7 +10,7 @@ import { NowPlayingContext } from '../context/NowPlayingContext';
 
 export default function Player(props: any) {
   const playerContext = useContext(PlayerContext)!;
-  const nowPlaying = useContext(NowPlayingContext)!;
+  const { station, stationMetadata, matchedTrack } = useContext(NowPlayingContext)!;
 
   let classes = styles.player;
   if (playerContext?.status === 'loading') classes += ' ' + styles.loading;
@@ -20,33 +20,27 @@ export default function Player(props: any) {
   return (
     <div className={classes}>
       <div className={styles['now-playing-container']}>
-        <img
-          src={nowPlaying.stationMetadata?.trackMatch?.artwork || nowPlaying.station?.logo || '/radio-no-logo.png'}
-          alt=""
-        />
+        <img src={matchedTrack?.artwork || station?.logo || '/radio-no-logo.png'} alt="" />
         <div className={styles['now-playing-info']}>
-          <ScrollingText
-            text={nowPlaying?.stationMetadata?.icyName || nowPlaying.station?.name || ''}
-            className={styles['radio-name']}
-          />
-          <ScrollingText text={nowPlaying?.stationMetadata?.title || ''} className={styles['track-name']} />
-          {nowPlaying.stationMetadata?.trackMatch && (
+          <ScrollingText text={stationMetadata?.icyName || station?.name || ''} className={styles['radio-name']} />
+          <ScrollingText text={stationMetadata?.title || ''} className={styles['track-name']} />
+          {matchedTrack && (
             <div className={styles.musicLinks}>
-              {nowPlaying.stationMetadata.trackMatch.appleMusicUrl && (
+              {matchedTrack.appleMusicUrl && (
                 <a
                   target="_blank"
                   rel="noreferrer"
-                  href={nowPlaying.stationMetadata?.trackMatch?.appleMusicUrl}
+                  href={matchedTrack.appleMusicUrl}
                   onClick={() => playerContext?.stop()}
                 >
                   <img src="/apple-music.svg" alt="Apple Musc" />
                 </a>
               )}
-              {nowPlaying.stationMetadata.trackMatch.youTubeUrl && (
+              {matchedTrack.youTubeUrl && (
                 <a
                   target="_blank"
                   rel="noreferrer"
-                  href={nowPlaying.stationMetadata?.trackMatch?.youTubeUrl}
+                  href={matchedTrack.youTubeUrl}
                   onClick={() => playerContext?.stop()}
                 >
                   <img src="/youtube.png" alt="Apple Musc" />
