@@ -43,9 +43,7 @@ export function useStations(
 
   // Fetch stations
   useEffect(() => {
-    if (!apiUrl) {
-      return;
-    }
+    if (!apiUrl) return;
     setLoading(true);
 
     // We need the server statistic to get total stations count
