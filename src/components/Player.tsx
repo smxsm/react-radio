@@ -55,6 +55,14 @@ export default function Player(props: any) {
         className={styles.artwork}
       />
 
+      <div className={styles.trackInfo}>
+        <p className={styles.trackTitle}>{matchedTrack?.title}</p>
+        <p className={styles.trackArtist}>{matchedTrack?.artist}</p>
+        <p className={styles.trackAlbum}>
+          {matchedTrack?.album} ({matchedTrack?.releaseDate?.getFullYear()})
+        </p>
+      </div>
+
       {matchedTrack && (
         <div className={styles.musicLinks}>
           {matchedTrack.appleMusicUrl && (
