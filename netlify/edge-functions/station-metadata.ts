@@ -1,4 +1,4 @@
-import { createClient } from 'https://deno.land/x/supabase/mod.ts';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 import getIcecastMetadata from '../services/streamMetadata.ts';
 import iTunesSearch from '../services/iTunes.ts';
@@ -39,13 +39,6 @@ const edge = async (req: Request) => {
       const searchTerm = cleanTitleForSearch(data.title);
       const trackMatch = await iTunesSearch(searchTerm);
       if (trackMatch) {
-        data.trackMatch = {};
-        data.trackMatch.artist = trackMatch.artist;
-        data.trackMatch.title = trackMatch.title;
-        data.trackMatch.album = trackMatch.album;
-        data.trackMatch.releaseDate = trackMatch.releaseDate;
-        data.trackMatch.artwork = trackMatch.artwork;
-
         const { data: supabaseResult, error } = await supabase
           .from('track_match')
           .upsert(
@@ -61,10 +54,13 @@ const edge = async (req: Request) => {
           )
           .select();
 
-        console.log('Error:');
-        console.log(error);
-        console.log('Supabase result');
-        console.log(supabaseResult);
+        data.trackMatch = {};
+        data.trackMatch.id = supabaseResult[0].id;
+        data.trackMatch.artist = supabaseResult[0].artist;
+        data.trackMatch.title = supabaseResult[0].title;
+        data.trackMatch.album = supabaseResult[0].album;
+        data.trackMatch.releaseDate = supabaseResult[0].releaseDate;
+        data.trackMatch.artwork = supabaseResult[0].artwork;
 
         data.trackMatch.appleMusicUrl = trackMatch.appleMusicUrl;
         const youTubeUrl = await youTubeSearch(searchTerm);
