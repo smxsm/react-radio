@@ -6,7 +6,7 @@ type NowPlayingContextType = {
   station?: RadioStation;
   stationMetadata?: StationMetadata;
   matchedTrack?: TrackInfo;
-  history?: TrackInfo[];
+  history?: TrackHistory[];
 };
 
 type StationMetadata = {
