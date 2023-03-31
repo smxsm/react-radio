@@ -135,6 +135,16 @@
   font-size: 18px;
 }
 
+.trackInfo {
+  width: 100%;
+  padding: 0 1rem;
+}
+
+.trackTitle {
+  font-weight: 700;
+  font-size: 1.6rem;
+}
+
 .musicLinks {
   display: flex;
   align-items: center;

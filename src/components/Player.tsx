@@ -10,8 +10,9 @@ import { NowPlayingContext } from '../context/NowPlayingContext';
 
 export default function Player(props: any) {
   const playerContext = useContext(PlayerContext)!;
-  const { station, stationMetadata, matchedTrack } = useContext(NowPlayingContext)!;
+  const { station, stationMetadata, matchedTrack, history } = useContext(NowPlayingContext)!;
 
+  const currentTrack = history?.length && history[0];
   let classes = styles.player;
   if (playerContext?.status === 'loading') classes += ' ' + styles.loading;
   if (playerContext?.status === 'error') classes += ' ' + styles.error;
@@ -56,11 +57,17 @@ export default function Player(props: any) {
       />
 
       <div className={styles.trackInfo}>
-        <p className={styles.trackTitle}>{matchedTrack?.title}</p>
-        <p className={styles.trackArtist}>{matchedTrack?.artist}</p>
-        <p className={styles.trackAlbum}>
-          {matchedTrack?.album} ({matchedTrack?.releaseDate?.getFullYear()})
-        </p>
+        {currentTrack && (
+          <>
+            {/* <p className={styles.trackTitle}>{currentTrack?.title}</p> */}
+            <ScrollingText text={currentTrack.title} className={styles.trackTitle} />
+            <ScrollingText text={currentTrack.artist} className={styles.trackArtist} />
+            <ScrollingText
+              text={`${currentTrack?.album} (${currentTrack?.releaseDate?.getFullYear()})`}
+              className={styles.trackAlbum}
+            />
+          </>
+        )}
       </div>
 
       {matchedTrack && (
