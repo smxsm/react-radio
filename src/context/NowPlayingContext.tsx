@@ -74,7 +74,10 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
           signal: abortControllerRef.current.signal,
         });
         const stationMetadata = await res.json();
-        setMatchedTrack(stationMetadata.trackMatch);
+        setMatchedTrack({
+          ...stationMetadata.trackMatch,
+          releaseDate: new Date(stationMetadata.trackMatch.releaseDate),
+        });
         delete stationMetadata.trackMatch;
         setStationMetadata(stationMetadata);
       } catch (err) {}
