@@ -4,9 +4,9 @@ import { PlayerContext } from '../context/PlayerContext';
 
 export function MediaSessionAPI() {
   const { play, stop, previous, next } = useContext(PlayerContext) || {};
-  const { station, stationMetadata } = useContext(NowPlayingContext) || {};
+  const { station, stationMetadata, matchedTrack } = useContext(NowPlayingContext) || {};
 
-  const { artist, title, artwork } = stationMetadata?.trackMatch || {};
+  const { artist, title, artwork } = matchedTrack || {};
   const { title: stationTitle, icyName } = stationMetadata || {};
   const { name, logo } = station || {};
 
