@@ -98,7 +98,6 @@ body {
 
 #root {
   height: calc(99% - 6rem);
-  /* height: 100%; */
 }
 
 a {
