@@ -114,7 +114,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
 
   // Add matched track to history
   useEffect(() => {
-    if (!matchedTrack?.id) return;
+    if (!matchedTrack?.id && !user) return;
 
     supabase
       .from('tracks_history')
@@ -139,7 +139,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
         }));
       })
       .then(setHistory);
-  }, [supabase, matchedTrack?.id]);
+  }, [supabase, matchedTrack?.id, user]);
 
   useEffect(() => {
     if (!user) return setHistory([]);
