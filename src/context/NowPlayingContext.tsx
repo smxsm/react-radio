@@ -75,6 +75,9 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
         });
         const result = await res.json();
         setStationMetadata(result.stationMetadata);
+        if (!result.matchedTrack) {
+          return setMatchedTrack(undefined);
+        }
         setMatchedTrack({
           ...result.matchedTrack,
           releaseDate: new Date(result.matchedTrack.releaseDate),
