@@ -203,3 +203,37 @@
     border-color: rgb(48, 110, 232);
   }
 }
+
+@media screen and (max-width: 600px) {
+  .player {
+    width: 80%;
+    height: 100%;
+    justify-content: center;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    margin: 0 auto;
+  }
+
+  .currentTrack {
+    height: 100%;
+  }
+
+  .artwork {
+    width: 100%;
+    height: 100%;
+  }
+
+  .active {
+    border: none;
+    box-shadow: none;
+  }
+
+  .loading {
+    animation: none;
+  }
+
+  .error {
+    animation: none;
+  }
+}

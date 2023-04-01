@@ -88,3 +88,9 @@
     border-color: rgb(48, 110, 232);
   }
 }
+
+@media screen and (max-width: 600px) {
+  .card {
+    width: 100%;
+  }
+}

@@ -83,3 +83,12 @@
 .streamLink {
   width: 24px;
 }
+
+@media screen and (max-width: 600px) {
+  .history {
+    align-items: center;
+  }
+  .historyCard {
+    width: 90%;
+  }
+}

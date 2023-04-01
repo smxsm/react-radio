@@ -141,3 +141,9 @@ h2 {
   background-color: rgb(48, 110, 232);
   border-radius: 4px;
 }
+
+@media screen and (max-width: 600px) {
+  body {
+    padding: 0;
+  }
+}
