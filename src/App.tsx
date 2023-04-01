@@ -16,6 +16,7 @@ import { UserProvider } from './context/UserContext';
 import SearchForm from './components/SearchForm';
 import UpsertCustomStation from './components/UpsertCustomStation';
 import CustomStations from './components/CustomStations';
+import TrackHistory from './components/TrackHistory';
 
 function App() {
   return (
@@ -24,36 +25,34 @@ function App() {
         <PlayerProvider>
           <NowPlayingProvider>
             <MediaSessionAPI />
-            <div className={styles.container}>
-              <div className={styles['grid-container']}>
-                <BrowserRouter>
-                  <div className={styles['side-menu']}>
-                    <SearchForm />
-                    <StationsMenu />
-                    <UserMenu />
-                  </div>
-                  <div className={styles['main-container']}>
-                    <main>
-                      <Routes>
-                        <Route path="/auth/signin" element={<SignIn />} />
-                        <Route path="/auth/signup" element={<SignUp />} />
-                        <Route path="/" element={<Home />} />
-                        <Route path="/stations/custom" element={<CustomStations />} />
-                        <Route path="/stations/custom/add" element={<UpsertCustomStation />} />
-                        <Route path="/stations/custom/edit/:id" element={<UpsertCustomStation />} />
-                        <Route path="/stations/all" element={<StationsCardList />} />
-                        <Route path="/stations/countries" element={<CountriesList />} />
-                        <Route path="/stations/music/genres" element={<GenresList />} />
-                        <Route path="/stations/music/:category?/:value?" element={<StationsCardList />} />
-                        <Route path="/stations/:category?/:value?" element={<StationsCardList />} />
-                      </Routes>
-                    </main>
-                  </div>
+            <BrowserRouter>
+              <nav className={styles.navigation}>
+                <StationsMenu />
+                <SearchForm className={styles.search} />
+                <UserMenu />
+              </nav>
+              <div className={styles.container}>
+                <main className={styles.content}>
+                  <Routes>
+                    <Route path="/auth/signin" element={<SignIn />} />
+                    <Route path="/auth/signup" element={<SignUp />} />
+                    <Route path="/" element={<Home />} />
+                    <Route path="/stations/custom" element={<CustomStations />} />
+                    <Route path="/stations/custom/add" element={<UpsertCustomStation />} />
+                    <Route path="/stations/custom/edit/:id" element={<UpsertCustomStation />} />
+                    <Route path="/stations/all" element={<StationsCardList />} />
+                    <Route path="/stations/countries" element={<CountriesList />} />
+                    <Route path="/stations/music/genres" element={<GenresList />} />
+                    <Route path="/stations/music/:category?/:value?" element={<StationsCardList />} />
+                    <Route path="/stations/:category?/:value?" element={<StationsCardList />} />
+                  </Routes>
+                </main>
+                <aside className={styles.sidePanel}>
                   <Player />
-                  {/* <aside className={styles['nowplaying-container']}>Playing </aside> */}
-                </BrowserRouter>
+                  <TrackHistory className={styles.trackHistory} />
+                </aside>
               </div>
-            </div>
+            </BrowserRouter>
           </NowPlayingProvider>
         </PlayerProvider>
       </UserProvider>

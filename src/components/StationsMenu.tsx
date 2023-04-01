@@ -2,37 +2,25 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faHome,
   faMusic,
-  faMicrophone,
   faNewspaper,
   faTableTennis,
   faListUl,
   faGlobeAmericas,
-  faFolder,
 } from '@fortawesome/free-solid-svg-icons';
 import { Menu } from './ui/Menu';
 import MenuItem from './ui/MenuItem';
 import styles from './StationsMenu.module.css';
-import { useContext } from 'react';
-import { UserContext } from '../context/UserContext';
 
 export default function StationsMenu() {
-  const { user } = useContext(UserContext)!;
-
   return (
     <Menu className={styles.stationsMenu}>
       <MenuItem href="/">
         <FontAwesomeIcon icon={faHome} />
         Home
       </MenuItem>
-      {user && (
-        <MenuItem href="/stations/custom">
-          <FontAwesomeIcon icon={faFolder} />
-          My Stations
-        </MenuItem>
-      )}
       <MenuItem href="/stations/all">
         <FontAwesomeIcon icon={faListUl} />
-        All Stations
+        Browse
       </MenuItem>
       <MenuItem href="/stations/music/genres" active>
         <FontAwesomeIcon icon={faMusic} />
@@ -46,13 +34,9 @@ export default function StationsMenu() {
         <FontAwesomeIcon icon={faTableTennis} />
         Sports
       </MenuItem>
-      <MenuItem href="stations/genres/talk">
-        <FontAwesomeIcon icon={faMicrophone} />
-        Talk
-      </MenuItem>
       <MenuItem href="stations/countries">
         <FontAwesomeIcon icon={faGlobeAmericas} />
-        By Location
+        Countries
       </MenuItem>
     </Menu>
   );

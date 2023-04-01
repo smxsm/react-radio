@@ -7,7 +7,6 @@
 
 .cardsList {
   overflow: auto;
-  padding-right: 10px;
   flex-grow: 1;
   place-content: flex-start;
 }

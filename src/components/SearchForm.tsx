@@ -6,7 +6,11 @@ import styles from './SearchForm.module.css';
 import Button from './ui/Button';
 import Input from './ui/Input';
 
-export default function SearchForm() {
+type SearchFormProps = {
+  className?: string;
+};
+
+export default function SearchForm({ className }: SearchFormProps) {
   const [value, setValue] = useState('');
   const navigate = useNavigate();
 
@@ -21,11 +25,18 @@ export default function SearchForm() {
   };
 
   return (
-    <form className={styles.searchForm} onSubmit={submitHandler}>
-      <Input className={styles.input} value={value} onChange={valueChangeHandler} placeholder="Search..."></Input>
-      <Button className={styles.btn}>
-        <FontAwesomeIcon icon={faSearch} />
-      </Button>
+    <form className={`${styles.searchForm} ${className}`.trim()} onSubmit={submitHandler}>
+      <div className={styles.searchInputGroup}>
+        <Input
+          className={`${styles.input} ${className}`.trim()}
+          value={value}
+          onChange={valueChangeHandler}
+          placeholder="Search..."
+        />
+        <Button className={styles.btn}>
+          <FontAwesomeIcon icon={faSearch} />
+        </Button>
+      </div>
     </form>
   );
 }

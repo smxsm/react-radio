@@ -36,7 +36,7 @@ html:focus-within {
 body {
   min-height: 100vh;
   text-rendering: optimizeSpeed;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 /* A elements that don't have a class get default styles */
@@ -91,6 +91,14 @@ body {
   background-color: var(--background);
   color: hsl(246, 6%, 65%);
   font-size: 1.4rem;
+  margin: 0 auto;
+  padding: 2rem;
+  height: 100vh;
+}
+
+#root {
+  height: calc(99% - 6rem);
+  /* height: 100%; */
 }
 
 a {

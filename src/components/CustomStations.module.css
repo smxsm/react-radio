@@ -8,7 +8,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-right: 10px;
 }
 
 .btnAdd {
@@ -20,7 +19,6 @@
 
 .cardsList {
   overflow: auto;
-  padding-right: 10px;
   flex-grow: 1;
   place-content: flex-start;
 }

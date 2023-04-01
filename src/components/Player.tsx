@@ -7,11 +7,10 @@ import SpectrumAnalyzer from './SpectrumAnalyzer';
 import ScrollingText from './ui/ScrollingText';
 import { PlayerContext } from '../context/PlayerContext';
 import { NowPlayingContext } from '../context/NowPlayingContext';
-import Card from './ui/Card';
 
 export default function Player(props: any) {
   const playerContext = useContext(PlayerContext)!;
-  const { station, stationMetadata, matchedTrack, history } = useContext(NowPlayingContext)!;
+  const { station, stationMetadata, matchedTrack } = useContext(NowPlayingContext)!;
 
   let classes = styles.player;
   if (playerContext?.status === 'loading') classes += ' ' + styles.loading;
@@ -20,13 +19,6 @@ export default function Player(props: any) {
 
   return (
     <div className={classes}>
-      {/* <div className={styles['now-playing-container']}>
-        <div className={styles['now-playing-info']}>
-          <ScrollingText text={stationMetadata?.icyName || station?.name || ''} className={styles['radio-name']} />
-          <ScrollingText text={stationMetadata?.title || ''} className={styles['track-name']} />
-        </div>
-      </div> */}
-
       <div className={styles.currentTrack}>
         <img
           src={matchedTrack?.artwork.replace('100x100', '600x600') || station?.logo || '/radio-no-logo.png'}
@@ -81,25 +73,6 @@ export default function Player(props: any) {
           )}
         </div>
       </div>
-
-      {/* {history && (
-        <div className={styles.history}>
-          {history.map((entry) =>
-            entry.id === matchedTrack?.id ? null : (
-              <Card key={entry.id} className={styles.historyCard}>
-                <figure>
-                  <img src={entry.artwork}></img>
-                </figure>
-                <div className={styles.historyTrackInfo}>
-                  <p className={styles.historyCardTitle}>{entry.title}</p>
-                  <p className={styles.historyCardArtist}>{entry.artist}</p>
-                  <p className={styles.historyCardDate}>{entry.heardAt.toLocaleString()}</p>
-                </div>
-              </Card>
-            )
-          )}
-        </div>
-      )} */}
     </div>
   );
 }

@@ -1,8 +1,6 @@
-.user-menu {
-  width: 100%;
-  margin: 0 auto;
-  margin-top: auto;
-}
+/* .userMenu {
+  display: flex;
+} */
 
 .spinner {
   width: 3rem;
@@ -10,17 +8,7 @@
 }
 
 .signout-item {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  text-decoration: none;
-  text-transform: uppercase;
-  height: 4.2rem;
-  overflow: hidden;
-  margin: 0 -3rem;
-  padding: 0 3rem;
-  border-color: rgb(48, 110, 232);
-  transition: all 0.2s ease-out;
+  padding: 1rem 1rem;
 }
 
 .signout-item:hover {

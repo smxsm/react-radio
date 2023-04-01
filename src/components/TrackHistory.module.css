@@ -1,0 +1,33 @@
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: auto;
+  width: 100%;
+}
+
+.componentTitle {
+  font-size: 2.4rem;
+  place-self: center;
+}
+
+.historyCard {
+  margin-right: 1rem;
+  flex-shrink: 0;
+  width: 300px;
+}
+
+.historyTrackInfo {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.historyCardTitle {
+  font-weight: 600;
+}
+
+.historyCardDate {
+  font-size: 1rem;
+  margin-top: 1rem;
+}
