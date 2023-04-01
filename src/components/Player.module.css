@@ -5,12 +5,13 @@
   gap: 2rem;
   align-items: center;
   background-color: var(--background);
-  border-left: 1px solid rgb(24, 51, 103);
-  /* border-bottom: 1px solid rgb(24, 51, 103); */
+  border: 1px solid rgb(24, 51, 103);
+  border-radius: 16px;
   transition: all 0.2s;
   padding: 20px 20px;
+  margin-top: 6rem;
   width: 300px;
-  height: 100%;
+  height: fit-content;
 }
 
 .media-controls {
