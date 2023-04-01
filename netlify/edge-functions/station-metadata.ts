@@ -36,7 +36,7 @@ const edge = async (req: Request) => {
     }
 
     if (!data.matchedTrack) {
-      const searchTerm = cleanTitleForSearch(data.title);
+      const searchTerm = cleanTitleForSearch(data.stationMetadata.title);
       const matchedTrack = await iTunesSearch(searchTerm);
       if (matchedTrack) {
         const { data: supabaseResult } = await supabase
