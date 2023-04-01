@@ -28,49 +28,49 @@ const edge = async (req: Request) => {
     const res = await fetch(url, { method: 'GET', headers: { 'Icy-MetaData': '1' }, signal });
     const icyMetaInt = parseInt(res.headers.get('Icy-MetaInt') || '');
 
-    const streamMetadata = await getIcecastMetadata(res, icyMetaInt);
-    const data = { ...cache.get(streamMetadata.title), ...streamMetadata };
+    const stationMetadata = await getIcecastMetadata(res, icyMetaInt);
+    const data = { ...cache.get(stationMetadata.title), stationMetadata };
 
-    if (!data.title) {
+    if (!data.stationMetadata.title) {
       throw new Error('No metadata collected');
     }
 
-    if (!data.trackMatch) {
+    if (!data.matchedTrack) {
       const searchTerm = cleanTitleForSearch(data.title);
-      const trackMatch = await iTunesSearch(searchTerm);
-      if (trackMatch) {
-        const { data: supabaseResult, error } = await supabase
+      const matchedTrack = await iTunesSearch(searchTerm);
+      if (matchedTrack) {
+        const { data: supabaseResult } = await supabase
           .from('track_match')
           .upsert(
             {
               text: searchTerm,
-              artist: trackMatch.artist,
-              title: trackMatch.title,
-              album: trackMatch.album,
-              artwork: trackMatch.artwork,
-              release_date: trackMatch.releaseDate,
+              artist: matchedTrack.artist,
+              title: matchedTrack.title,
+              album: matchedTrack.album,
+              artwork: matchedTrack.artwork,
+              release_date: matchedTrack.releaseDate,
             },
             { onConflict: 'text' }
           )
           .select();
 
-        data.trackMatch = {};
-        data.trackMatch.id = supabaseResult[0].id;
-        data.trackMatch.artist = supabaseResult[0].artist;
-        data.trackMatch.title = supabaseResult[0].title;
-        data.trackMatch.album = supabaseResult[0].album;
-        data.trackMatch.releaseDate = supabaseResult[0].release_date;
-        data.trackMatch.artwork = supabaseResult[0].artwork;
+        data.matchedTrack = {};
+        data.matchedTrack.id = supabaseResult[0].id;
+        data.matchedTrack.artist = supabaseResult[0].artist;
+        data.matchedTrack.title = supabaseResult[0].title;
+        data.matchedTrack.album = supabaseResult[0].album;
+        data.matchedTrack.releaseDate = supabaseResult[0].release_date;
+        data.matchedTrack.artwork = supabaseResult[0].artwork;
 
-        data.trackMatch.appleMusicUrl = trackMatch.appleMusicUrl;
+        data.matchedTrack.appleMusicUrl = matchedTrack.appleMusicUrl;
         const youTubeUrl = await youTubeSearch(searchTerm);
         if (youTubeUrl) {
-          data.trackMatch.youTubeUrl = youTubeUrl;
+          data.matchedTrack.youTubeUrl = youTubeUrl;
         }
       }
     }
 
-    cache.set(data.title, { ...cache.get(data.title), ...data });
+    cache.set(data.stationMetadata.title, { ...cache.get(data.stationMetadata.title), ...data });
     if (cache.size > 100) {
       cache.delete(cache.keys()[0]);
     }
