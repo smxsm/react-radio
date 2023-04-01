@@ -34,8 +34,14 @@ export default function Player(props: any) {
 
         <div className={styles.trackInfo}>
           <ScrollingText text={stationMetadata?.icyName || station?.name || ''} className={styles.stationName} />
-          <ScrollingText text={matchedTrack?.title || stationMetadata?.title || '-'} className={styles.trackTitle} />
-          <ScrollingText text={matchedTrack?.artist || ''} className={styles.trackArtist} />
+          <ScrollingText
+            text={
+              `${matchedTrack?.artist ? matchedTrack.artist + ' - ' : ''}${matchedTrack?.title || ''}` ||
+              stationMetadata?.title ||
+              '-'
+            }
+            className={styles.trackTitle}
+          />
         </div>
 
         <div className={styles['media-controls']}>
