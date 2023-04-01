@@ -73,13 +73,12 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
         const res = await fetch('https://radio.ivanoff.dev/station-metadata?url=' + url, {
           signal: abortControllerRef.current.signal,
         });
-        const stationMetadata = await res.json();
+        const result = await res.json();
+        setStationMetadata(result.stationMetadata);
         setMatchedTrack({
-          ...stationMetadata.trackMatch,
-          releaseDate: new Date(stationMetadata.trackMatch.releaseDate),
+          ...result.matchedTrack,
+          releaseDate: new Date(result.matchedTrack.releaseDate),
         });
-        delete stationMetadata.trackMatch;
-        setStationMetadata(stationMetadata);
       } catch (err) {}
     };
 
