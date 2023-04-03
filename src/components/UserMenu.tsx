@@ -10,7 +10,11 @@ import Spinner from './ui/Spinner';
 
 import styles from './UserMenu.module.css';
 
-export default function UserMenu() {
+type UserMenuProps = {
+  className?: string;
+};
+
+export default function UserMenu({ className }: UserMenuProps) {
   const { user, loading, signout } = useContext(UserContext)!;
 
   const signOutClickHandler = () => signout();
@@ -20,7 +24,7 @@ export default function UserMenu() {
   }
   if (user) {
     return (
-      <Menu className={styles.userMenu}>
+      <Menu className={`${styles.userMenu} ${className ? className : ''}`.trim()}>
         <MenuItem href="/stations/custom">
           <FontAwesomeIcon icon={faFolder} />
           My Stations
@@ -32,7 +36,7 @@ export default function UserMenu() {
     );
   }
   return (
-    <Menu className={styles.userMenu}>
+    <Menu className={`${styles.userMenu} ${className ? className : ''}`.trim()}>
       <MenuItem href="/auth/signin">
         <FontAwesomeIcon icon={faRightToBracket} />
         Sign In

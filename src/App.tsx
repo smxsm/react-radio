@@ -25,6 +25,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import styles from './App.module.css';
 
 function App() {
+  const [mobilePlayerActive, setMobilePlayerActive] = useState(false);
   return (
     <>
       <UserProvider>
@@ -32,11 +33,7 @@ function App() {
           <NowPlayingProvider>
             <MediaSessionAPI />
             <BrowserRouter>
-              <nav className={styles.navigation}>
-                <StationsMenu />
-                <SearchForm className={styles.search} />
-                <UserMenu />
-              </nav>
+              <Navigation showPlayer={() => setMobilePlayerActive((mobilePlayerActive) => !mobilePlayerActive)} />
               <div className={styles.container}>
                 <main className={styles.content}>
                   <DocumentTitleProvider>
@@ -60,7 +57,7 @@ function App() {
                     </Routes>
                   </DocumentTitleProvider>
                 </main>
-                <aside className={styles.sidePanel}>
+                <aside className={`${styles.sidePanel} ${mobilePlayerActive ? styles.playerActive : ''}`.trim()}>
                   <Player />
                   <TrackHistory className={styles.trackHistory} />
                 </aside>

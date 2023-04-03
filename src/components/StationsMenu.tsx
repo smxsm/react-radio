@@ -13,9 +13,13 @@ import MenuItem from './ui/MenuItem';
 
 import styles from './StationsMenu.module.css';
 
-export default function StationsMenu() {
+type StationsMenuProps = {
+  className?: string;
+};
+
+export default function StationsMenu({ className }: StationsMenuProps) {
   return (
-    <Menu className={styles.stationsMenu}>
+    <Menu className={`${styles.stationsMenu} ${className ? className : ''}`.trim()}>
       <MenuItem href="/">
         <FontAwesomeIcon icon={faHome} />
         Home
