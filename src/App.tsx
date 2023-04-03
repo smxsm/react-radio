@@ -17,6 +17,7 @@ import SearchForm from './components/SearchForm';
 import UpsertCustomStation from './components/UpsertCustomStation';
 import CustomStations from './components/CustomStations';
 import TrackHistory from './components/TrackHistory';
+import NotFound from './components/NotFound';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
                     <Route path="/stations/music/genres" element={<GenresList />} />
                     <Route path="/stations/music/:category?/:value?" element={<StationsCardList />} />
                     <Route path="/stations/:category?/:value?" element={<StationsCardList />} />
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>
                 <aside className={styles.sidePanel}>
