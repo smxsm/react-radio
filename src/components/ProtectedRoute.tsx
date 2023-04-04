@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { UserContext } from '../context/UserContext';
 import Spinner from './ui/Spinner';
 import { Navigate, Outlet } from 'react-router-dom';
@@ -12,13 +12,18 @@ type ProtectedRouteProps = {
 
 export default function ProtectedRoute({ hasUser = true, redirectTo = '/' }: ProtectedRouteProps) {
   const { user, loading } = useContext(UserContext) || {};
+  const [initialized, setInitialized] = useState(false);
 
-  if (loading) {
+  if (loading && !initialized) {
     return (
       <section className={styles.section}>
         <Spinner />
       </section>
     );
+  }
+
+  if (!initialized) {
+    setInitialized(true);
   }
   if (hasUser !== !!user) {
     return <Navigate to={redirectTo} />;
