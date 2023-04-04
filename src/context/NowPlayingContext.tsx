@@ -114,7 +114,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
 
   // Add matched track to history
   useEffect(() => {
-    if (!matchedTrack?.id && !user) return;
+    if (!matchedTrack?.id) return;
 
     supabase
       .from('tracks_history')
@@ -127,7 +127,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
           .limit(100)
       )
       .then(({ data, error }) => {
-        if (error) throw error;
+        if (error) return [];
         return data.map<TrackHistory>((entry) => ({
           heardAt: new Date(entry.created_at),
           id: entry.track_match.id,
@@ -139,7 +139,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
         }));
       })
       .then(setHistory);
-  }, [supabase, matchedTrack?.id, user]);
+  }, [supabase, matchedTrack?.id]);
 
   useEffect(() => {
     if (!user) return setHistory([]);
