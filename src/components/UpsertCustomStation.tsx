@@ -1,9 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm, FieldValues } from 'react-hook-form';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
-import { UserContext } from '../context/UserContext';
 import useCustomStations from '../hooks/useCustomStations';
 
 import styles from './UpsertCustomStation.module.css';
@@ -19,7 +18,6 @@ const customStationValues = z.object({
 
 export default function UpsertCustomStation() {
   const { id } = useParams();
-  const { user, loading: userLoading } = useContext(UserContext)!;
   const { loading, error, getCustomStations, addCustomStation, stations } = useCustomStations();
   const navigate = useNavigate();
   const { register, handleSubmit, formState, setValue } = useForm({
@@ -49,10 +47,6 @@ export default function UpsertCustomStation() {
       }
     });
   };
-
-  if (!user && !userLoading) {
-    return <Navigate to="/" />;
-  }
 
   return (
     <section className={styles.section}>

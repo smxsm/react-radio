@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 import { Link, Navigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -8,7 +8,6 @@ import styles from './SignUp.module.css';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import Label from './ui/Label';
-import Spinner from './ui/Spinner';
 
 const signUpDataSchema = z.object({
   email: z.string().trim().email('Invalid e-mail address'),
@@ -21,16 +20,12 @@ const signUpDataSchema = z.object({
 export default function SignUp() {
   const { user, signup, loading, error } = useContext(UserContext)!;
   const { register, handleSubmit, formState } = useForm({ mode: 'onTouched', resolver: zodResolver(signUpDataSchema) });
-  const [signingUp, setSigningUp] = useState(false);
 
   const submitHandler = ({ email, firstName, lastName, password }: FieldValues) => {
-    setSigningUp(true);
     signup(email, firstName, lastName, password);
   };
 
   if (user) return <Navigate to="/" />;
-
-  if (!user && loading && !signingUp) return <Spinner className={styles.spinner} />;
 
   return (
     <section className={styles['signup-section']}>

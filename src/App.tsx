@@ -18,6 +18,7 @@ import UpsertCustomStation from './components/UpsertCustomStation';
 import CustomStations from './components/CustomStations';
 import TrackHistory from './components/TrackHistory';
 import NotFound from './components/NotFound';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -35,17 +36,21 @@ function App() {
               <div className={styles.container}>
                 <main className={styles.content}>
                   <Routes>
-                    <Route path="/auth/signin" element={<SignIn />} />
-                    <Route path="/auth/signup" element={<SignUp />} />
                     <Route path="/" element={<Home />} />
-                    <Route path="/stations/custom" element={<CustomStations />} />
-                    <Route path="/stations/custom/add" element={<UpsertCustomStation />} />
-                    <Route path="/stations/custom/edit/:id" element={<UpsertCustomStation />} />
                     <Route path="/stations/all" element={<StationsCardList />} />
                     <Route path="/stations/countries" element={<CountriesList />} />
                     <Route path="/stations/music/genres" element={<GenresList />} />
                     <Route path="/stations/music/:category?/:value?" element={<StationsCardList />} />
                     <Route path="/stations/:category?/:value?" element={<StationsCardList />} />
+                    <Route element={<ProtectedRoute hasUser={true} redirectTo={'/auth/signin'} />}>
+                      <Route path="/stations/custom" element={<CustomStations />} />
+                      <Route path="/stations/custom/add" element={<UpsertCustomStation />} />
+                      <Route path="/stations/custom/edit/:id" element={<UpsertCustomStation />} />
+                    </Route>
+                    <Route element={<ProtectedRoute hasUser={false} redirectTo={'/'} />}>
+                      <Route path="/auth/signin" element={<SignIn />} />
+                      <Route path="/auth/signup" element={<SignUp />} />
+                    </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>

@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useContext, useEffect } from 'react';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import Button from './ui/Button';
 import CardsList from './ui/CardsList';
@@ -17,7 +17,7 @@ import CustomStationsListOptions from './CustomStationsListOptions';
 export default function CustomStation() {
   const [searchParams] = useSearchParams();
   const { sort, order } = Object.fromEntries(searchParams.entries());
-  const { user, loading: userLoading } = useContext(UserContext)!;
+  const { user } = useContext(UserContext)!;
   const playerContext = useContext(PlayerContext);
   const { getCustomStations, deleteCustomStation, stations, loading: stationsLoading } = useCustomStations();
   const navigate = useNavigate();
@@ -25,10 +25,6 @@ export default function CustomStation() {
   useEffect(() => {
     getCustomStations('', sort, order !== 'desc');
   }, [user, getCustomStations, sort, order]);
-
-  if (!user && !userLoading) {
-    return <Navigate to="/" />;
-  }
 
   const playHandler = (index: number) => () => playerContext?.play(stations, index);
   const editHandler = ({ id }: RadioStation) => navigate(`edit/${id}`);
