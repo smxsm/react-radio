@@ -56,7 +56,7 @@ export default function SignIn() {
         <p className={styles['validation-error']}>{formState.errors['password']?.message as string}</p>
 
         <div className={styles['form-actions']}>
-          <Button type="submit" loading={loading} error={!!error} disabled={loading}>
+          <Button type="submit" loading={loading} error={!!error && !loading} disabled={loading}>
             Sign in
           </Button>
         </div>
@@ -71,6 +71,8 @@ export default function SignIn() {
           <Link to="/auth/forgot-password">Forgot your password?</Link>
         </div>
       </form>
+
+      {error && <p className={styles.errorMessage}>{error.message}</p>}
     </section>
   );
 }

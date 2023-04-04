@@ -33,6 +33,7 @@
   width: 100%;
 }
 
-.spinner {
-  margin: 2rem auto;
+.errorMessage {
+  place-self: center;
+  color: indianred;
 }

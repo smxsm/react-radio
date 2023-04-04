@@ -93,11 +93,13 @@ export default function SignUp() {
         <p className={styles['validation-error']}>{formState.errors['rePass']?.message as string}</p>
 
         <div className={styles['form-actions']}>
-          <Button type="submit" loading={loading} error={!!error} disabled={loading}>
+          <Button type="submit" loading={loading} error={!!error && !loading} disabled={loading}>
             Create account
           </Button>
         </div>
       </form>
+
+      {error && <p className={styles.errorMessage}>{error.message}</p>}
     </section>
   );
 }
