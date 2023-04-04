@@ -21,6 +21,8 @@ import CustomStations from './components/CustomStations';
 import TrackHistory from './components/TrackHistory';
 import NotFound from './components/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
+import Navigation from './components/Navigation';
+import { useState } from 'react';
 
 import styles from './App.module.css';
 
