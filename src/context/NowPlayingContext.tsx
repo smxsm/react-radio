@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import useSupabase from '../hooks/useSupabase';
 import { PlayerContext } from './PlayerContext';
 import { UserContext } from './UserContext';
@@ -65,6 +65,29 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   const intervalRef = useRef<NodeJS.Timer | number>(0);
   const abortControllerRef = useRef(new AbortController());
 
+  const loadTrackHistory = useCallback(() => {
+    supabase
+      .from('tracks_history')
+      .select('*, track_match(*)')
+      .order('created_at', { ascending: false })
+      .limit(100)
+      .then(({ data, error }) => {
+        if (error) throw error;
+        return data.map<TrackHistory>((entry) => ({
+          heardAt: new Date(entry.created_at),
+          id: entry.track_match.id,
+          artist: entry.track_match.artist,
+          title: entry.track_match.title,
+          album: entry.track_match.album,
+          releaseDate: new Date(entry.track_match.release_date),
+          artwork: entry.track_match.artwork,
+          appleMusicUrl: entry.track_match.apple_music_url,
+          youTubeUrl: entry.track_match.youtube_url,
+        }));
+      })
+      .then(setHistory);
+  }, []);
+
   // Get station metadata on interval
   useEffect(() => {
     const getNowPlayingInfo = async (url: string | undefined) => {
@@ -119,51 +142,13 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
     supabase
       .from('tracks_history')
       .upsert({ track_id: matchedTrack?.id, created_at: new Date().toISOString() })
-      .then(() =>
-        supabase
-          .from('tracks_history')
-          .select('*, track_match (id, artist, title, album, artwork, release_date)')
-          .order('created_at', { ascending: false })
-          .limit(100)
-      )
-      .then(({ data, error }) => {
-        if (error) return [];
-        return data.map<TrackHistory>((entry) => ({
-          heardAt: new Date(entry.created_at),
-          id: entry.track_match.id,
-          artist: entry.track_match.artist,
-          title: entry.track_match.title,
-          album: entry.track_match.album,
-          releaseDate: new Date(entry.track_match.release_date),
-          artwork: entry.track_match.artwork,
-        }));
-      })
-      .then(setHistory);
-  }, [supabase, matchedTrack?.id]);
+      .then(() => loadTrackHistory());
+  }, [supabase, matchedTrack?.id, loadTrackHistory]);
 
   useEffect(() => {
     if (!user) return setHistory([]);
-    supabase
-      .from('tracks_history')
-      .select('*, track_match(*)')
-      .order('created_at', { ascending: false })
-      .limit(100)
-      .then(({ data, error }) => {
-        if (error) throw error;
-        return data.map<TrackHistory>((entry) => ({
-          heardAt: new Date(entry.created_at),
-          id: entry.track_match.id,
-          artist: entry.track_match.artist,
-          title: entry.track_match.title,
-          album: entry.track_match.album,
-          releaseDate: new Date(entry.track_match.release_date),
-          artwork: entry.track_match.artwork,
-          appleMusicUrl: entry.track_match.apple_music_url,
-          youTubeUrl: entry.track_match.youtube_url,
-        }));
-      })
-      .then(setHistory);
-  }, [supabase, user]);
+    loadTrackHistory();
+  }, [supabase, user, loadTrackHistory]);
 
   return (
     <NowPlayingContext.Provider value={{ station, stationMetadata, matchedTrack, history }}>
