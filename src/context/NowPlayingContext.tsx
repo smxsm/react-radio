@@ -145,7 +145,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
     if (!user) return setHistory([]);
     supabase
       .from('tracks_history')
-      .select('*, track_match (id, artist, title, album, artwork, release_date)')
+      .select('*, track_match(*)')
       .order('created_at', { ascending: false })
       .limit(100)
       .then(({ data, error }) => {
@@ -158,6 +158,8 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
           album: entry.track_match.album,
           releaseDate: new Date(entry.track_match.release_date),
           artwork: entry.track_match.artwork,
+          appleMusicUrl: entry.track_match.apple_music_url,
+          youTubeUrl: entry.track_match.youtube_url,
         }));
       })
       .then(setHistory);
