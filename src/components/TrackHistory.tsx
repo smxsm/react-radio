@@ -26,6 +26,18 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
             <p className={styles.historyCardArtist}>{entry.artist}</p>
             <p className={styles.historyCardDate}>{entry.heardAt.toLocaleString()}</p>
           </div>
+          <div className={styles.streamLinks}>
+            {entry.appleMusicUrl && (
+              <a target="_blank" rel="noreferrer" href={entry.appleMusicUrl}>
+                <img src="/apple-music.svg" alt="Apple Musc" className={styles.streamLink} />
+              </a>
+            )}
+            {entry.youTubeUrl && (
+              <a target="_blank" rel="noreferrer" href={entry.youTubeUrl}>
+                <img src="/youtube.png" alt="Apple Musc" className={styles.streamLink} />
+              </a>
+            )}
+          </div>
         </Card>
       ))}
     </div>

@@ -12,6 +12,7 @@
 }
 
 .historyCard {
+  position: relative;
   margin-right: 1rem;
   flex-shrink: 0;
   width: 300px;
@@ -30,4 +31,24 @@
 .historyCardDate {
   font-size: 1rem;
   margin-top: 1rem;
+}
+
+.historyCard:hover .streamLinks {
+  opacity: 1;
+  transition: all 0s;
+}
+
+.streamLinks {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+  transition: all 0.2s ease-in;
+}
+
+.streamLink {
+  width: 24px;
+  height: 24px;
 }
