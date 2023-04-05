@@ -86,7 +86,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
         }));
       })
       .then(setHistory);
-  }, []);
+  }, [supabase]);
 
   // Get station metadata on interval
   useEffect(() => {
