@@ -1,3 +1,5 @@
+import Fuse from 'https://deno.land/x/fuse@v6.4.1/dist/fuse.esm.min.js';
+
 type TrackInfo = {
   artist: string;
   title: string;
@@ -13,18 +15,24 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
       return null;
     }
     const res = await fetch(`https://itunes.apple.com/search?term=${searchTerm}&entity=musicTrack`);
-    const data = await res.json();
-    if (!data.resultCount) {
+    const data = (await res.json())?.results;
+    if (!data?.length) {
       return null;
     }
-    // TODO Implement some kind of matching algorithm instead of taking the first result
+    // Using Fuse.js to select best match
+    const fuse = new Fuse(data.map(({ artistName, trackName }) => `${artistName} ${trackName}`));
+    const searchResults = fuse.search(searchTerm);
+    if (!searchResults.length) {
+      return null;
+    }
+    const [{ refIndex }] = searchResults;
     return {
-      artist: data.results[0].artistName || '',
-      title: data.results[0].trackName || '',
-      album: data.results[0].collectionName || '',
-      releaseDate: new Date(data.results[0].releaseDate) || null,
-      artwork: data.results[0].artworkUrl100,
-      appleMusicUrl: data.results[0].trackViewUrl,
+      artist: data[refIndex].artistName || '',
+      title: data[refIndex].trackName || '',
+      album: data[refIndex].collectionName || '',
+      releaseDate: new Date(data[refIndex].releaseDate) || null,
+      artwork: data[refIndex].artworkUrl100,
+      appleMusicUrl: data[refIndex].trackViewUrl,
     };
   } catch (err) {
     return null;
