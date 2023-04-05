@@ -20,7 +20,7 @@ let cache = new Map();
 function cleanTitleForSearch(title: string) {
   const filterTerms = ['ft', 'feat', 'vs'];
   return title
-    .match(/\w+(?![^(]*\))/g)
+    .match(/\p{L}+(?![^(]*\))/gu)
     ?.filter((term) => !filterTerms.includes(term.toLowerCase()))
     .join(' ');
 }
