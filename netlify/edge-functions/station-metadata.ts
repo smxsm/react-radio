@@ -4,6 +4,16 @@ import getIcecastMetadata from '../services/streamMetadata.ts';
 import iTunesSearch from '../services/iTunes.ts';
 import youTubeSearch from '../services/youTube.ts';
 
+type MatchedTrackInfo = {
+  artist: string;
+  title: string;
+  album: string;
+  releaseDate: Date | null;
+  artwork: string;
+  appleMusicUrl?: string;
+  youTubeUrl?: string;
+};
+
 const supabase = createClient('https://iddsgsocgqklrqeuykzn.supabase.co', Deno.env.get('SUPABASE_KEY'));
 let cache = new Map();
 
@@ -35,10 +45,17 @@ const edge = async (req: Request) => {
       throw new Error('No metadata collected');
     }
 
+    const searchTerm = cleanTitleForSearch(data.stationMetadata.title);
+    if (!searchTerm) {
+      throw new Error('Search string is empty');
+    }
+
     if (!data.matchedTrack) {
-      const searchTerm = cleanTitleForSearch(data.stationMetadata.title);
-      const matchedTrack = await iTunesSearch(searchTerm);
+      const matchedTrack = (await iTunesSearch(searchTerm)) as MatchedTrackInfo;
+
       if (matchedTrack) {
+        matchedTrack.youTubeUrl = (await youTubeSearch(searchTerm)) || '';
+
         const { data: supabaseResult } = await supabase
           .from('track_match')
           .upsert(
@@ -49,6 +66,8 @@ const edge = async (req: Request) => {
               album: matchedTrack.album,
               artwork: matchedTrack.artwork,
               release_date: matchedTrack.releaseDate,
+              apple_music_url: matchedTrack.appleMusicUrl || '',
+              youtube_url: matchedTrack.youTubeUrl || '',
             },
             { onConflict: 'text' }
           )
@@ -61,12 +80,8 @@ const edge = async (req: Request) => {
         data.matchedTrack.album = supabaseResult[0].album;
         data.matchedTrack.releaseDate = supabaseResult[0].release_date;
         data.matchedTrack.artwork = supabaseResult[0].artwork;
-
-        data.matchedTrack.appleMusicUrl = matchedTrack.appleMusicUrl;
-        const youTubeUrl = await youTubeSearch(searchTerm);
-        if (youTubeUrl) {
-          data.matchedTrack.youTubeUrl = youTubeUrl;
-        }
+        data.matchedTrack.appleMusicUrl = supabaseResult[0].apple_music_url;
+        data.matchedTrack.youTubeUrl = supabaseResult[0].youtube_url;
       }
     }
 
