@@ -3,20 +3,28 @@ import { NowPlayingContext } from '../context/NowPlayingContext';
 import Card from './ui/Card';
 
 import styles from './TrackHistory.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+import Button from './ui/Button';
 
 type TrackHistoryProps = {
   className?: string;
 };
 
 export default function TrackHistory({ className }: TrackHistoryProps) {
-  const { history } = useContext(NowPlayingContext) || {};
+  const { history, removeFromHistory, clearHistory } = useContext(NowPlayingContext)!;
 
-  if (!history?.length) return null;
+  // if (!history?.length) return null;
 
   return (
     <div className={`${styles.history} ${className ? className : ''}.trim()`}>
-      <h2 className={styles.componentTitle}>Song history</h2>
-      {history.map((entry) => (
+      <div className={styles.titleContainer}>
+        <h2 className={styles.componentTitle}>Song history</h2>
+        <Button type="button" disabled={!history?.length} className={styles.btnClear} onClick={() => clearHistory()}>
+          Clear
+        </Button>
+      </div>
+      {history?.map((entry) => (
         <Card key={entry.id} className={styles.historyCard}>
           <figure>
             <img src={entry.artwork} alt="Song artwork"></img>
@@ -25,6 +33,14 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
             <p className={styles.historyCardTitle}>{entry.title}</p>
             <p className={styles.historyCardArtist}>{entry.artist}</p>
             <p className={styles.historyCardDate}>{entry.heardAt.toLocaleString()}</p>
+          </div>
+          <div className={styles.actions}>
+            <FontAwesomeIcon
+              icon={faTrashAlt}
+              className={styles.actionIcon}
+              title={`Remove`}
+              onClick={() => removeFromHistory(entry.id)}
+            />
           </div>
           <div className={styles.streamLinks}>
             {entry.appleMusicUrl && (

@@ -6,9 +6,20 @@
   width: 100%;
 }
 
+.titleContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
 .componentTitle {
   font-size: 2.4rem;
-  place-self: center;
+}
+
+.btnClear {
+  font-size: 1rem;
+  padding: 0.25rem 0.75rem;
 }
 
 .historyCard {
@@ -19,6 +30,7 @@
 }
 
 .historyTrackInfo {
+  flex-grow: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -33,9 +45,27 @@
   margin-top: 1rem;
 }
 
-.historyCard:hover .streamLinks {
+.actions {
+  place-self: flex-start;
+  opacity: 0;
+  transition: all 0.2s ease-in;
+}
+
+.historyCard:hover .streamLinks,
+.historyCard:hover .actions {
   opacity: 1;
   transition: all 0s;
+}
+
+.actionIcon {
+  display: block;
+  font-size: 1.6rem;
+  color: var(--color);
+}
+
+.actionIcon:hover {
+  color: white;
+  cursor: pointer;
 }
 
 .streamLinks {

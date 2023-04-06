@@ -8,6 +8,8 @@ type NowPlayingContextType = {
   stationMetadata?: StationMetadata;
   matchedTrack?: TrackInfo;
   history?: TrackHistory[];
+  removeFromHistory: (id: string) => Promise<void>;
+  clearHistory: () => Promise<void>;
 };
 
 type StationMetadata = {
@@ -150,8 +152,24 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
     loadTrackHistory();
   }, [supabase, user, loadTrackHistory]);
 
+  const removeFromHistory = useCallback(
+    async (id: string) => {
+      if (!id) return;
+      await supabase.from('tracks_history').delete().eq('track_id', id);
+      loadTrackHistory();
+    },
+    [supabase, loadTrackHistory]
+  );
+
+  const clearHistory = useCallback(async () => {
+    await supabase.from('tracks_history').delete().neq('track_id', '00000000-0000-0000-0000-000000000000');
+    loadTrackHistory();
+  }, [supabase, loadTrackHistory]);
+
   return (
-    <NowPlayingContext.Provider value={{ station, stationMetadata, matchedTrack, history }}>
+    <NowPlayingContext.Provider
+      value={{ station, stationMetadata, matchedTrack, history, removeFromHistory, clearHistory }}
+    >
       {children}
     </NowPlayingContext.Provider>
   );
