@@ -8,7 +8,7 @@ export type PlayerContextType = {
   status: PlayerStatus;
   audioContext?: AudioContext;
   sourceNode?: AudioNode;
-  play: (stations?: RadioStation[] | null, index?: number) => void;
+  play: (stations?: RadioStation[] | null, index?: number) => Promise<void>;
   previous: () => void;
   next: () => void;
   stop: () => void;
@@ -34,6 +34,10 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   const [sourceNode, setSourceNode] = useState<AudioNode>();
 
   useEffect(() => {
+    audioElementRef.current.addEventListener('playing', () => setStatus('playing'));
+    audioElementRef.current.addEventListener('error', () => setStatus('error'));
+    audioElement2Ref.current.addEventListener('playing', () => setStatus('playing'));
+    audioElement2Ref.current.addEventListener('error', () => setStatus('error'));
     audioSourceNodeRef.current = audioContextRef.current.createMediaElementSource(audioElementRef.current);
     audioSourceNodeRef.current.connect(audioContextRef.current.destination);
     setSourceNode(audioSourceNodeRef.current);
@@ -42,8 +46,8 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   audioElementRef.current.crossOrigin = 'anonymous';
 
   const resetAudioElements = () => {
-    audioElementRef.current.src = '';
-    audioElement2Ref.current.src = '';
+    // audioElementRef.current.src = '';
+    // audioElement2Ref.current.src = '';
     audioElementRef.current.load();
     audioElement2Ref.current.load();
   };
@@ -73,7 +77,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
     play(null, index);
   };
 
-  const play = (stations: RadioStation[] | null | undefined, index = queueCurrentIndex) => {
+  const play = async (stations: RadioStation[] | null | undefined, index = queueCurrentIndex) => {
     let station = queue[index];
     if (stations) {
       setQueue(stations);
@@ -93,35 +97,31 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
       audioContextRef.current.resume();
     }
 
-    audioElementRef.current.src = station.listenUrl;
-    // Try playing the stream
-    audioElementRef.current
-      .play()
-      .then(() => {
-        setStatus('playing');
-      })
-      .catch(() => {
-        // Playback failed. Maybe CORS issue. Try playing outside the Audio Context.
+    try {
+      const signal = AbortSignal.timeout(5000);
+      const res = await fetch(station.listenUrl, { signal });
+      // HACK! Google Chrome states it can't play audio/aacp but in reality it plays fine. So we change audio/aacp content type to regular audio/aac
+      const contentType = (res.headers.get('Content-Type') || '').replace('aacp', 'aac');
+      if (!audioElementRef.current.canPlayType(contentType) && contentType !== 'application/vnd.apple.mpegurl') {
+        throw new Error('Unsupported audio stream format');
+      }
+      if (!audioElementRef.current.canPlayType(contentType) && contentType === 'application/vnd.apple.mpegurl') {
+        hlsRef.current.loadSource(station.listenUrl);
+        hlsRef.current.attachMedia(audioElementRef.current);
+      } else {
+        audioElementRef.current.src = station.listenUrl;
+      }
+      audioElementRef.current.play();
+    } catch (err) {
+      if (err instanceof TypeError) {
+        // Probably CORS issue. Play the stream outside the AudioContext
         audioElement2Ref.current.src = station.listenUrl;
-        audioElement2Ref.current
-          .play()
-          .then(() => setStatus('playing'))
-          .catch(() => {
-            // Still failing. Maybe it is a HLS stream. Try playing it using hls.js.
-            resetAudioElements();
-            hlsRef.current.loadSource(station.listenUrl);
-            hlsRef.current.attachMedia(audioElementRef.current);
-            audioElementRef.current
-              .play()
-              .then(() => {
-                setStatus('playing');
-              })
-              .catch(() => {
-                // All playback attempts failed.
-                setStatus('error');
-              });
-          });
-      });
+        audioElement2Ref.current.play();
+      } else {
+        console.log((err as Error).message);
+        setStatus('error');
+      }
+    }
   };
 
   return (
