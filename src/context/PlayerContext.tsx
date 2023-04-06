@@ -46,15 +46,14 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   audioElementRef.current.crossOrigin = 'anonymous';
 
   const resetAudioElements = () => {
-    // audioElementRef.current.src = '';
-    // audioElement2Ref.current.src = '';
-    audioElementRef.current.load();
-    audioElement2Ref.current.load();
+    hlsRef.current.stopLoad();
+    hlsRef.current.detachMedia();
+    hlsRef.current.destroy();
+    audioElementRef.current.src = '';
+    audioElement2Ref.current.src = '';
   };
 
   const stop = () => {
-    hlsRef.current.stopLoad();
-    hlsRef.current.detachMedia();
     resetAudioElements();
     setStatus('stopped');
   };
@@ -106,6 +105,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
         throw new Error('Unsupported audio stream format');
       }
       if (!audioElementRef.current.canPlayType(contentType) && contentType === 'application/vnd.apple.mpegurl') {
+        hlsRef.current = new Hls();
         hlsRef.current.loadSource(station.listenUrl);
         hlsRef.current.attachMedia(audioElementRef.current);
       } else {
@@ -113,6 +113,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
       }
       audioElementRef.current.play();
     } catch (err) {
+      console.log(err);
       if (err instanceof TypeError) {
         // Probably CORS issue. Play the stream outside the AudioContext
         audioElement2Ref.current.src = station.listenUrl;
