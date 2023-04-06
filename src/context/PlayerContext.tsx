@@ -1,5 +1,5 @@
 import Hls from 'hls.js';
-import { createContext, PropsWithChildren, useEffect, useRef, useState } from 'react';
+import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
 
 export type PlayerContextType = {
   station?: RadioStation;
@@ -33,25 +33,52 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   const [status, setStatus] = useState<PlayerStatus>('stopped');
   const [sourceNode, setSourceNode] = useState<AudioNode>();
 
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Initialize
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   useEffect(() => {
     audioElementRef.current.addEventListener('playing', () => setStatus('playing'));
-    audioElementRef.current.addEventListener('error', () => setStatus('error'));
     audioElement2Ref.current.addEventListener('playing', () => setStatus('playing'));
-    audioElement2Ref.current.addEventListener('error', () => setStatus('error'));
+    audioElement2Ref.current.addEventListener('error', (e: Event) => {
+      if ((e.target as HTMLMediaElement).src !== window.location.href) {
+        setStatus('error');
+      }
+    });
+
+    audioElementRef.current.crossOrigin = 'anonymous';
     audioSourceNodeRef.current = audioContextRef.current.createMediaElementSource(audioElementRef.current);
     audioSourceNodeRef.current.connect(audioContextRef.current.destination);
     setSourceNode(audioSourceNodeRef.current);
   }, []);
 
-  audioElementRef.current.crossOrigin = 'anonymous';
-
-  const resetAudioElements = () => {
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Used to reset audio elements and destroy hls object on playback change
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  const resetAudioElements = useCallback(() => {
     hlsRef.current.stopLoad();
     hlsRef.current.detachMedia();
     hlsRef.current.destroy();
-    audioElementRef.current.src = '';
-    audioElement2Ref.current.src = '';
-  };
+    audioElementRef.current.src = window.location.href;
+    audioElement2Ref.current.src = window.location.href;
+  }, []);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Tries to play the first audio element. Falls back to using the second one (outside AudioContext) on CORS error
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  const startPlayback = useCallback(
+    (station: RadioStation) => {
+      audioElementRef.current.play().catch((err) => {
+        if (err.name === 'NotSupportedError') {
+          resetAudioElements();
+          audioElement2Ref.current.src = station.listenUrl;
+          audioElement2Ref.current.play();
+          return;
+        }
+        setStatus('error');
+      });
+    },
+    [resetAudioElements]
+  );
 
   const stop = () => {
     resetAudioElements();
@@ -104,20 +131,18 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
       if (!audioElementRef.current.canPlayType(contentType) && contentType !== 'application/vnd.apple.mpegurl') {
         throw new Error('Unsupported audio stream format');
       }
+      audioElementRef.current.src = station.listenUrl;
       if (!audioElementRef.current.canPlayType(contentType) && contentType === 'application/vnd.apple.mpegurl') {
         hlsRef.current = new Hls();
         hlsRef.current.loadSource(station.listenUrl);
         hlsRef.current.attachMedia(audioElementRef.current);
-      } else {
-        audioElementRef.current.src = station.listenUrl;
       }
-      audioElementRef.current.play();
+      startPlayback(station);
     } catch (err) {
-      console.log(err);
       if (err instanceof TypeError) {
-        // Probably CORS issue. Play the stream outside the AudioContext
-        audioElement2Ref.current.src = station.listenUrl;
-        audioElement2Ref.current.play();
+        // Probably CORS. Try to play anyway and fallback to second audio element (outside AudioContext) on error
+        audioElementRef.current.src = station.listenUrl;
+        startPlayback(station);
       } else {
         console.log((err as Error).message);
         setStatus('error');
