@@ -1,5 +1,5 @@
 import styles from './SignIn.module.css';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import Input from './ui/Input';
 import Label from './ui/Label';
@@ -16,11 +16,12 @@ const signInDataSchema = z.object({
 });
 
 export default function SignIn() {
-  const { user, signin, loading, error } = useContext(UserContext)!;
+  const { user, signin, loading } = useContext(UserContext)!;
   const { register, handleSubmit, formState } = useForm({ mode: 'onTouched', resolver: zodResolver(signInDataSchema) });
+  const [error, setError] = useState<null | Error>(null);
 
-  const submitHandler = ({ email, password, remember }: FieldValues) => {
-    signin(email, password, remember);
+  const submitHandler = async ({ email, password, remember }: FieldValues) => {
+    setError(await signin(email, password, remember));
   };
 
   if (user) {

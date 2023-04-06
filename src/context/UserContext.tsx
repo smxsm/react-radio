@@ -4,9 +4,8 @@ import useSupabase from '../hooks/useSupabase';
 type UserContextType = {
   user: any;
   loading: boolean;
-  error: Error | null;
-  signup: (email: string, firstName: string, lastName: string, password: string) => void;
-  signin: (email: string, password: string, saveSession: boolean) => void;
+  signup: (email: string, firstName: string, lastName: string, password: string) => Promise<null | Error>;
+  signin: (email: string, password: string, saveSession: boolean) => Promise<null | Error>;
   signout: () => void;
 };
 
@@ -25,7 +24,6 @@ export function UserProvider({ children }: UserProviderProps) {
   const supabase = useSupabase();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
   const [persistSession, setPersistSession] = useState(true);
 
   useEffect(() => {
@@ -48,7 +46,6 @@ export function UserProvider({ children }: UserProviderProps) {
       const [{ id, email, first_name: firstName, last_name: lastName }] = data;
       setUser({ id, email, firstName, lastName });
       setLoading(false);
-      setError(null);
     });
 
     const session = JSON.parse(localStorage.getItem('session') || 'null');
@@ -66,9 +63,8 @@ export function UserProvider({ children }: UserProviderProps) {
     setLoading(true);
     const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
     if (signUpError) {
-      setError(new Error(signUpError.message));
       setLoading(false);
-      return;
+      return new Error(signUpError.message);
     }
     const { error: createProfileError } = await supabase.from('profiles').insert({
       id: data.user!.id,
@@ -77,32 +73,28 @@ export function UserProvider({ children }: UserProviderProps) {
       last_name: lastName,
     });
     if (createProfileError) {
-      setError(new Error(createProfileError.message));
       setLoading(false);
-      return;
+      return new Error(createProfileError.message);
     }
     signin(email, password, true);
+    return null;
   };
 
   const signin = async (email: string, password: string, persistSession: boolean = true) => {
-    setError(null);
     setLoading(true);
     setPersistSession(persistSession);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setLoading(false);
-      setError(new Error(error.message));
-      return;
+      return new Error(error.message);
     }
+    return null;
   };
 
   const signout = () => {
-    setError(null);
     setLoading(true);
     supabase.auth.signOut();
   };
 
-  return (
-    <UserContext.Provider value={{ user, loading, error, signup, signin, signout }}>{children}</UserContext.Provider>
-  );
+  return <UserContext.Provider value={{ user, loading, signup, signin, signout }}>{children}</UserContext.Provider>;
 }

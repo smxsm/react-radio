@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 import { Link, Navigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -18,11 +18,12 @@ const signUpDataSchema = z.object({
 });
 
 export default function SignUp() {
-  const { user, signup, loading, error } = useContext(UserContext)!;
+  const { user, signup, loading } = useContext(UserContext)!;
   const { register, handleSubmit, formState } = useForm({ mode: 'onTouched', resolver: zodResolver(signUpDataSchema) });
+  const [error, setError] = useState<null | Error>(null);
 
-  const submitHandler = ({ email, firstName, lastName, password }: FieldValues) => {
-    signup(email, firstName, lastName, password);
+  const submitHandler = async ({ email, firstName, lastName, password }: FieldValues) => {
+    setError(await signup(email, firstName, lastName, password));
   };
 
   if (user) return <Navigate to="/" />;
