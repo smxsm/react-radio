@@ -74,7 +74,10 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
           audioElement2Ref.current.play();
           return;
         }
-        setStatus('error');
+        // Die silently if station has been changed
+        if (station.listenUrl === audioElementRef.current.src) {
+          setStatus('error');
+        }
       });
     },
     [resetAudioElements]
@@ -114,10 +117,10 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
     }
     if (!station) return;
 
-    stop();
+    resetAudioElements();
+    setStatus('loading');
     setQueueCurrentIndex(index);
     setStation(station);
-    setStatus('loading');
 
     if (audioContextRef.current.state === 'suspended') {
       audioContextRef.current.resume();
