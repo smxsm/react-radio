@@ -21,7 +21,7 @@ export default function Player(props: any) {
     <div className={classes}>
       <div className={styles.currentTrack}>
         <img
-          src={matchedTrack?.artwork.replace('100x100', '600x600') || station?.logo || '/radio-no-logo.png'}
+          src={matchedTrack?.artwork.replace('100x100', '600x600') || station?.logo || '/sound-wave.png'}
           alt=""
           className={styles.artwork}
         />
