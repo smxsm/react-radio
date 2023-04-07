@@ -9,6 +9,8 @@ import CardsList from './ui/CardsList';
 import useCustomStations from '../hooks/useCustomStations';
 import { useContext } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
+import { UserContext } from '../context/UserContext';
+import { NowPlayingContext } from '../context/NowPlayingContext';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -18,6 +20,8 @@ export default function Home() {
     { limit: 12, sort: 'trending', order: 'desc' }
   );
   const { stations: newest, loading: loadinNewest } = useStations({}, { limit: 12, sort: 'date', order: 'desc' });
+  const { user, loading: loadingUser } = useContext(UserContext) || {};
+  const { stationHistory } = useContext(NowPlayingContext) || {};
   const { addCustomStation, getCustomStations, loading: addingCustomStation } = useCustomStations();
 
   const playHandler = (station: RadioStation) => playerContext?.play([station]);
@@ -33,29 +37,31 @@ export default function Home() {
 
   return (
     <>
-      <section className={styles.heroSection}>
-        <figure className={styles.heroImg}>
-          <img src="/main.svg" alt="Sound wave"></img>
-        </figure>
-        <header className={styles.header}>
-          <h1 className={styles.heroTitle}>Hear the world</h1>
-          <p className={styles.heroText}>
-            Choose from over 30000 radio stations or <Link to="/auth/signup">register an account</Link> to create your
-            own library.
-          </p>
-          <p className={styles.heroSubText}>
-            Already have an account? <Link to="/auth/signin">Click here to sign in.</Link>
-          </p>
-          <Button
-            type="button"
-            title="Browse stations"
-            className={styles.btnBrowse}
-            onClick={() => navigate('/stations/all')}
-          >
-            Browse stations
-          </Button>
-        </header>
-      </section>
+      {!loadingUser && !user && (
+        <section className={styles.heroSection}>
+          <figure className={styles.heroImg}>
+            <img src="/main.svg" alt="Sound wave"></img>
+          </figure>
+          <header className={styles.header}>
+            <h1 className={styles.heroTitle}>Hear the world</h1>
+            <p className={styles.heroText}>
+              Choose from over 30000 radio stations or <Link to="/auth/signup">register an account</Link> to create your
+              own library.
+            </p>
+            <p className={styles.heroSubText}>
+              Already have an account? <Link to="/auth/signin">Click here to sign in.</Link>
+            </p>
+            <Button
+              type="button"
+              title="Browse stations"
+              className={styles.btnBrowse}
+              onClick={() => navigate('/stations/all')}
+            >
+              Browse stations
+            </Button>
+          </header>
+        </section>
+      )}
 
       <section className={styles.categoriesSection}>
         <Link to="/stations/music/genres" className={styles.category}>
@@ -85,6 +91,21 @@ export default function Home() {
       </section>
 
       <section className={styles.recommendedSection}>
+        {!!stationHistory?.length && (
+          <div className={styles.recommended}>
+            <h3 className={styles.recommendedTitle}>Recently played</h3>
+            <CardsList>
+              {stationHistory.map((station) => (
+                <RadioStationCard
+                  // disabled={loadingTrending || addingCustomStation}
+                  station={station}
+                  key={station.id}
+                  onPlay={playHandler}
+                />
+              ))}
+            </CardsList>
+          </div>
+        )}
         <div className={styles.recommended}>
           <h3 className={styles.recommendedTitle}>Trending</h3>
           <CardsList>
