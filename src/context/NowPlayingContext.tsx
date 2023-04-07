@@ -7,7 +7,8 @@ type NowPlayingContextType = {
   station?: RadioStation;
   stationMetadata?: StationMetadata;
   matchedTrack?: TrackInfo;
-  history?: TrackHistory[];
+  stationHistory?: RadioStation[];
+  songHistory?: TrackHistory[];
   removeFromHistory: (id: string) => Promise<void>;
   clearHistory: () => Promise<void>;
 };
@@ -63,7 +64,8 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   const [station, setStation] = useState<RadioStation | undefined>();
   const [stationMetadata, setStationMetadata] = useState<StationMetadata | undefined>();
   const [matchedTrack, setMatchedTrack] = useState<TrackInfo | undefined>();
-  const [history, setHistory] = useState<TrackHistory[]>([]);
+  const [stationHistory, setStationHistory] = useState<RadioStation[]>([]);
+  const [songHistory, setSongHistory] = useState<TrackHistory[]>([]);
   const intervalRef = useRef<NodeJS.Timer | number>(0);
   const abortControllerRef = useRef(new AbortController());
 
@@ -87,8 +89,46 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
           youTubeUrl: entry.track_match.youtube_url,
         }));
       })
-      .then(setHistory);
+      .then(setSongHistory);
   }, [supabase]);
+
+  const loadStationHistory = useCallback(() => {
+    supabase
+      .from('listen_history')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100)
+      .then(({ data, error }) => {
+        if (error) {
+          return;
+        }
+        setStationHistory(
+          data.map<RadioStation>((entry) => ({
+            id: entry.station_id,
+            name: entry.name,
+            logo: entry.logo,
+            listenUrl: entry.listen_url,
+          }))
+        );
+      });
+  }, [supabase]);
+
+  // Update played stations history
+  useEffect(() => {
+    if (playerContext?.status !== 'playing') {
+      return;
+    }
+    supabase
+      .from('listen_history')
+      .upsert({
+        station_id: playerContext.station?.id,
+        name: playerContext.station?.name,
+        logo: playerContext.station?.logo,
+        listen_url: playerContext.station?.listenUrl,
+        created_at: new Date().toISOString(),
+      })
+      .then(() => loadStationHistory());
+  }, [playerContext?.station, playerContext?.status, supabase, loadStationHistory]);
 
   // Get station metadata on interval
   useEffect(() => {
@@ -148,9 +188,14 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   }, [supabase, matchedTrack?.id, loadTrackHistory]);
 
   useEffect(() => {
-    if (!user) return setHistory([]);
+    if (!user) {
+      setStationHistory([]);
+      setSongHistory([]);
+      return;
+    }
+    loadStationHistory();
     loadTrackHistory();
-  }, [supabase, user, loadTrackHistory]);
+  }, [supabase, user, loadStationHistory, loadTrackHistory]);
 
   const removeFromHistory = useCallback(
     async (id: string) => {
@@ -168,7 +213,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
 
   return (
     <NowPlayingContext.Provider
-      value={{ station, stationMetadata, matchedTrack, history, removeFromHistory, clearHistory }}
+      value={{ station, stationMetadata, matchedTrack, songHistory, stationHistory, removeFromHistory, clearHistory }}
     >
       {children}
     </NowPlayingContext.Provider>
