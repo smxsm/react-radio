@@ -14,7 +14,7 @@ type TrackHistoryProps = {
 export default function TrackHistory({ className }: TrackHistoryProps) {
   const { history, removeFromHistory, clearHistory } = useContext(NowPlayingContext)!;
 
-  // if (!history?.length) return null;
+  if (!history?.length) return null;
 
   return (
     <div className={`${styles.history} ${className ? className : ''}.trim()`}>
