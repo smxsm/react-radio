@@ -29,6 +29,7 @@ const routeToApiSort: { [key: string]: string } = {
   name: 'name',
   popularity: 'clickcount',
   trending: 'clicktrend',
+  date: 'changetimestamp',
 };
 
 export function useStations(
