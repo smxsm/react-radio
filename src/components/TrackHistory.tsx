@@ -12,19 +12,24 @@ type TrackHistoryProps = {
 };
 
 export default function TrackHistory({ className }: TrackHistoryProps) {
-  const { history, removeFromHistory, clearHistory } = useContext(NowPlayingContext)!;
+  const { songHistory, removeFromHistory, clearHistory } = useContext(NowPlayingContext)!;
 
-  if (!history?.length) return null;
+  if (!songHistory?.length) return null;
 
   return (
     <div className={`${styles.history} ${className ? className : ''}.trim()`}>
       <div className={styles.titleContainer}>
         <h2 className={styles.componentTitle}>Song history</h2>
-        <Button type="button" disabled={!history?.length} className={styles.btnClear} onClick={() => clearHistory()}>
+        <Button
+          type="button"
+          disabled={!songHistory?.length}
+          className={styles.btnClear}
+          onClick={() => clearHistory()}
+        >
           Clear
         </Button>
       </div>
-      {history?.map((entry) => (
+      {songHistory?.map((entry) => (
         <Card key={entry.id} className={styles.historyCard}>
           <figure>
             <img src={entry.artwork} alt="Song artwork"></img>
