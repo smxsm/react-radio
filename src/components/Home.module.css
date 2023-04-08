@@ -4,11 +4,14 @@
   align-items: center;
   gap: 5rem;
   width: 90%;
+  max-width: 1300px;
   margin: 5rem auto;
 }
 
 .heroImg {
   width: 60%;
+  min-width: 300px;
+  max-width: 600px;
 }
 
 .header {
@@ -39,6 +42,8 @@
 .categoriesSection {
   display: flex;
   justify-content: space-evenly;
+  max-width: 1000px;
+  margin: 0 auto;
   margin-top: 5rem;
 }
 
@@ -66,4 +71,21 @@
   font-size: 2.4rem;
   font-weight: normal;
   margin-bottom: 1rem;
+}
+
+.playHistoryTitleContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.playHistoryTitleContainer .recommendedTitle {
+  margin: 0;
+}
+
+.btnClear {
+  font-size: 1rem;
+  padding: 0.25rem 0.75rem;
+  margin-right: 1rem;
 }

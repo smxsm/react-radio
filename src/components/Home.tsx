@@ -21,7 +21,7 @@ export default function Home() {
   );
   const { stations: newest, loading: loadinNewest } = useStations({}, { limit: 12, sort: 'date', order: 'desc' });
   const { user, loading: loadingUser } = useContext(UserContext) || {};
-  const { stationHistory } = useContext(NowPlayingContext) || {};
+  const { stationHistory, removeStationFromHistory, clearStationHistory } = useContext(NowPlayingContext)!;
   const { addCustomStation, getCustomStations, loading: addingCustomStation } = useCustomStations();
 
   const playHandler = (station: RadioStation) => playerContext?.play([station]);
@@ -93,14 +93,24 @@ export default function Home() {
       <section className={styles.recommendedSection}>
         {!!stationHistory?.length && (
           <div className={styles.recommended}>
-            <h3 className={styles.recommendedTitle}>Recently played</h3>
+            <div className={styles.playHistoryTitleContainer}>
+              <h3 className={styles.recommendedTitle}>Recently played</h3>
+              <Button
+                type="button"
+                disabled={!stationHistory?.length}
+                className={styles.btnClear}
+                onClick={() => clearStationHistory()}
+              >
+                Clear
+              </Button>
+            </div>
             <CardsList>
               {stationHistory.slice(0, 12).map((station) => (
                 <RadioStationCard
-                  // disabled={loadingTrending || addingCustomStation}
-                  station={station}
+                  station={{ ...station, isOwner: true }}
                   key={station.id}
                   onPlay={playHandler}
+                  onDelete={() => removeStationFromHistory(station.id)}
                 />
               ))}
             </CardsList>
