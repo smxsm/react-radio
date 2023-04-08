@@ -1,15 +1,18 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { PlayerContext } from '../context/PlayerContext';
-import { useStations } from '../hooks/useStations';
-import Pagination from './Pagination';
-import CardsList from './ui/CardsList';
 
-import styles from './StationsCardList.module.css';
+import { PlayerContext } from '../context/PlayerContext';
+import { DocumentTitleContext } from '../context/DocumentTitleContext';
+import { useStations } from '../hooks/useStations';
+import useCustomStations from '../hooks/useCustomStations';
+
 import Spinner from './ui/Spinner';
+import CardsList from './ui/CardsList';
+import Pagination from './Pagination';
 import StationsListOptions from './StationsListOptions';
 import RadioStationCard from './RadioStationCard';
-import useCustomStations from '../hooks/useCustomStations';
+
+import styles from './StationsCardList.module.css';
 
 interface RadioStation {
   id: string;
@@ -32,6 +35,11 @@ export default function StationsCardList() {
   const { totalCount, stations, loading: loadingStations } = useStations(filter, searchParamsState);
   const playerContext = useContext(PlayerContext);
   const { addCustomStation, getCustomStations, loading: addingCustomStation } = useCustomStations();
+  const { setDocumentTitle } = useContext(DocumentTitleContext)!;
+
+  useEffect(() => {
+    setDocumentTitle('Browse stations');
+  }, [setDocumentTitle]);
 
   const loading = loadingStations || addingCustomStation;
 

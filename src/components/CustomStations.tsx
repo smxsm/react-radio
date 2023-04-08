@@ -1,18 +1,20 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useContext, useEffect } from 'react';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-
-import Button from './ui/Button';
-import CardsList from './ui/CardsList';
-import RadioStationCard from './RadioStationCard';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import { UserContext } from '../context/UserContext';
 import { PlayerContext } from '../context/PlayerContext';
+import { DocumentTitleContext } from '../context/DocumentTitleContext';
 import useCustomStations from '../hooks/useCustomStations';
 
-import styles from './CustomStations.module.css';
+import Button from './ui/Button';
+import CardsList from './ui/CardsList';
+import Spinner from './ui/Spinner';
+import RadioStationCard from './RadioStationCard';
 import CustomStationsListOptions from './CustomStationsListOptions';
+
+import styles from './CustomStations.module.css';
 
 export default function CustomStation() {
   const [searchParams] = useSearchParams();
@@ -20,7 +22,12 @@ export default function CustomStation() {
   const { user } = useContext(UserContext)!;
   const playerContext = useContext(PlayerContext);
   const { getCustomStations, deleteCustomStation, stations, loading: stationsLoading } = useCustomStations();
+  const { setDocumentTitle } = useContext(DocumentTitleContext)!;
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setDocumentTitle('My stations');
+  }, [setDocumentTitle]);
 
   useEffect(() => {
     getCustomStations('', sort, order !== 'desc');
@@ -31,6 +38,10 @@ export default function CustomStation() {
   const deleteHandler = ({ id, name }: RadioStation) =>
     window.confirm(`Are you sure you want to delete ${name}?`) &&
     deleteCustomStation(id).then(() => getCustomStations('', sort, order !== 'desc'));
+
+  if (stationsLoading) {
+    return <Spinner className={styles.spinner} />;
+  }
 
   return (
     <section className={styles.section}>

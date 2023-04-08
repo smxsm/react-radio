@@ -1,13 +1,17 @@
-import styles from './SignIn.module.css';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import Input from './ui/Input';
-import Label from './ui/Label';
-import { UserContext } from '../context/UserContext';
-import { z } from 'zod';
 import { FieldValues, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+import { UserContext } from '../context/UserContext';
+import { DocumentTitleContext } from '../context/DocumentTitleContext';
+
+import Input from './ui/Input';
+import Label from './ui/Label';
 import Button from './ui/Button';
+
+import styles from './SignIn.module.css';
 
 const signInDataSchema = z.object({
   email: z.string().trim().email('Invalid e-mail address'),
@@ -19,6 +23,11 @@ export default function SignIn() {
   const { user, signin, loading } = useContext(UserContext)!;
   const { register, handleSubmit, formState } = useForm({ mode: 'onTouched', resolver: zodResolver(signInDataSchema) });
   const [error, setError] = useState<null | Error>(null);
+  const { setDocumentTitle } = useContext(DocumentTitleContext)!;
+
+  useEffect(() => {
+    setDocumentTitle('Sign in');
+  }, [setDocumentTitle]);
 
   const submitHandler = async ({ email, password, remember }: FieldValues) => {
     setError(await signin(email, password, remember));

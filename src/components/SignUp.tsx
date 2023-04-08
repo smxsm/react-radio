@@ -1,13 +1,17 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useContext, useState } from 'react';
-import { FieldValues, useForm } from 'react-hook-form';
+import { useContext, useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+import { FieldValues, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+
 import { UserContext } from '../context/UserContext';
-import styles from './SignUp.module.css';
+import { DocumentTitleContext } from '../context/DocumentTitleContext';
+
 import Button from './ui/Button';
 import Input from './ui/Input';
 import Label from './ui/Label';
+
+import styles from './SignUp.module.css';
 
 const signUpDataSchema = z.object({
   email: z.string().trim().email('Invalid e-mail address'),
@@ -21,6 +25,11 @@ export default function SignUp() {
   const { user, signup, loading } = useContext(UserContext)!;
   const { register, handleSubmit, formState } = useForm({ mode: 'onTouched', resolver: zodResolver(signUpDataSchema) });
   const [error, setError] = useState<null | Error>(null);
+  const { setDocumentTitle } = useContext(DocumentTitleContext)!;
+
+  useEffect(() => {
+    setDocumentTitle('Sign up');
+  }, [setDocumentTitle]);
 
   const submitHandler = async ({ email, firstName, lastName, password }: FieldValues) => {
     setError(await signup(email, firstName, lastName, password));

@@ -1,4 +1,8 @@
+import { useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+
+import { DocumentTitleContext } from '../context/DocumentTitleContext';
+
 import Card from './ui/Card';
 import CardsList from './ui/CardsList';
 
@@ -19,6 +23,12 @@ const genres = [
 ];
 
 export default function GenresList() {
+  const { setDocumentTitle } = useContext(DocumentTitleContext)!;
+
+  useEffect(() => {
+    setDocumentTitle('Browse stations');
+  }, [setDocumentTitle]);
+
   return (
     <CardsList>
       {genres.map((genre) => (
