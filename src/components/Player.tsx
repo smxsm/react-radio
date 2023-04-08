@@ -46,7 +46,10 @@ export default function Player(props: any) {
 
         <div className={styles['media-controls']}>
           <div className={styles['button-container']}>
-            <button className={styles['media-button']} onClick={() => playerContext.previous()}>
+            <button
+              className={`${styles['media-button']} ${playerContext.queue.length < 2 ? styles.disabled : ''}`.trim()}
+              onClick={() => playerContext.previous()}
+            >
               <FontAwesomeIcon icon={faStepBackward} className={styles['media-button-icon']} />
             </button>
             <button
@@ -60,7 +63,10 @@ export default function Player(props: any) {
                 <FontAwesomeIcon icon={faStop} className={styles['media-button-icon']} />
               )}
             </button>
-            <button className={styles['media-button']} onClick={() => playerContext.next()}>
+            <button
+              className={`${styles['media-button']} ${playerContext.queue.length < 2 ? styles.disabled : ''}`.trim()}
+              onClick={() => playerContext.next()}
+            >
               <FontAwesomeIcon icon={faStepForward} className={styles['media-button-icon']} />
             </button>
           </div>

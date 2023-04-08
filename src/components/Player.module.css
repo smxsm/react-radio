@@ -37,6 +37,7 @@
   color: #fff;
   border: 1px solid rgba(0, 0, 0, 0.3);
   border-top-color: rgba(255, 255, 255, 0.15);
+  transition: transform 0.2s ease-out;
 }
 
 .media-button:first-child {
@@ -51,8 +52,16 @@
 }
 
 .media-button:active {
+  border: none;
   border-width: 1px;
   transform: scale(0.96);
+}
+
+.media-button.disabled {
+  border: none;
+  border-width: 1px;
+  transform: scale(0.96);
+  transition: all 0.2s ease-in;
 }
 
 .media-button-play {
@@ -60,11 +69,18 @@
 }
 
 .media-button-icon {
+  opacity: 1;
   position: static;
   width: 12px;
   height: 12px;
   margin: 0;
   padding: 0;
+  transition: opacity 0.2s ease-out;
+}
+
+.media-button.disabled .media-button-icon {
+  opacity: 0.3;
+  transition: opacity 0.2s ease-in;
 }
 
 .video {
