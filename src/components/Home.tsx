@@ -70,7 +70,7 @@ export default function Home() {
           </figure>
           <p className={styles.categoryName}>Music</p>
         </Link>
-        <Link to="/stations/music/genres" className={styles.category}>
+        <Link to="/stations/genres/news" className={styles.category}>
           <figure>
             <FontAwesomeIcon icon={faNewspaper} className={styles.categoryIcon} />
           </figure>
@@ -82,7 +82,7 @@ export default function Home() {
           </figure>
           <p className={styles.categoryName}>Sports</p>
         </Link>
-        <Link to="/stations/music/genres" className={styles.category}>
+        <Link to="/stations/countries" className={styles.category}>
           <figure>
             <FontAwesomeIcon icon={faGlobeAmericas} className={styles.categoryIcon} />
           </figure>
@@ -95,7 +95,7 @@ export default function Home() {
           <div className={styles.recommended}>
             <h3 className={styles.recommendedTitle}>Recently played</h3>
             <CardsList>
-              {stationHistory.map((station) => (
+              {stationHistory.slice(0, 12).map((station) => (
                 <RadioStationCard
                   // disabled={loadingTrending || addingCustomStation}
                   station={station}
