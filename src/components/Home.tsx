@@ -131,7 +131,7 @@ export default function Home() {
           </CardsList>
         </div>
         <div className={styles.recommended}>
-          <h3 className={styles.recommendedTitle}>New</h3>
+          <h3 className={styles.recommendedTitle}>New and updated</h3>
           <CardsList>
             {newest.map((station, i) => (
               <RadioStationCard
