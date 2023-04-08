@@ -20,7 +20,7 @@ export default function CustomStationsListOptions() {
         ]}
         label="Order"
         name="order"
-        defaultValue="desc"
+        defaultValue="asc"
       />
     </div>
   );
