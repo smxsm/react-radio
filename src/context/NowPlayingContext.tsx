@@ -9,8 +9,8 @@ type NowPlayingContextType = {
   matchedTrack?: TrackInfo;
   stationHistory?: RadioStation[];
   songHistory?: TrackHistory[];
-  removeFromHistory: (id: string) => Promise<void>;
-  clearHistory: () => Promise<void>;
+  removeSongFromHistory: (id: string) => Promise<void>;
+  clearSongHistory: () => Promise<void>;
 };
 
 type StationMetadata = {
@@ -197,7 +197,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
     loadTrackHistory();
   }, [supabase, user, loadStationHistory, loadTrackHistory]);
 
-  const removeFromHistory = useCallback(
+  const removeSongFromHistory = useCallback(
     async (id: string) => {
       if (!id) return;
       await supabase.from('tracks_history').delete().eq('track_id', id);
@@ -206,14 +206,22 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
     [supabase, loadTrackHistory]
   );
 
-  const clearHistory = useCallback(async () => {
+  const clearSongHistory = useCallback(async () => {
     await supabase.from('tracks_history').delete().neq('track_id', '00000000-0000-0000-0000-000000000000');
     loadTrackHistory();
   }, [supabase, loadTrackHistory]);
 
   return (
     <NowPlayingContext.Provider
-      value={{ station, stationMetadata, matchedTrack, songHistory, stationHistory, removeFromHistory, clearHistory }}
+      value={{
+        station,
+        stationMetadata,
+        matchedTrack,
+        songHistory,
+        stationHistory,
+        removeSongFromHistory,
+        clearSongHistory,
+      }}
     >
       {children}
     </NowPlayingContext.Provider>

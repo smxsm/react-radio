@@ -12,7 +12,7 @@ type TrackHistoryProps = {
 };
 
 export default function TrackHistory({ className }: TrackHistoryProps) {
-  const { songHistory, removeFromHistory, clearHistory } = useContext(NowPlayingContext)!;
+  const { songHistory, removeSongFromHistory, clearSongHistory } = useContext(NowPlayingContext)!;
 
   if (!songHistory?.length) return null;
 
@@ -24,7 +24,7 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
           type="button"
           disabled={!songHistory?.length}
           className={styles.btnClear}
-          onClick={() => clearHistory()}
+          onClick={() => clearSongHistory()}
         >
           Clear
         </Button>
@@ -44,7 +44,7 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
               icon={faTrashAlt}
               className={styles.actionIcon}
               title={`Remove`}
-              onClick={() => removeFromHistory(entry.id)}
+              onClick={() => removeSongFromHistory(entry.id)}
             />
           </div>
           <div className={styles.streamLinks}>
