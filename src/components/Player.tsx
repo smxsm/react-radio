@@ -54,12 +54,16 @@ export default function Player(props: any) {
             </button>
             <button
               className={`${styles['media-button']} ${styles['media-button-play']}`}
-              onClick={() => (playerContext.status !== 'stopped' ? playerContext.stop() : playerContext.play())}
+              onClick={() =>
+                playerContext.status === 'playing' || playerContext.status === 'loading'
+                  ? playerContext.stop()
+                  : playerContext.play()
+              }
             >
-              {playerContext.status === 'stopped' && (
+              {(playerContext.status === 'stopped' || playerContext.status === 'error') && (
                 <FontAwesomeIcon icon={faPlay} className={styles['media-button-icon']} />
               )}
-              {playerContext.status !== 'stopped' && (
+              {(playerContext.status === 'playing' || playerContext.status === 'loading') && (
                 <FontAwesomeIcon icon={faStop} className={styles['media-button-icon']} />
               )}
             </button>
