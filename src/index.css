@@ -119,7 +119,7 @@ h2 {
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #0f172a #13111c;
+  scrollbar-color: rgb(48, 110, 232) hsl(222, 47%, 18%);
 }
 
 /* Chrome, Edge, and Safari */
