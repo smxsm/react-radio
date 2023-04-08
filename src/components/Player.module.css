@@ -158,20 +158,42 @@
 }
 
 .loading {
-  animation-duration: 1s;
-  animation-name: breeth;
+  animation-duration: 0.8s;
+  animation-name: loading;
   animation-iteration-count: infinite;
   animation-direction: alternate;
+  animation-delay: 0.2s;
 }
 
 .error {
-  animation-duration: 0.15s;
-  animation-name: breeth;
-  animation-iteration-count: 5;
-  animation-direction: alternate;
+  animation-duration: 0.2s;
+  animation-name: error;
+  animation-iteration-count: 3;
 }
 
 @keyframes breeth {
+  from {
+    box-shadow: 0px 0px 1rem rgba(23, 92, 230, 0.1);
+    border-color: rgb(24, 51, 103);
+  }
+  to {
+    box-shadow: 0px 0px 2rem rgba(23, 92, 230, 0.7);
+    border-color: rgb(48, 110, 232);
+  }
+}
+
+@keyframes loading {
+  from {
+    box-shadow: 0px 0px 1rem rgba(23, 92, 230, 0.1);
+    border-color: rgb(24, 51, 103);
+  }
+  to {
+    box-shadow: 0px 0px 2rem rgba(23, 92, 230, 0.7);
+    border-color: rgb(48, 110, 232);
+  }
+}
+
+@keyframes error {
   from {
     box-shadow: 0px 0px 1rem rgba(23, 92, 230, 0.1);
     border-color: rgb(24, 51, 103);
