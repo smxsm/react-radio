@@ -7,8 +7,10 @@ import {
   faListUl,
   faGlobeAmericas,
 } from '@fortawesome/free-solid-svg-icons';
-import { Menu } from './ui/Menu';
+
+import Menu from './ui/Menu';
 import MenuItem from './ui/MenuItem';
+
 import styles from './StationsMenu.module.css';
 
 export default function StationsMenu() {

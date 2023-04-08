@@ -1,11 +1,14 @@
+import { useContext } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 import { faPencil, faPlay, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useContext } from 'react';
-import { PlayerContext } from '../context/PlayerContext';
-import Card from './ui/Card';
-import styles from './RadioStationCard.module.css';
+
 import { UserContext } from '../context/UserContext';
+import { PlayerContext } from '../context/PlayerContext';
+
+import Card from './ui/Card';
+
+import styles from './RadioStationCard.module.css';
 
 type RadioStationCardProps = {
   station: RadioStation;

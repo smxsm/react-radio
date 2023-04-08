@@ -1,12 +1,14 @@
-import styles from './Player.module.css';
-
 import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStepBackward, faPlay, faStepForward, faStop } from '@fortawesome/free-solid-svg-icons';
-import SpectrumAnalyzer from './SpectrumAnalyzer';
-import ScrollingText from './ui/ScrollingText';
+
 import { PlayerContext } from '../context/PlayerContext';
 import { NowPlayingContext } from '../context/NowPlayingContext';
+
+import ScrollingText from './ui/ScrollingText';
+import SpectrumAnalyzer from './SpectrumAnalyzer';
+
+import styles from './Player.module.css';
 
 export default function Player(props: any) {
   const playerContext = useContext(PlayerContext)!;

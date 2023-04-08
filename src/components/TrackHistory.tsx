@@ -1,11 +1,13 @@
 import { useContext } from 'react';
-import { NowPlayingContext } from '../context/NowPlayingContext';
-import Card from './ui/Card';
-
-import styles from './TrackHistory.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+
+import { NowPlayingContext } from '../context/NowPlayingContext';
+
+import Card from './ui/Card';
 import Button from './ui/Button';
+
+import styles from './TrackHistory.module.css';
 
 type TrackHistoryProps = {
   className?: string;

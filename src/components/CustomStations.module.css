@@ -22,3 +22,7 @@
   flex-grow: 1;
   place-content: flex-start;
 }
+
+.spinner {
+  margin: 2rem auto;
+}

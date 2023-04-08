@@ -1,7 +1,9 @@
 import { useContext, useState } from 'react';
-import { UserContext } from '../context/UserContext';
-import Spinner from './ui/Spinner';
 import { Navigate, Outlet } from 'react-router-dom';
+
+import { UserContext } from '../context/UserContext';
+
+import Spinner from './ui/Spinner';
 
 import styles from './ProtectedRoute.module.css';
 

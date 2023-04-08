@@ -1,5 +1,5 @@
-import Hls from 'hls.js';
 import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
+import Hls from 'hls.js';
 
 export type PlayerContextType = {
   station?: RadioStation;

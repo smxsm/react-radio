@@ -1,10 +1,13 @@
-import { faFolder, faRightFromBracket, faRightToBracket, faUserPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useContext } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFolder, faRightFromBracket, faRightToBracket, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+
 import { UserContext } from '../context/UserContext';
-import { Menu } from './ui/Menu';
+
+import Menu from './ui/Menu';
 import MenuItem from './ui/MenuItem';
 import Spinner from './ui/Spinner';
+
 import styles from './UserMenu.module.css';
 
 export default function UserMenu() {

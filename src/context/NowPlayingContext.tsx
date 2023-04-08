@@ -1,7 +1,8 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import useSupabase from '../hooks/useSupabase';
+
 import { PlayerContext } from './PlayerContext';
 import { UserContext } from './UserContext';
+import useSupabase from '../hooks/useSupabase';
 
 type NowPlayingContextType = {
   station?: RadioStation;

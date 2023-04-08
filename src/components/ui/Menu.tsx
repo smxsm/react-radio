@@ -5,7 +5,7 @@ type MenuProps = PropsWithChildren & {
   className?: string;
 };
 
-export function Menu({ children, className }: MenuProps) {
+export default function Menu({ children, className }: MenuProps) {
   return (
     <ul className={`${styles.menu} ${className}`.trim()}>
       {Array.isArray(children) ? children?.map((child, i) => <li key={i}>{child}</li>) : children}

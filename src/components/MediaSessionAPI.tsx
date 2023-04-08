@@ -1,4 +1,5 @@
 import { useContext, useEffect } from 'react';
+
 import { NowPlayingContext } from '../context/NowPlayingContext';
 import { PlayerContext } from '../context/PlayerContext';
 

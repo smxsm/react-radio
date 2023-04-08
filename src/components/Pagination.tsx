@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import styles from './Pagination.module.css';
 import Button from './ui/Button';
+import styles from './Pagination.module.css';
 
 type PaginationProps = {
   pages: number;

@@ -1,10 +1,12 @@
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from './SearchForm.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
+
 import Button from './ui/Button';
 import Input from './ui/Input';
+
+import styles from './SearchForm.module.css';
 
 type SearchFormProps = {
   className?: string;

@@ -1,16 +1,18 @@
+import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import styles from './Home.module.css';
-import Button from './ui/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGlobeAmericas, faMusic, faNewspaper, faTableTennis } from '@fortawesome/free-solid-svg-icons';
-import { useStations } from '../hooks/useStations';
-import RadioStationCard from './RadioStationCard';
-import CardsList from './ui/CardsList';
-import useCustomStations from '../hooks/useCustomStations';
-import { useContext } from 'react';
+
 import { PlayerContext } from '../context/PlayerContext';
 import { UserContext } from '../context/UserContext';
 import { NowPlayingContext } from '../context/NowPlayingContext';
+import { useStations } from '../hooks/useStations';
+import useCustomStations from '../hooks/useCustomStations';
+
+import Button from './ui/Button';
+import CardsList from './ui/CardsList';
+import RadioStationCard from './RadioStationCard';
+import styles from './Home.module.css';
 
 export default function Home() {
   const navigate = useNavigate();
