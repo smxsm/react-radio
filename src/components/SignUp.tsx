@@ -13,13 +13,15 @@ import Label from './ui/Label';
 
 import styles from './SignUp.module.css';
 
-const signUpDataSchema = z.object({
-  email: z.string().trim().email('Invalid e-mail address'),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  password: z.string().min(6, 'The password must be at least 6 character long'),
-  rePass: z.string(),
-});
+const signUpDataSchema = z
+  .object({
+    email: z.string().trim().email('Invalid e-mail address'),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    password: z.string().min(6, 'The password must be at least 6 character long'),
+    rePass: z.string(),
+  })
+  .refine((data) => data.password === data.rePass, { message: "Passwords don't match", path: ['rePass'] });
 
 export default function SignUp() {
   const { user, signup, loading } = useContext(UserContext)!;
