@@ -37,3 +37,16 @@
   place-self: center;
   color: indianred;
 }
+
+@container (max-width: 400px) {
+  .signup-form {
+    grid-template-columns: 1fr;
+  }
+  .validation-error {
+    grid-column: 1/2;
+  }
+  .form-actions {
+    grid-column: 1/2;
+    margin-top: 2rem;
+  }
+}

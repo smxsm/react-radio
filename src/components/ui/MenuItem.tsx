@@ -4,7 +4,7 @@ import styles from './MenuItem.module.css';
 
 type MenuItemProps = PropsWithChildren & {
   href?: string;
-  active?: boolean;
+  markActive?: boolean;
   isActive?: boolean;
   className?: string;
   onClick?: MouseEventHandler;
@@ -12,7 +12,7 @@ type MenuItemProps = PropsWithChildren & {
 
 export default function MenuItem({
   href = '#',
-  active = false,
+  markActive = true,
   isActive = false,
   children,
   className,
@@ -24,7 +24,7 @@ export default function MenuItem({
   return (
     <NavLink
       to={href}
-      className={({ isActive }) => (isActive ? classes + ' ' + styles.active : classes)}
+      className={({ isActive }) => (isActive && markActive ? classes + ' ' + styles.active : classes)}
       onClick={onClick}
     >
       {children}

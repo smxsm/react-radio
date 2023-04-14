@@ -6,19 +6,24 @@
 }
 
 .content {
+  container-type: inline-size;
   flex-grow: 1;
   overflow: auto;
+  padding-right: 1rem;
 }
 
 .sidePanel {
   display: flex;
+  width: 300px;
   flex-direction: column;
+  container-type: inline-size;
 }
 
-@media screen and (max-width: 639px) {
+@media screen and (max-width: 720px) {
   .container {
     display: block;
     position: relative;
+    margin-top: 8rem;
   }
 
   .content {
@@ -39,5 +44,6 @@
 
   .sidePanel.playerActive {
     display: block;
+    width: 100%;
   }
 }

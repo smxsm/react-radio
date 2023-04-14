@@ -25,6 +25,13 @@ import styles from './App.module.css';
 
 function App() {
   const [mobilePlayerActive, setMobilePlayerActive] = useState(false);
+  const switchPlayer = (visible?: boolean) => {
+    if (visible === undefined) {
+      return setMobilePlayerActive((mobilePlayerActive) => !mobilePlayerActive);
+    }
+
+    setMobilePlayerActive(visible);
+  };
   return (
     <>
       <UserProvider>
@@ -32,7 +39,7 @@ function App() {
           <NowPlayingProvider>
             <MediaSessionAPI />
             <BrowserRouter>
-              <Navigation showPlayer={() => setMobilePlayerActive((mobilePlayerActive) => !mobilePlayerActive)} />
+              <Navigation switchPlayer={switchPlayer} showNowPlaying={!mobilePlayerActive} />
               <div className={styles.container}>
                 <main className={styles.content}>
                   <DocumentTitleProvider>

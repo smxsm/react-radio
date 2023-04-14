@@ -1,11 +1,10 @@
 .options {
   display: flex;
-  flex-wrap: wrap;
   gap: 2rem;
   margin-bottom: 2rem;
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 340px) {
   .options {
     flex-wrap: wrap;
     justify-content: center;

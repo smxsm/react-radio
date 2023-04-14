@@ -1,20 +1,24 @@
 .player {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  display: grid;
+  grid-template-areas:
+    'artwork'
+    'track-info'
+    'visualiser'
+    'media-controls'
+    'music-links';
+  justify-items: center;
   gap: 2rem;
-  align-items: center;
   background-color: rgb(15, 23, 42);
   border: 1px solid rgb(24, 51, 103);
   border-radius: 8px;
-  transition: all 0.2s;
   padding: 20px 20px;
-  width: 300px;
-  height: fit-content;
 }
 
 .media-controls {
   display: flex;
+  grid-area: media-controls;
+  align-self: end;
+  justify-self: center;
 }
 
 .button-container {
@@ -27,7 +31,7 @@
 }
 
 .media-button {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(255, 255, 255, 0.05);
   outline: none;
   display: flex;
   justify-content: center;
@@ -83,25 +87,10 @@
   transition: opacity 0.2s ease-in;
 }
 
-.video {
-  width: 0;
-  height: 0;
-  visibility: hidden;
-}
-
 .visualizer {
   width: 257px;
-}
-
-.currentTrack {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  height: 425px;
-  flex-shrink: 0;
+  grid-area: visualiser;
+  align-self: center;
 }
 
 .artwork {
@@ -111,12 +100,17 @@
   border-radius: 14px;
   aspect-ratio: 1/1;
   object-fit: contain;
+  grid-area: artwork;
 }
 
 .trackInfo {
   width: 100%;
+  max-width: 257px;
+  overflow: hidden;
   height: 50px;
   flex-shrink: 0;
+  grid-area: track-info;
+  align-self: start;
 }
 
 .stationName {
@@ -130,21 +124,12 @@
   color: white;
 }
 
-.trackArtist {
-  font-weight: 600;
-  font-size: 1.6rem;
-  color: white;
-}
-
-.trackAlbum {
-  font-style: italic;
-}
-
 .musicLinks {
   display: flex;
   align-items: center;
   gap: 10px;
   height: 24px;
+  grid-area: music-links;
 }
 
 .musicLinks img {
@@ -154,7 +139,6 @@
 .active {
   border: 1px solid rgb(48, 110, 232);
   box-shadow: 0px 0px 2rem rgba(23, 92, 230, 0.7);
-  transition: all 0.2s;
 }
 
 .loading {
@@ -204,24 +188,45 @@
   }
 }
 
-@media screen and (max-width: 600px) {
+@container (min-width: 550px) {
   .player {
-    width: 80%;
-    height: 100%;
-    justify-content: center;
-    background-color: transparent;
+    justify-items: start;
+    gap: 1rem;
+    grid-template-areas:
+      'artwork track-info'
+      'artwork visualiser'
+      'artwork media-controls'
+      'music-links music-links';
+    margin: 1rem auto;
+    margin-top: 0;
+    max-width: 510px;
+  }
+}
+
+@media screen and (max-width: 549px) {
+  .player {
+    background: none;
     border: none;
     padding: 0;
-    margin: 0 auto;
-  }
-
-  .currentTrack {
-    height: 100%;
   }
 
   .artwork {
-    width: 100%;
-    height: 100%;
+    width: 257px;
+    height: 257px;
+  }
+
+  .media-button {
+    width: 70px;
+    height: 40px;
+  }
+
+  .media-button-play {
+    width: 100px;
+  }
+
+  .media-button-icon {
+    width: 18px;
+    height: 18px;
   }
 
   .active {

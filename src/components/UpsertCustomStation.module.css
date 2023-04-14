@@ -38,3 +38,17 @@
 .spinner {
   margin: 2rem auto;
 }
+
+@container (max-width: 400px) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+  .validationError {
+    grid-column: 1/2;
+  }
+  .formActions {
+    grid-column: 1/2;
+    margin-top: 2rem;
+    flex-wrap: wrap-reverse;
+  }
+}

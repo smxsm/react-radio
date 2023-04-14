@@ -8,24 +8,37 @@ type ScrollingTextProps = {
 };
 
 export default function ScrollingText({ text, className }: ScrollingTextProps) {
-  const divRef = useRef(null);
-  const spanRef = useRef(null);
+  const divRef = useRef<HTMLDivElement | null>(null);
+  const spanRef = useRef<HTMLSpanElement | null>(null);
   const timoutRef = useRef<NodeJS.Timer | number>(0);
+  const [containerWidth, setContainerWidth] = useState(1000);
   const [shouldScroll, setShouldScroll] = useState(false);
 
   useEffect(() => {
+    const div = divRef.current;
+    const observer = new ResizeObserver((entries) => {
+      setContainerWidth(entries[0].contentRect.width);
+    });
+    if (div) {
+      observer.observe(div);
+    }
+    return () => {
+      div && observer.unobserve(div);
+    };
+  }, []);
+
+  useEffect(() => {
     const resetAnimation = () => {
-      span.classList.remove(styles.scroll);
-      void span.offsetWidth;
+      spanRef.current?.classList.remove(styles.scroll);
+      void spanRef.current?.offsetWidth;
     };
 
     clearTimeout(timoutRef.current);
-    const div = divRef.current! as HTMLSpanElement;
-    const span = spanRef.current! as HTMLSpanElement;
     resetAnimation();
-    const hidden = div.offsetWidth - span.offsetWidth;
 
-    if (hidden > 0) {
+    const textWidth = (spanRef.current && spanRef.current.offsetWidth) || 0;
+
+    if (containerWidth - textWidth >= 0) {
       setShouldScroll(false);
       return;
     }
@@ -35,17 +48,17 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
     const startAnimation = () => {
       timoutRef.current = setTimeout(() => {
         resetAnimation();
-        const animationDuration = span.offsetWidth / 60;
-        span.style.animationDuration = animationDuration.toFixed(2) + 's';
-        span.classList.add(styles.scroll);
-        span.onanimationend = startAnimation;
+        const animationDuration = textWidth / 60;
+        spanRef.current!.style.animationDuration = animationDuration.toFixed(2) + 's';
+        spanRef.current!.classList.add(styles.scroll);
+        spanRef.current!.onanimationend = startAnimation;
       }, 8000);
     };
 
     startAnimation();
 
     return () => clearTimeout(timoutRef.current);
-  }, [text]);
+  }, [text, containerWidth]);
 
   return (
     <div ref={divRef} className={styles.container}>

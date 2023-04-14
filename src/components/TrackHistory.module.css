@@ -4,6 +4,7 @@
   gap: 1rem;
   overflow: auto;
   width: 100%;
+  padding: 0 1rem;
   padding-top: 1rem;
 }
 
@@ -27,7 +28,6 @@
 .historyCard {
   position: relative;
   flex-shrink: 0;
-  width: 275px;
 }
 
 .historyTrackInfo {
@@ -84,11 +84,8 @@
   width: 24px;
 }
 
-@media screen and (max-width: 600px) {
+@container (max-width: 301px) {
   .history {
-    align-items: center;
-  }
-  .historyCard {
-    width: 90%;
+    padding-left: 0;
   }
 }

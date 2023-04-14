@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGlobeAmericas, faMusic, faNewspaper, faTableTennis } from '@fortawesome/free-solid-svg-icons';
+import { faFolder, faGlobeAmericas, faMusic, faNewspaper, faTableTennis } from '@fortawesome/free-solid-svg-icons';
 
 import { PlayerContext } from '../context/PlayerContext';
 import { UserContext } from '../context/UserContext';
@@ -66,28 +66,26 @@ export default function Home() {
       )}
 
       <section className={styles.categoriesSection}>
+        {user && (
+          <Link to="/stations/custom" className={styles.category}>
+            <FontAwesomeIcon icon={faFolder} className={styles.categoryIcon} />
+            <p className={styles.categoryName}>My Stations</p>
+          </Link>
+        )}
         <Link to="/stations/music/genres" className={styles.category}>
-          <figure>
-            <FontAwesomeIcon icon={faMusic} className={styles.categoryIcon} />
-          </figure>
+          <FontAwesomeIcon icon={faMusic} className={styles.categoryIcon} />
           <p className={styles.categoryName}>Music</p>
         </Link>
         <Link to="/stations/genres/news" className={styles.category}>
-          <figure>
-            <FontAwesomeIcon icon={faNewspaper} className={styles.categoryIcon} />
-          </figure>
+          <FontAwesomeIcon icon={faNewspaper} className={styles.categoryIcon} />
           <p className={styles.categoryName}>News</p>
         </Link>
         <Link to="/stations/genres/sports" className={styles.category}>
-          <figure>
-            <FontAwesomeIcon icon={faTableTennis} className={styles.categoryIcon} />
-          </figure>
+          <FontAwesomeIcon icon={faTableTennis} className={styles.categoryIcon} />
           <p className={styles.categoryName}>Sports</p>
         </Link>
         <Link to="/stations/countries" className={styles.category}>
-          <figure>
-            <FontAwesomeIcon icon={faGlobeAmericas} className={styles.categoryIcon} />
-          </figure>
+          <FontAwesomeIcon icon={faGlobeAmericas} className={styles.categoryIcon} />
           <p className={styles.categoryName}>Countries</p>
         </Link>
       </section>

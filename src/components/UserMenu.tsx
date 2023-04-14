@@ -26,24 +26,25 @@ export default function UserMenu({ className }: UserMenuProps) {
     return (
       <Menu className={`${styles.userMenu} ${className ? className : ''}`.trim()}>
         <MenuItem href="/stations/custom">
-          <FontAwesomeIcon icon={faFolder} />
-          My Stations
+          <FontAwesomeIcon icon={faFolder} title="My Stations" />
+          <span className={styles.menuItemText}>My Stations</span>
         </MenuItem>
-        <div className={styles['signout-item']} onClick={signOutClickHandler}>
-          <FontAwesomeIcon icon={faRightFromBracket} />
-        </div>
+        <MenuItem href="" className={styles['signout-item']} onClick={signOutClickHandler} markActive={false}>
+          <FontAwesomeIcon icon={faRightFromBracket} title="Sign out" />
+          <span className={styles.menuItemText}>Sign out</span>
+        </MenuItem>
       </Menu>
     );
   }
   return (
     <Menu className={`${styles.userMenu} ${className ? className : ''}`.trim()}>
       <MenuItem href="/auth/signin">
-        <FontAwesomeIcon icon={faRightToBracket} />
-        Sign In
+        <FontAwesomeIcon icon={faRightToBracket} title="Sign in" />
+        <span className={styles.menuItemText}>Sign in</span>
       </MenuItem>
       <MenuItem href="/auth/signup">
-        <FontAwesomeIcon icon={faUserPlus} />
-        Create acount
+        <FontAwesomeIcon icon={faUserPlus} title="Create account" />
+        <span className={styles.menuItemText}>Create acount</span>
       </MenuItem>
     </Menu>
   );
