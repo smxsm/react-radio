@@ -21,7 +21,10 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
     }
     // Using Fuse.js to select best match
     let fuse = new Fuse(
-      data.map(({ artistName, trackName, collectionName }) => `${artistName} ${trackName} ${collectionName}`),
+      data.map(
+        ({ artistName, trackName, collectionName, collectionArtistName }) =>
+          `${artistName} ${trackName} ${collectionArtistName} ${collectionName}`
+      ),
       { useExtendedSearch: true }
     );
     // First run trying to filter out collection albums
