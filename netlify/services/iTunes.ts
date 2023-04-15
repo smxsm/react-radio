@@ -14,7 +14,7 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
     if (!searchTerm) {
       return null;
     }
-    const res = await fetch(`https://itunes.apple.com/search?term=${searchTerm}&entity=musicTrack`);
+    const res = await fetch(`https://itunes.apple.com/search?term=${searchTerm}&entity=song`);
     const data = (await res.json())?.results;
     if (!data?.length) {
       return null;
