@@ -20,8 +20,17 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
       return null;
     }
     // Using Fuse.js to select best match
-    const fuse = new Fuse(data.map(({ artistName, trackName }) => `${artistName} ${trackName}`));
-    const searchResults = fuse.search(searchTerm);
+    let fuse = new Fuse(
+      data.map(({ artistName, trackName, collectionName }) => `${artistName} ${trackName} ${collectionName}`),
+      { useExtendedSearch: true }
+    );
+    // First run trying to filter out collection albums
+    let searchResults = fuse.search(`${searchTerm} !greatest !best !hits !essential !single !live`);
+    if (!searchResults.length) {
+      // If furst run found nothing, try againt without considering album type
+      fuse = new Fuse(data.map(({ artistName, trackName }) => `${artistName} ${trackName}}`));
+      searchResults = fuse.search(searchTerm);
+    }
     if (!searchResults.length) {
       return null;
     }
