@@ -22,11 +22,11 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
     highShelffFilter.current = audioCtx.createBiquadFilter();
 
     lowShelffFilter.current!.type = 'lowshelf';
-    lowShelffFilter.current!.frequency.value = 1000;
+    lowShelffFilter.current!.frequency.value = 800;
     lowShelffFilter.current!.gain.value = -20;
 
     highShelffFilter.current!.type = 'highshelf';
-    highShelffFilter.current!.frequency.value = 10000;
+    highShelffFilter.current!.frequency.value = 4000;
     highShelffFilter.current!.gain.value = 8;
 
     gainNode.current!.gain.value = 35;
@@ -55,7 +55,7 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
     const WIDTH = canvasRef.current!.width;
     const HEIGHT = canvasRef.current!.height;
-    const exp = 1.2;
+    const exp = 1.25;
 
     draw();
 
