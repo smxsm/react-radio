@@ -9,7 +9,8 @@ type ScrollingTextProps = {
 
 export default function ScrollingText({ text, className }: ScrollingTextProps) {
   const divRef = useRef<HTMLDivElement | null>(null);
-  const spanRef = useRef<HTMLSpanElement | null>(null);
+  const scrollableRef = useRef<HTMLSpanElement | null>(null);
+  const textSpanRef = useRef<HTMLSpanElement | null>(null);
   const timoutRef = useRef<NodeJS.Timer | number>(0);
   const [containerWidth, setContainerWidth] = useState(1000);
   const [shouldScroll, setShouldScroll] = useState(false);
@@ -29,14 +30,14 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
 
   useEffect(() => {
     const resetAnimation = () => {
-      spanRef.current?.classList.remove(styles.scroll);
-      void spanRef.current?.offsetWidth;
+      scrollableRef.current?.classList.remove(styles.scroll);
+      void scrollableRef.current?.offsetWidth;
     };
 
     clearTimeout(timoutRef.current);
     resetAnimation();
 
-    const textWidth = (spanRef.current && spanRef.current.offsetWidth) || 0;
+    const textWidth = (textSpanRef.current && textSpanRef.current.offsetWidth) || 0;
 
     if (containerWidth - textWidth >= 0) {
       setShouldScroll(false);
@@ -49,9 +50,9 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
       timoutRef.current = setTimeout(() => {
         resetAnimation();
         const animationDuration = textWidth / 60;
-        spanRef.current!.style.animationDuration = animationDuration.toFixed(2) + 's';
-        spanRef.current!.classList.add(styles.scroll);
-        spanRef.current!.onanimationend = startAnimation;
+        scrollableRef.current!.style.animationDuration = animationDuration.toFixed(2) + 's';
+        scrollableRef.current!.classList.add(styles.scroll);
+        scrollableRef.current!.onanimationend = startAnimation;
       }, 8000);
     };
 
@@ -62,8 +63,8 @@ export default function ScrollingText({ text, className }: ScrollingTextProps) {
 
   return (
     <div ref={divRef} className={styles.container}>
-      <span ref={spanRef} className={`${styles.scrollable}${className ? ' ' + className : ''}`} key={text}>
-        {text}
+      <span ref={scrollableRef} className={`${styles.scrollable}${className ? ' ' + className : ''}`} key={text}>
+        <span ref={textSpanRef}>{text}</span>
         {!shouldScroll ? '' : ' | ' + text + ' | '}
       </span>
     </div>
