@@ -5,7 +5,6 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
   const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const analyser = useRef<AnalyserNode | undefined>();
   const gainNode = useRef<GainNode | undefined>();
-  const lowShelffFilter = useRef<BiquadFilterNode | undefined>();
   const highShelffFilter = useRef<BiquadFilterNode | undefined>();
   const floatDataArray = useRef<Float32Array>(new Float32Array());
   const barsCount = useRef(0);
@@ -18,25 +17,19 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
     analyser.current = audioCtx.createAnalyser();
     gainNode.current = audioCtx.createGain();
-    lowShelffFilter.current = audioCtx.createBiquadFilter();
     highShelffFilter.current = audioCtx.createBiquadFilter();
 
-    lowShelffFilter.current!.type = 'lowshelf';
-    lowShelffFilter.current!.frequency.value = 800;
-    lowShelffFilter.current!.gain.value = -20;
-
     highShelffFilter.current!.type = 'highshelf';
-    highShelffFilter.current!.frequency.value = 4000;
-    highShelffFilter.current!.gain.value = 8;
+    highShelffFilter.current!.frequency.value = 1000;
+    highShelffFilter.current!.gain.value = 30;
 
-    gainNode.current!.gain.value = 35;
+    gainNode.current!.gain.value = 2.5;
 
-    source.connect(lowShelffFilter.current!);
-    lowShelffFilter.current!.connect(highShelffFilter.current!);
+    source.connect(highShelffFilter.current);
     highShelffFilter.current!.connect(gainNode.current!);
     gainNode.current!.connect(analyser.current!);
 
-    analyser.current!.smoothingTimeConstant = 0.86;
+    analyser.current!.smoothingTimeConstant = 0.85;
     analyser.current!.fftSize = 128;
 
     barsCount.current = analyser.current!.frequencyBinCount / 3.2;
@@ -55,7 +48,7 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
     const WIDTH = canvasRef.current!.width;
     const HEIGHT = canvasRef.current!.height;
-    const exp = 1.25;
+    const exp = 1.3;
 
     draw();
 
