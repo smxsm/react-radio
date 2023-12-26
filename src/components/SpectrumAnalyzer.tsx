@@ -4,7 +4,6 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const analyser = useRef<AnalyserNode | undefined>();
-  const gainNode = useRef<GainNode | undefined>();
   const highShelffFilter = useRef<BiquadFilterNode | undefined>();
   const floatDataArray = useRef<Float32Array>(new Float32Array());
   const barsCount = useRef(0);
@@ -16,20 +15,16 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
     }
 
     analyser.current = audioCtx.createAnalyser();
-    gainNode.current = audioCtx.createGain();
     highShelffFilter.current = audioCtx.createBiquadFilter();
 
-    highShelffFilter.current!.type = 'highshelf';
-    highShelffFilter.current!.frequency.value = 1000;
-    highShelffFilter.current!.gain.value = 30;
-
-    gainNode.current!.gain.value = 2.5;
+    highShelffFilter.current!.type = 'lowshelf';
+    highShelffFilter.current!.frequency.value = 1200;
+    highShelffFilter.current!.gain.value = -18;
 
     source.connect(highShelffFilter.current);
-    highShelffFilter.current!.connect(gainNode.current!);
-    gainNode.current!.connect(analyser.current!);
+    highShelffFilter.current!.connect(analyser.current!);
 
-    analyser.current!.smoothingTimeConstant = 0.85;
+    analyser.current!.smoothingTimeConstant = 0.82;
     analyser.current!.fftSize = 128;
 
     barsCount.current = analyser.current!.frequencyBinCount / 3.2;
@@ -48,7 +43,9 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
     const WIDTH = canvasRef.current!.width;
     const HEIGHT = canvasRef.current!.height;
-    const exp = 1.3;
+    const exp = 1.2;
+
+    const barsBucket: number[][] = [];
 
     draw();
 
@@ -57,12 +54,11 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
 
       now = Date.now();
       elapsed = now - then;
-      if (elapsed < fpsInterval) {
-        return;
-      }
       then = now - (elapsed % fpsInterval);
 
-      canvasCtxRef.current!.clearRect(0, 0, WIDTH + 10, HEIGHT);
+      if (elapsed >= fpsInterval) {
+        canvasCtxRef.current!.clearRect(0, 0, WIDTH + 10, HEIGHT);
+      }
 
       if (!analyser.current) {
         return;
@@ -73,7 +69,16 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
       x = 0;
       barWidth.current = Math.round((WIDTH - (barsCount.current - 1) * 3) / barsCount.current);
       for (let i = 0; i < barsCount.current; i++) {
-        barHeight = HEIGHT - Math.abs(floatDataArray.current[i]) ** exp;
+        barsBucket[i] ||= [];
+        barsBucket[i].push(floatDataArray.current[i]);
+
+        if (elapsed < fpsInterval) {
+          return;
+        }
+
+        barHeight =
+          HEIGHT * 2 - Math.abs(barsBucket[i].reduce((sum, num) => sum + num, 0) / barsBucket[i].length) ** exp;
+        barsBucket[i].length = 0;
 
         if (barHeight < 0) barHeight = 0;
         if (barHeight > HEIGHT) barHeight = HEIGHT;
