@@ -45,8 +45,6 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
     const HEIGHT = canvasRef.current!.height;
     const exp = 1.2;
 
-    const barsBucket: number[][] = [];
-
     draw();
 
     function draw() {
@@ -56,9 +54,11 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
       elapsed = now - then;
       then = now - (elapsed % fpsInterval);
 
-      if (elapsed >= fpsInterval) {
-        canvasCtxRef.current!.clearRect(0, 0, WIDTH + 10, HEIGHT);
+      if (elapsed < fpsInterval) {
+        return;
       }
+
+      canvasCtxRef.current!.clearRect(0, 0, WIDTH + 10, HEIGHT);
 
       if (!analyser.current) {
         return;
@@ -69,16 +69,7 @@ export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
       x = 0;
       barWidth.current = Math.round((WIDTH - (barsCount.current - 1) * 3) / barsCount.current);
       for (let i = 0; i < barsCount.current; i++) {
-        barsBucket[i] ||= [];
-        barsBucket[i].push(floatDataArray.current[i]);
-
-        if (elapsed < fpsInterval) {
-          return;
-        }
-
-        barHeight =
-          HEIGHT * 2 - Math.abs(barsBucket[i].reduce((sum, num) => sum + num, 0) / barsBucket[i].length) ** exp;
-        barsBucket[i].length = 0;
+        barHeight = HEIGHT * 2 - Math.abs(floatDataArray.current[i]) ** exp;
 
         if (barHeight < 0) barHeight = 0;
         if (barHeight > HEIGHT) barHeight = HEIGHT;
