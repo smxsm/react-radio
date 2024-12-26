@@ -58,7 +58,7 @@ async function startServer() {
   });
 
   // Error handling middleware
-  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     console.error('Unhandled error:', err);
     res.status(500).json({ 
       error: 'Internal server error', 
@@ -616,7 +616,7 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
 });
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   const timeout = setTimeout(() => {
     res.status(504).json({ error: 'Health check timeout' });
   }, 5000);

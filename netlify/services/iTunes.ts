@@ -10,6 +10,12 @@ export type TrackInfo = {
   youTubeUrl?: string;
 };
 
+interface iTunesItem {
+  artistName: string;
+  trackName: string;
+  collectionName: string;
+  collectionArtistName: string;
+}
 export default async function iTunesSearch(searchTerm: string): Promise<TrackInfo | null> {
   try {
     if (!searchTerm) {
@@ -24,7 +30,7 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
     // Using Fuse.js to select best match
     let fuse = new Fuse(
       data.map(
-        ({ artistName, trackName, collectionName, collectionArtistName }) =>
+        ({ artistName, trackName, collectionName, collectionArtistName }: iTunesItem) =>
           `${artistName} ${trackName} ${collectionArtistName} ${collectionName}`
       ),
       { useExtendedSearch: true }
@@ -37,7 +43,7 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
     
     if (!searchResults.length) {
       // If first run found nothing, try again without considering album type
-      fuse = new Fuse(data.map(({ artistName, trackName }) => `${artistName} ${trackName}}`));
+      fuse = new Fuse(data.map(({ artistName, trackName }: iTunesItem) => `${artistName} ${trackName}}`));
       searchResults = fuse.search(searchTerm);
     }
     

@@ -27,3 +27,4 @@ yarn-error.log*
 .netlify
 netlify/node_modules
 netlify/data/radio.db*
+netlify/dist

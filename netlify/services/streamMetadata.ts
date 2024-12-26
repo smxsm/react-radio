@@ -70,7 +70,7 @@ export default async function getIcecastMetadata(response: Response, icyMetaInt:
       
       try {
         // Create the Icecast stream and store the reference
-        const icecastStream = new IcecastReadableStream(response, {
+        new IcecastReadableStream(response, {
           onMetadata: ({ metadata }) => {
             console.log('Received metadata:', metadata);
             const title = metadata?.StreamTitle || metadata?.TITLE || '';

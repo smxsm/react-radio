@@ -15,7 +15,6 @@ if (!existsSync(dbDir)) {
 
 // Database connection management
 const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
 const HEALTH_CHECK_INTERVAL = 30000; // 30 seconds
 
 // Type definitions
