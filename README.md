@@ -3,6 +3,22 @@
 [https://radio.ivanoff.dev](https://radio.ivanoff.dev)\
 React Radio is a course project for SoftUnu ReactJS - Febuary 2023 course edition.
 
+## Fork info
+
+First of all, thanks a lot to the authors for this awesome, feature-rich ReactJS Radio Player!
+
+This fork replaces the tight _Supabase_ integration of the original __React Radio__ project with a more lightweight __SQLite__ database. The original project used Supabase for real-time data synchronization and authentication, but this fork uses SQLite for local storage and a custom Express backend server to handle authentication and data synchronization. The Express backend also replaces the original Netlify edge function for displaying the "Now playing" information etc.
+
+So before starting the ReactJS player, first start the Express backend server:
+
+```bash
+cd netlify
+npm install
+npm run dev
+```
+
+This will start the Express server at port 3001 (see __.env.dist__, rename to _.env_ and adjust if needed).
+
 ## Description
 
 The app aims to be a completely functional online radio player similar to the popular TuneIn service with a catalog of more than 30000 radio station from all over the world provided by [Radio Browser API](https://www.radio-browser.info). The stations can be browsed by music genres, news, sports and countries.
