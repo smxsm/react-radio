@@ -34,12 +34,12 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
       {songHistory?.map((entry) => (
         <Card key={entry.id} className={styles.historyCard}>
           <figure>
-            <img src={entry.artwork} alt="Song artwork"></img>
+            <img src={entry.artwork ?? undefined} alt="Song artwork" />
           </figure>
           <div className={styles.historyTrackInfo}>
             <p className={styles.historyCardTitle}>{entry.title}</p>
             <p className={styles.historyCardArtist}>{entry.artist}</p>
-            <p className={styles.historyCardDate}>{entry.heardAt.toLocaleString()}</p>
+            <p className={styles.historyCardDate}>{entry.heardAt?.toLocaleString()}</p>
           </div>
           <div className={styles.actions}>
             <FontAwesomeIcon

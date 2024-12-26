@@ -1,7 +1,9 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
-import { createClient } from '@supabase/supabase-js';
 import 'dotenv/config';
+import { randomUUID } from 'crypto';
+import * as auth from './services/auth';
+import { statements } from './services/database';
 import getIcecastMetadata from './services/streamMetadata.js';
 import iTunesSearch from './services/iTunes.js';
 import youTubeSearch from './services/youTube.js';
@@ -16,8 +18,8 @@ function corsMiddleware(req: Request, res: Response, next: NextFunction) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
@@ -27,7 +29,6 @@ function corsMiddleware(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
-
 async function startServer() {
   const app = express();
   const port = process.env.PORT || 3001;
@@ -36,11 +37,241 @@ async function startServer() {
   app.use(express.json());
   app.use(corsMiddleware);
 
-  // Initialize Supabase
-  const supabase = createClient(
-    'https://iddsgsocgqklrqeuykzn.supabase.co',
-    process.env.SUPABASE_KEY || ''
-  );
+  // Auth endpoints
+  app.post('/auth/signup', async (req: Request, res: Response) => {
+    try {
+      const { email, password, firstName, lastName } = req.body;
+      
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const existingUser = auth.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(409).json({ error: 'Email already exists' });
+      }
+
+      const user = await auth.createUser(email, firstName, lastName, password);
+      const session = await auth.createSession(user.id);
+
+      res.json({ user, session });
+    } catch (error) {
+      console.error('Signup error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/auth/signin', async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Missing email or password' });
+      }
+
+      const result = await auth.signIn(email, password);
+      if (!result) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error('Signin error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/auth/signout', (req: Request, res: Response) => {
+    try {
+      const sessionId = req.headers.authorization?.split(' ')[1];
+      if (!sessionId) {
+        return res.status(401).json({ error: 'No session provided' });
+      }
+
+      auth.deleteSession(sessionId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Signout error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Session middleware for protected routes
+  const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const sessionId = req.headers.authorization?.split(' ')[1];
+      if (!sessionId) {
+        return res.status(401).json({ error: 'No session provided' });
+      }
+
+      const session = auth.getSession(sessionId);
+      if (!session) {
+        return res.status(401).json({ error: 'Invalid or expired session' });
+      }
+
+      const user = auth.getUserById(session.userId);
+      if (!user) {
+        return res.status(401).json({ error: 'User not found' });
+      }
+
+      // Add user to request for use in protected routes
+      (req as any).user = user;
+      (req as any).session = session;
+      next();
+    } catch (error) {
+      console.error('Auth middleware error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  // Protected routes
+  app.get('/user/profile', requireAuth, (req: Request, res: Response) => {
+    res.json({ user: (req as any).user });
+  });
+
+  // Custom stations endpoints
+  app.get('/stations', requireAuth, (req: Request, res: Response) => {
+    try {
+      const orderBy = (req.query.orderBy as string) || 'created_at';
+      const order = (req.query.order as string) || 'DESC';
+      const stations = statements.getAllStations.all(orderBy, order);
+      res.json(stations);
+    } catch (error) {
+      console.error('Get stations error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.get('/stations/:id', requireAuth, (req: Request, res: Response) => {
+    try {
+      const station = statements.getStationById.get(req.params.id);
+      if (!station) {
+        return res.status(404).json({ error: 'Station not found' });
+      }
+      res.json(station);
+    } catch (error) {
+      console.error('Get station error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/stations', requireAuth, (req: Request, res: Response) => {
+    try {
+      const { id, name, logo, listen_url } = req.body;
+      statements.upsertStation.run({ id, name, logo, listen_url });
+      const station = statements.getStationById.get(id);
+      res.json(station);
+    } catch (error) {
+      console.error('Create station error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.delete('/stations/:id', requireAuth, (req: Request, res: Response) => {
+    try {
+      statements.deleteStation.run(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete station error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Track history endpoints
+  app.get('/tracks/history', requireAuth, (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const tracks = statements.getTrackHistory.all((req as any).user.id, limit);
+      res.json(tracks);
+    } catch (error) {
+      console.error('Get track history error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/tracks/history', requireAuth, (req: Request, res: Response) => {
+    try {
+      const { track_id } = req.body;
+      statements.addTrackHistory.run({
+        track_id,
+        user_id: (req as any).user.id
+      });
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Add track history error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.delete('/tracks/history/:trackId', requireAuth, (req: Request, res: Response) => {
+    try {
+      statements.deleteTrackHistory.run(req.params.trackId, (req as any).user.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete track history error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.delete('/tracks/history', requireAuth, (req: Request, res: Response) => {
+    try {
+      statements.clearTrackHistory.run((req as any).user.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Clear track history error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Listen history endpoints
+  app.get('/listen/history', requireAuth, (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const history = statements.getListenHistory.all((req as any).user.id, limit);
+      res.json(history);
+    } catch (error) {
+      console.error('Get listen history error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/listen/history', requireAuth, (req: Request, res: Response) => {
+    try {
+      const { station_id, name, logo, listen_url } = req.body;
+      statements.addListenHistory.run({
+        station_id,
+        user_id: (req as any).user.id,
+        name,
+        logo,
+        listen_url
+      });
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Add listen history error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.delete('/listen/history/:stationId', requireAuth, (req: Request, res: Response) => {
+    try {
+      statements.deleteListenHistory.run(req.params.stationId, (req as any).user.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete listen history error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.delete('/listen/history', requireAuth, (req: Request, res: Response) => {
+    try {
+      statements.clearListenHistory.run((req as any).user.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Clear listen history error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
 
   // Cache setup
   const cache = new Map();
@@ -93,35 +324,28 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
       if (matchedTrack) {
         matchedTrack.youTubeUrl = await youTubeSearch(searchTerm) || '';
 
-        const { data: supabaseResult } = await supabase
-          .from('track_match')
-          .upsert(
-            {
-              text: searchTerm,
-              artist: matchedTrack.artist,
-              title: matchedTrack.title,
-              album: matchedTrack.album,
-              artwork: matchedTrack.artwork,
-              release_date: matchedTrack.releaseDate,
-              apple_music_url: matchedTrack.appleMusicUrl || '',
-              youtube_url: matchedTrack.youTubeUrl || '',
-            },
-            { onConflict: 'text' }
-          )
-          .select();
+        const trackId = randomUUID();
+        statements.upsertTrackMatch.run({
+          id: trackId,
+          artist: matchedTrack.artist,
+          title: matchedTrack.title,
+          album: matchedTrack.album,
+          artwork: matchedTrack.artwork,
+          release_date: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
+          apple_music_url: matchedTrack.appleMusicUrl || '',
+          youtube_url: matchedTrack.youTubeUrl || ''
+        });
 
-        if (supabaseResult && supabaseResult[0]) {
-          data.matchedTrack = {
-            id: supabaseResult[0].id,
-            artist: supabaseResult[0].artist,
-            title: supabaseResult[0].title,
-            album: supabaseResult[0].album,
-            releaseDate: supabaseResult[0].release_date,
-            artwork: supabaseResult[0].artwork,
-            appleMusicUrl: supabaseResult[0].apple_music_url,
-            youTubeUrl: supabaseResult[0].youtube_url,
-          };
-        }
+        data.matchedTrack = {
+          id: trackId,
+          artist: matchedTrack.artist,
+          title: matchedTrack.title,
+          album: matchedTrack.album,
+          releaseDate: matchedTrack.releaseDate,
+          artwork: matchedTrack.artwork,
+          appleMusicUrl: matchedTrack.appleMusicUrl || '',
+          youTubeUrl: matchedTrack.youTubeUrl || ''
+        };
       }
     }
 

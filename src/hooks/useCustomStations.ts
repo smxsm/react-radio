@@ -1,69 +1,92 @@
 import { useCallback, useState } from 'react';
-import useSupabase from './useSupabase';
+import * as api from '../lib/api';
 
 export default function useCustomStations() {
-  const supabase = useSupabase();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [stations, setStations] = useState<RadioStation[]>([]);
+  const [stations, setStations] = useState<api.RadioStation[]>([]);
 
   const getCustomStations = useCallback(
-    async (id = '', sort = 'created_at', ascending = true) => {
-      setLoading(true);
-      let query = supabase.from('user_stations').select('*');
-      if (id) {
-        query = query.eq('id', id);
-      }
-      if (sort !== 'created_at' && sort !== 'name') {
-        sort = 'created_at';
-      }
-      query = query.order(sort, { ascending });
-      const { data, error } = await query;
-      if (error) {
-        setError(new Error(error.message));
+    async (id = '', sort = 'created_at', ascending = false) => {
+      try {
+        setLoading(true);
+        const sessionId = localStorage.getItem('sessionId');
+        if (!sessionId) {
+          throw new Error('No session found');
+        }
+
+        let data;
+        if (id) {
+          data = [await api.getCustomStationById(sessionId, id)];
+        } else {
+          data = await api.getCustomStations(
+            sessionId,
+            sort,
+            ascending ? 'ASC' : 'DESC'
+          );
+        }
+
+        const stations = data.map<api.RadioStation>(({ id, name, logo, listen_url }) => ({
+          id,
+          name,
+          logo: logo || '',
+          listenUrl: listen_url,
+          isOwner: true,
+        }));
+
+        setStations(stations);
+        setLoading(false);
+        return stations;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to get stations');
+        setError(error);
         setLoading(false);
         return [];
       }
-      const stations =
-        data?.map<RadioStation>(({ id, name, logo, listen_url }) => ({
-          id,
-          name,
-          logo,
-          listenUrl: listen_url,
-          isOwner: true,
-        })) || [];
-      setStations(stations);
-      setLoading(false);
-      return stations;
     },
-    [supabase]
+    []
   );
 
   const addCustomStation = useCallback(
-    async ({ id, name, logo, listenUrl }: RadioStation) => {
-      setLoading(true);
-      const { error } = await supabase.from('user_stations').upsert({ id, name, logo, listen_url: listenUrl }).select();
-      if (error) {
-        setError(new Error(error.message));
+    async (station: api.RadioStation) => {
+      try {
+        setLoading(true);
+        const sessionId = localStorage.getItem('sessionId');
+        if (!sessionId) {
+          throw new Error('No session found');
+        }
+
+        await api.addCustomStation(sessionId, station);
+        setLoading(false);
+        return true;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to add station');
+        setError(error);
         setLoading(false);
         return false;
       }
-
-      setLoading(false);
-      return true;
     },
-    [supabase]
+    []
   );
 
   const deleteCustomStation = useCallback(
     async (id: string) => {
-      setLoading(true);
-      const { error } = await supabase.from('user_stations').delete().eq('id', id);
-      if (error) {
-        setError(new Error(error.message));
+      try {
+        setLoading(true);
+        const sessionId = localStorage.getItem('sessionId');
+        if (!sessionId) {
+          throw new Error('No session found');
+        }
+
+        await api.deleteCustomStation(sessionId, id);
+        setLoading(false);
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to delete station');
+        setError(error);
+        setLoading(false);
       }
     },
-    [supabase]
+    []
   );
 
   return { loading, error, stations, getCustomStations, addCustomStation, deleteCustomStation };

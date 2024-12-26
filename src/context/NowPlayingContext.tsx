@@ -1,24 +1,19 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from 'react';
-
 import { PlayerContext } from './PlayerContext';
 import { UserContext } from './UserContext';
-import useSupabase from '../hooks/useSupabase';
+import { useHistory } from '../hooks/useHistory';
+import { TrackInfo, RadioStation } from '../lib/api';
 
-type NowPlayingContextType = {
-  station?: RadioStation;
-  stationMetadata?: StationMetadata;
-  matchedTrack?: TrackInfo;
-  stationHistory?: RadioStation[];
-  songHistory?: TrackHistory[];
-  removeSongFromHistory: (id: string) => Promise<void>;
-  clearSongHistory: () => Promise<void>;
-  removeStationFromHistory: (id: string) => Promise<void>;
-  clearStationHistory: () => Promise<void>;
-};
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
-type StationMetadata = {
+export interface StationMetadata {
   icyGenre: string[];
-  icyAudioInfo: icyAudioInfo;
+  icyAudioInfo: {
+    bitRate: number;
+    quality: number;
+    channels: number;
+    sampleRate: number;
+  };
   icyName: string;
   icyDescription: string;
   icyUrl: string;
@@ -32,106 +27,63 @@ type StationMetadata = {
   contentType: string;
   title: string;
   trackMatch?: TrackInfo;
-};
+}
 
-type icyAudioInfo = {
-  bitRate: number;
-  quality: number;
-  channels: number;
-  sampleRate: number;
-};
-
-type TrackInfo = {
-  id: string;
-  artist: string;
-  title: string;
-  album: string;
-  releaseDate: Date | null;
-  artwork: string;
-  appleMusicUrl?: string;
-  youTubeUrl?: string;
-};
-
-type TrackHistory = TrackInfo & {
-  heardAt: Date;
-};
+interface NowPlayingContextType {
+  station?: RadioStation;
+  stationMetadata?: StationMetadata;
+  matchedTrack?: TrackInfo;
+  stationHistory?: RadioStation[];
+  songHistory?: TrackInfo[];
+  removeSongFromHistory: (id: string) => Promise<void>;
+  clearSongHistory: () => Promise<void>;
+  removeStationFromHistory: (id: string) => Promise<void>;
+  clearStationHistory: () => Promise<void>;
+}
 
 type NowPlayingInfoProviderProps = PropsWithChildren & {};
 
 export const NowPlayingContext = createContext<NowPlayingContextType | null>(null);
 
 export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
-  const supabase = useSupabase();
   const playerContext = useContext(PlayerContext);
   const { user } = useContext(UserContext) || {};
+  const {
+    trackHistory: songHistory,
+    stationHistory,
+    getTrackHistory,
+    getStationHistory,
+    addTrackToHistory,
+    addStationToHistory,
+    deleteTrackFromHistory,
+    deleteStationFromHistory,
+    clearTrackHistory,
+    clearStationHistory,
+  } = useHistory();
+
   const [station, setStation] = useState<RadioStation | undefined>();
   const [stationMetadata, setStationMetadata] = useState<StationMetadata | undefined>();
   const [matchedTrack, setMatchedTrack] = useState<TrackInfo | undefined>();
-  const [stationHistory, setStationHistory] = useState<RadioStation[]>([]);
-  const [songHistory, setSongHistory] = useState<TrackHistory[]>([]);
   const intervalRef = useRef<NodeJS.Timer | number>(0);
   const abortControllerRef = useRef(new AbortController());
 
-  const loadTrackHistory = useCallback(() => {
-    supabase
-      .from('tracks_history')
-      .select('*, track_match(*)')
-      .order('created_at', { ascending: false })
-      .limit(100)
-      .then(({ data, error }) => {
-        if (error) throw error;
-        return data.map<TrackHistory>((entry) => ({
-          heardAt: new Date(entry.created_at),
-          id: entry.track_match.id,
-          artist: entry.track_match.artist,
-          title: entry.track_match.title,
-          album: entry.track_match.album,
-          releaseDate: new Date(entry.track_match.release_date),
-          artwork: entry.track_match.artwork,
-          appleMusicUrl: entry.track_match.apple_music_url,
-          youTubeUrl: entry.track_match.youtube_url,
-        }));
-      })
-      .then(setSongHistory);
-  }, [supabase]);
+  const loadTrackHistory = useCallback(async () => {
+    if (!user) return;
+    await getTrackHistory();
+  }, [user, getTrackHistory]);
 
-  const loadStationHistory = useCallback(() => {
-    supabase
-      .from('listen_history')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(100)
-      .then(({ data, error }) => {
-        if (error) {
-          return;
-        }
-        setStationHistory(
-          data.map<RadioStation>((entry) => ({
-            id: entry.station_id,
-            name: entry.name,
-            logo: entry.logo,
-            listenUrl: entry.listen_url,
-          }))
-        );
-      });
-  }, [supabase]);
+  const loadStationHistory = useCallback(async () => {
+    if (!user) return;
+    await getStationHistory();
+  }, [user, getStationHistory]);
 
   // Update played stations history
   useEffect(() => {
-    if (playerContext?.status !== 'playing') {
+    if (!user || playerContext?.status !== 'playing' || !playerContext.station) {
       return;
     }
-    supabase
-      .from('listen_history')
-      .upsert({
-        station_id: playerContext.station?.id,
-        name: playerContext.station?.name,
-        logo: playerContext.station?.logo,
-        listen_url: playerContext.station?.listenUrl,
-        created_at: new Date().toISOString(),
-      })
-      .then(() => loadStationHistory());
-  }, [playerContext?.station, playerContext?.status, supabase, loadStationHistory]);
+    addStationToHistory(playerContext.station).then(loadStationHistory);
+  }, [playerContext?.station, playerContext?.status, user, addStationToHistory, loadStationHistory]);
 
   // Get station metadata on interval
   useEffect(() => {
@@ -139,9 +91,10 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
       if (!url) return;
       try {
         abortControllerRef.current = new AbortController();
-        const res = await fetch('https://radio.ivanoff.dev/station-metadata?url=' + url, {
+        const res = await fetch(API_BASE_URL + '/station-metadata?url=' + url, {
           signal: abortControllerRef.current.signal,
         });
+        console.log('Lookup', res);
         const result = await res.json();
         setStationMetadata(result.stationMetadata);
         if (!result.matchedTrack) {
@@ -182,51 +135,45 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
 
   // Add matched track to history
   useEffect(() => {
-    if (!matchedTrack?.id) return;
-
-    supabase
-      .from('tracks_history')
-      .upsert({ track_id: matchedTrack?.id, created_at: new Date().toISOString() })
-      .then(() => loadTrackHistory());
-  }, [supabase, matchedTrack?.id, loadTrackHistory]);
+    if (!user || !matchedTrack?.id) return;
+    addTrackToHistory(matchedTrack).then(loadTrackHistory);
+  }, [user, matchedTrack?.id, addTrackToHistory, loadTrackHistory]);
 
   useEffect(() => {
-    if (!user) {
-      setStationHistory([]);
-      setSongHistory([]);
-      return;
-    }
+    if (!user) return;
     loadStationHistory();
     loadTrackHistory();
-  }, [supabase, user, loadStationHistory, loadTrackHistory]);
+  }, [user, loadStationHistory, loadTrackHistory]);
 
   const removeSongFromHistory = useCallback(
     async (id: string) => {
-      if (!id) return;
-      await supabase.from('tracks_history').delete().eq('track_id', id);
-      loadTrackHistory();
+      if (!user || !id) return;
+      await deleteTrackFromHistory(id);
+      await loadTrackHistory();
     },
-    [supabase, loadTrackHistory]
+    [user, deleteTrackFromHistory, loadTrackHistory]
   );
 
-  const clearSongHistory = useCallback(async () => {
-    await supabase.from('tracks_history').delete().neq('track_id', '00000000-0000-0000-0000-000000000000');
-    loadTrackHistory();
-  }, [supabase, loadTrackHistory]);
+  const clearSongHistoryHandler = useCallback(async () => {
+    if (!user) return;
+    await clearTrackHistory();
+    await loadTrackHistory();
+  }, [user, clearTrackHistory, loadTrackHistory]);
 
   const removeStationFromHistory = useCallback(
     async (id: string) => {
-      if (!id) return;
-      await supabase.from('listen_history').delete().eq('station_id', id);
-      loadStationHistory();
+      if (!user || !id) return;
+      await deleteStationFromHistory(id);
+      await loadStationHistory();
     },
-    [supabase, loadStationHistory]
+    [user, deleteStationFromHistory, loadStationHistory]
   );
 
-  const clearStationHistory = useCallback(async () => {
-    await supabase.from('listen_history').delete().neq('station_id', '00000000-0000-0000-0000-000000000000');
-    loadStationHistory();
-  }, [supabase, loadStationHistory]);
+  const clearStationHistoryHandler = useCallback(async () => {
+    if (!user) return;
+    await clearStationHistory();
+    await loadStationHistory();
+  }, [user, clearStationHistory, loadStationHistory]);
 
   return (
     <NowPlayingContext.Provider
@@ -237,9 +184,9 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
         songHistory,
         stationHistory,
         removeSongFromHistory,
-        clearSongHistory,
+        clearSongHistory: clearSongHistoryHandler,
         removeStationFromHistory,
-        clearStationHistory,
+        clearStationHistory: clearStationHistoryHandler,
       }}
     >
       {children}
