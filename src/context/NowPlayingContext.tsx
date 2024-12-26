@@ -94,7 +94,6 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
         const res = await fetch(API_BASE_URL + '/station-metadata?url=' + url, {
           signal: abortControllerRef.current.signal,
         });
-        console.log('Lookup', res);
         const result = await res.json();
         setStationMetadata(result.stationMetadata);
         if (!result.matchedTrack) {
