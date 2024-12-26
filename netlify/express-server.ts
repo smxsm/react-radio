@@ -134,6 +134,7 @@ async function startServer() {
     try {
       const orderBy = (req.query.orderBy as string) || 'created_at';
       const order = (req.query.order as string)?.toUpperCase() || 'DESC';
+      //const distance = parseInt(req.query.distance as string) || -1;
       
       let statement;
       if (orderBy === 'name') {

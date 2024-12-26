@@ -35,6 +35,19 @@ export default function StationsListOptions() {
         name="limit"
         defaultValue="40"
       />
+      <SearchParamSelect
+        optionsList={[
+          ['All', '-1'],
+          ['10 km', '10'],
+          ['50 km', '50'],
+          ['100 km', '100'],
+          ['500 km', '500'],
+          ['1000 km', '1000'],
+        ]}
+        label="Distance"
+        name="distance"
+        defaultValue="-1"
+      />
     </div>
   );
 }

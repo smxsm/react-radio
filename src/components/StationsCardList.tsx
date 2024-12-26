@@ -21,11 +21,12 @@ interface RadioStation {
   listenUrl: string;
 }
 
-const parseSearchParams = ({ limit, offset, sort, order }: any) => ({
+const parseSearchParams = ({ limit, offset, sort, order, distance }: any) => ({
   limit: Number(limit) || 40,
   offset: Number(offset) || 0,
   sort: sort || 'popularity',
   order: order || 'desc',
+  distance: Number(distance) || -1,
 });
 
 export default function StationsCardList() {
