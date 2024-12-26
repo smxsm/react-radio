@@ -133,8 +133,17 @@ async function startServer() {
   app.get('/stations', requireAuth, (req: Request, res: Response) => {
     try {
       const orderBy = (req.query.orderBy as string) || 'created_at';
-      const order = (req.query.order as string) || 'DESC';
-      const stations = statements.getAllStations.all(orderBy, order);
+      const order = (req.query.order as string)?.toUpperCase() || 'DESC';
+      
+      let statement;
+      if (orderBy === 'name') {
+        statement = order === 'ASC' ? statements.getAllStations.byNameAsc : statements.getAllStations.byName;
+      } else {
+        // Default to created_at
+        statement = order === 'ASC' ? statements.getAllStations.byCreatedAtAsc : statements.getAllStations.byCreatedAt;
+      }
+      
+      const stations = statement.all();
       res.json(stations);
     } catch (error) {
       console.error('Get stations error:', error);

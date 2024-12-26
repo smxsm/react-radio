@@ -1,4 +1,4 @@
-import Database, { Statement } from 'better-sqlite3';
+import Database, { Statement, RunResult } from 'better-sqlite3';
 import path from 'path';
 import { mkdirSync, existsSync } from 'fs';
 import dotenv from 'dotenv';
@@ -84,7 +84,65 @@ db.exec(`
 `);
 
 // Prepare statements for better performance
-export const statements: Record<string, Statement> = {
+interface DbUser {
+  id: string;
+  email: string;
+  password_hash: string;
+  first_name: string;
+  last_name: string;
+}
+
+interface DbSession {
+  id: string;
+  user_id: string;
+  expires_at: string;
+}
+
+interface DbStation {
+  id: string;
+  name: string;
+  logo: string | null;
+  listen_url: string;
+}
+
+type StatementsType = {
+  // User management
+  createUser: Statement<[{ id: string; email: string; password_hash: string; first_name: string; last_name: string; }], RunResult>;
+  getUserByEmail: Statement<[string], DbUser>;
+  getUserById: Statement<[string], DbUser>;
+
+  // Session management
+  createSession: Statement<[{ id: string; user_id: string; expires_at: string; }], RunResult>;
+  getSession: Statement<[string], DbSession>;
+  deleteSession: Statement<[string], RunResult>;
+  deleteUserSessions: Statement<[string], RunResult>;
+
+  // Custom stations
+  getAllStations: {
+    byCreatedAt: Statement<[], DbStation[]>;
+    byCreatedAtAsc: Statement<[], DbStation[]>;
+    byName: Statement<[], DbStation[]>;
+    byNameAsc: Statement<[], DbStation[]>;
+  };
+  getStationById: Statement<[string], DbStation>;
+  upsertStation: Statement<[{ id: string; name: string; logo: string | null; listen_url: string; }], RunResult>;
+  deleteStation: Statement<[string], RunResult>;
+
+  // Track management
+  upsertTrackMatch: Statement<[{ id: string; artist: string; title: string; album: string | null; release_date: string | null; artwork: string | null; apple_music_url: string; youtube_url: string; }], RunResult>;
+  addTrackHistory: Statement<[{ track_id: string; user_id: string; }], RunResult>;
+  getTrackHistory: Statement<[string, number], any[]>;
+  deleteTrackHistory: Statement<[string, string], RunResult>;
+  clearTrackHistory: Statement<[string], RunResult>;
+
+  // Listen history
+  addListenHistory: Statement<[{ station_id: string; user_id: string; name: string; logo: string | null; listen_url: string; }], RunResult>;
+  getListenHistory: Statement<[string, number], any[]>;
+  deleteListenHistory: Statement<[string, string], RunResult>;
+  clearListenHistory: Statement<[string], RunResult>;
+};
+
+export const statements: StatementsType = {
   // User management
   createUser: db.prepare(`
     INSERT INTO users (id, email, password_hash, first_name, last_name)
@@ -103,7 +161,12 @@ export const statements: Record<string, Statement> = {
   deleteUserSessions: db.prepare('DELETE FROM sessions WHERE user_id = ?'),
 
   // Custom stations
-  getAllStations: db.prepare('SELECT * FROM user_stations ORDER BY ?'),
+  getAllStations: {
+    byCreatedAt: db.prepare('SELECT * FROM user_stations ORDER BY created_at DESC'),
+    byCreatedAtAsc: db.prepare('SELECT * FROM user_stations ORDER BY created_at ASC'),
+    byName: db.prepare('SELECT * FROM user_stations ORDER BY name DESC'),
+    byNameAsc: db.prepare('SELECT * FROM user_stations ORDER BY name ASC')
+  },
   getStationById: db.prepare('SELECT * FROM user_stations WHERE id = ?'),
   upsertStation: db.prepare(`
     INSERT INTO user_stations (id, name, logo, listen_url)
