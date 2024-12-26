@@ -26,4 +26,4 @@ yarn-error.log*
 # Local Netlify folder
 .netlify
 netlify/node_modules
-netlify/data/radio.db
+netlify/data/radio.db*

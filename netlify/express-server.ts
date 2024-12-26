@@ -4,34 +4,67 @@ import 'dotenv/config';
 import { randomUUID } from 'crypto';
 import * as auth from './services/auth';
 import { statements } from './services/database';
-import getIcecastMetadata from './services/streamMetadata.js';
+import getIcecastMetadata, { StationMetadata } from './services/streamMetadata.js';
 import iTunesSearch from './services/iTunes.js';
 import youTubeSearch from './services/youTube.js';
+import PQueue from 'p-queue';
 
 // Custom CORS middleware
-function corsMiddleware(req: Request, res: Response, next: NextFunction) {
+function corsMiddleware (req: Request, res: Response, next: NextFunction) {
   const origin = req.headers.origin;
-  
+
+  // Allow localhost with any port
   if (!origin || /https?:\/\/localhost:?\d{0,5}/.test(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin || '*');
   } else {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
-  
+
+  // Add all required CORS headers
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, X-Requested-With'
+  );
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+
+  // Handle preflight
   if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
+    res.status(204).end();
     return;
   }
-  
+
   next();
 }
 
 async function startServer() {
   const app = express();
   const port = process.env.PORT || 3001;
+
+  // Request logging middleware
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const start = Date.now();
+    const requestId = Math.random().toString(36).substring(7);
+    
+    console.log(`[${requestId}] ${req.method} ${req.url} started`);
+    
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      console.log(`[${requestId}] ${req.method} ${req.url} completed in ${duration}ms with status ${res.statusCode}`);
+    });
+
+    next();
+  });
+
+  // Error handling middleware
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({ 
+      error: 'Internal server error', 
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined 
+    });
+  });
 
   // Middleware
   app.use(express.json());
@@ -130,122 +163,215 @@ async function startServer() {
   });
 
   // Custom stations endpoints
-  app.get('/stations', requireAuth, (req: Request, res: Response) => {
+  app.get('/stations', requireAuth, async (req: Request, res: Response) => {
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 10000);
+    });
+
     try {
       const orderBy = (req.query.orderBy as string) || 'created_at';
       const order = (req.query.order as string)?.toUpperCase() || 'DESC';
-      //const distance = parseInt(req.query.distance as string) || -1;
-      
+
       let statement;
       if (orderBy === 'name') {
         statement = order === 'ASC' ? statements.getAllStations.byNameAsc : statements.getAllStations.byName;
       } else {
-        // Default to created_at
         statement = order === 'ASC' ? statements.getAllStations.byCreatedAtAsc : statements.getAllStations.byCreatedAt;
       }
-      
-      const stations = statement.all();
+
+      // Race between the database operation and timeout
+      const stations = await Promise.race([
+        Promise.resolve(statement.all()),
+        timeoutPromise
+      ]);
+
       res.json(stations);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Get stations error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+
+      if (error.message === 'Request timeout') {
+        res.status(504).json({ error: 'Request timeout' });
+      } else {
+        res.status(500).json({
+          error: 'Database error',
+          details: error?.message || 'Unknown database error'
+        });
+      }
     }
   });
-
+  
   app.get('/stations/:id', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       const station = statements.getStationById.get(req.params.id);
+      clearTimeout(timeout);
+      
       if (!station) {
         return res.status(404).json({ error: 'Station not found' });
       }
       res.json(station);
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Get station error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
   app.post('/stations', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       const { id, name, logo, listen_url } = req.body;
       statements.upsertStation.run({ id, name, logo, listen_url });
       const station = statements.getStationById.get(id);
+      clearTimeout(timeout);
       res.json(station);
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Create station error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
   app.delete('/stations/:id', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       statements.deleteStation.run(req.params.id);
+      clearTimeout(timeout);
       res.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Delete station error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
   // Track history endpoints
   app.get('/tracks/history', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const tracks = statements.getTrackHistory.all((req as any).user.id, limit);
+      clearTimeout(timeout);
       res.json(tracks);
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Get track history error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
   app.post('/tracks/history', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       const { track_id } = req.body;
       statements.addTrackHistory.run({
         track_id,
         user_id: (req as any).user.id
       });
+      clearTimeout(timeout);
       res.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Add track history error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
   app.delete('/tracks/history/:trackId', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       statements.deleteTrackHistory.run(req.params.trackId, (req as any).user.id);
+      clearTimeout(timeout);
       res.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Delete track history error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
   app.delete('/tracks/history', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       statements.clearTrackHistory.run((req as any).user.id);
+      clearTimeout(timeout);
       res.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Clear track history error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
   // Listen history endpoints
   app.get('/listen/history', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const history = statements.getListenHistory.all((req as any).user.id, limit);
+      clearTimeout(timeout);
       res.json(history);
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Get listen history error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
   app.post('/listen/history', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       const { station_id, name, logo, listen_url } = req.body;
       statements.addListenHistory.run({
@@ -255,36 +381,88 @@ async function startServer() {
         logo,
         listen_url
       });
+      clearTimeout(timeout);
       res.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Add listen history error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
   app.delete('/listen/history/:stationId', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       statements.deleteListenHistory.run(req.params.stationId, (req as any).user.id);
+      clearTimeout(timeout);
       res.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Delete listen history error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
   app.delete('/listen/history', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
     try {
       statements.clearListenHistory.run((req as any).user.id);
+      clearTimeout(timeout);
       res.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
+      clearTimeout(timeout);
       console.error('Clear listen history error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        error: 'Database error', 
+        details: error?.message || 'Unknown database error' 
+      });
     }
   });
 
 
-  // Cache setup
-  const cache = new Map();
+  // Types for metadata handling
+interface MatchedTrack {
+  id: string;
+  artist: string;
+  title: string;
+  album: string | null;
+  releaseDate: string | null;
+  artwork: string | null;
+  appleMusicUrl: string;
+  youTubeUrl: string;
+}
+
+interface MetadataResponse {
+  stationMetadata: StationMetadata;
+  matchedTrack?: MatchedTrack;
+}
+
+interface CacheEntry {
+  url: string;
+  data: MetadataResponse;
+  timestamp: number;
+}
+
+// Cache setup
+const cache = new Map<string, CacheEntry>();
+const metadataQueue = new PQueue({ 
+  concurrency: 2, // Limit concurrent metadata processing
+  timeout: 15000, // 15 second timeout for each task
+  throwOnTimeout: true // Reject the promise when task times out
+}); 
+const CACHE_ITEM_TTL = 60000; // 60 seconds
 
 // Helper function from edge function
 function cleanTitleForSearch(title: string) {
@@ -304,81 +482,187 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
   }
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const streamResponse = await fetch(url, {
-      method: 'GET',
-      headers: { 'Icy-MetaData': '1' },
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
-    const icyMetaInt = parseInt(streamResponse.headers.get('Icy-MetaInt') || '');
-    const stationMetadata = await getIcecastMetadata(streamResponse, icyMetaInt);
-    const data = { ...cache.get(stationMetadata.title), stationMetadata };
-
-    if (!data.stationMetadata.title) {
-      throw new Error('No metadata collected');
+    // Normalize URL for consistent cache keys
+    const normalizedUrl = new URL(url).href;
+    
+    // Check cache using direct key lookup
+    const cachedData = cache.get(normalizedUrl);
+    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_ITEM_TTL) {
+      console.log('Cache hit for URL:', normalizedUrl);
+      return res.json(cachedData.data);
     }
+    console.log('Cache miss for URL:', normalizedUrl);
+  } catch (error) {
+    console.warn('URL normalization failed:', error);
+  }
 
-    const searchTerm = cleanTitleForSearch(data.stationMetadata.title);
-    if (!searchTerm) {
-      throw new Error('Search string is empty');
-    }
+  return metadataQueue.add(async () => {
+    let controller: AbortController | null = new AbortController();
+    
+    try {
+      console.log('Running metadata queue ...');
+      console.log('Fetching metadata for URL:', url);
+      const streamResponse = await fetch(url, {
+        method: 'GET',
+        headers: { 'Icy-MetaData': '1' },
+        signal: controller.signal
+      });
 
-    if (!data.matchedTrack) {
-      const matchedTrack = await iTunesSearch(searchTerm);
+      if (!streamResponse.ok) {
+        throw new Error(`Stream response error: ${streamResponse.status} ${streamResponse.statusText}`);
+      }
 
-      if (matchedTrack) {
-        matchedTrack.youTubeUrl = await youTubeSearch(searchTerm) || '';
+      const icyMetaInt = parseInt(streamResponse.headers.get('Icy-MetaInt') || '0');
+      if (!icyMetaInt) {
+        console.warn('No ICY-MetaInt header found, using default value');
+      }
 
-        const trackId = randomUUID();
-        statements.upsertTrackMatch.run({
-          id: trackId,
-          artist: matchedTrack.artist,
-          title: matchedTrack.title,
-          album: matchedTrack.album,
-          artwork: matchedTrack.artwork,
-          release_date: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
-          apple_music_url: matchedTrack.appleMusicUrl || '',
-          youtube_url: matchedTrack.youTubeUrl || ''
+      console.log('Fetching metadata...');
+      const stationMetadata = await getIcecastMetadata(streamResponse, icyMetaInt);
+      console.log('Metadata received:', stationMetadata);
+
+      if (!stationMetadata.title) {
+        throw new Error('No metadata collected');
+      }
+
+      const searchTerm = cleanTitleForSearch(stationMetadata.title);
+      if (!searchTerm) {
+        throw new Error('Search string is empty');
+      }
+
+      let data: MetadataResponse = { stationMetadata };
+
+      // Try to find existing track match
+      const existingMatch = Array.from(cache.values())
+        .find(entry => entry.data?.stationMetadata?.title === stationMetadata.title)
+        ?.data?.matchedTrack;
+
+      if (existingMatch) {
+        data = { ...data, matchedTrack: existingMatch };
+      } else {
+        const matchedTrack = await iTunesSearch(searchTerm);
+        if (matchedTrack) {
+          matchedTrack.youTubeUrl = await youTubeSearch(searchTerm) || '';
+
+          const trackId = randomUUID();
+          statements.upsertTrackMatch.run({
+            id: trackId,
+            artist: matchedTrack.artist,
+            title: matchedTrack.title,
+            album: matchedTrack.album,
+            artwork: matchedTrack.artwork,
+            release_date: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
+            apple_music_url: matchedTrack.appleMusicUrl || '',
+            youtube_url: matchedTrack.youTubeUrl || ''
+          });
+
+          data.matchedTrack = {
+            id: trackId,
+            artist: matchedTrack.artist,
+            title: matchedTrack.title,
+            album: matchedTrack.album,
+            releaseDate: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
+            artwork: matchedTrack.artwork,
+            appleMusicUrl: matchedTrack.appleMusicUrl || '',
+            youTubeUrl: matchedTrack.youTubeUrl || ''
+          };
+        }
+      }
+
+      // Cache using normalized URL
+      try {
+        const normalizedUrl = new URL(url).href;
+        cache.set(normalizedUrl, {
+          url: normalizedUrl,
+          data,
+          timestamp: Date.now()
         });
+      } catch (error) {
+        console.warn('Failed to cache result:', error);
+      }
 
-        data.matchedTrack = {
-          id: trackId,
-          artist: matchedTrack.artist,
-          title: matchedTrack.title,
-          album: matchedTrack.album,
-          releaseDate: matchedTrack.releaseDate,
-          artwork: matchedTrack.artwork,
-          appleMusicUrl: matchedTrack.appleMusicUrl || '',
-          youTubeUrl: matchedTrack.youTubeUrl || ''
-        };
+      // Periodic cache cleanup (every 100 requests)
+      if (Math.random() < 0.01) {
+        const now = Date.now();
+        for (const [key, value] of cache.entries()) {
+          if (now - value.timestamp > CACHE_ITEM_TTL) {
+            cache.delete(key);
+          }
+        }
+
+        // Limit cache size to 50 entries
+        if (cache.size > 50) {
+          const entries = Array.from(cache.entries())
+            .sort(([_, a], [__, b]) => b.timestamp - a.timestamp)
+            .slice(0, 50);
+          cache.clear();
+          entries.forEach(([key, value]) => cache.set(key, value));
+        }
+      }
+
+      res.json(data);
+    } catch (err) {
+      console.error('Metadata error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch metadata';
+      console.error('Metadata error details:', errorMessage);
+      res.status(500).json({ error: errorMessage });
+    } finally {
+      if (controller) {
+        controller.abort();
+        controller = null;
       }
     }
-
-    cache.set(data.stationMetadata.title, { ...cache.get(data.stationMetadata.title), ...data });
-    if (cache.size > 100) {
-      cache.delete(Array.from(cache.keys())[0]);
-    }
-
-    res.json(data);
-  } catch (err) {
-    console.error(err);
-    res.json({});
-  }
+  });
 });
 
 // Health check endpoint
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
+app.get('/health', (req: Request, res: Response) => {
+  const timeout = setTimeout(() => {
+    res.status(504).json({ error: 'Health check timeout' });
+  }, 5000);
+
+  try {
+    // Test database connection with a simple query
+    const dbTest = statements.getAllStations.byCreatedAt.get();
+    const dbStatus = dbTest !== undefined ? 'ok' : 'error';
+    
+    clearTimeout(timeout);
+    res.json({ 
+      status: 'ok',
+      database: dbStatus,
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    clearTimeout(timeout);
+    console.error('Health check error:', error);
+    res.status(500).json({ 
+      status: 'error',
+      database: 'error',
+      error: error?.message || 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
   // Start server
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     console.log(`Express server running on port ${port}`);
+  });
+
+  // Handle server errors
+  server.on('error', (error: any) => {
+    console.error('Server error:', error);
+  });
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      console.log('Server closed');
+      process.exit(0);
+    });
   });
 }
 

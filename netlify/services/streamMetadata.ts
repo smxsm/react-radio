@@ -24,7 +24,7 @@ type StreamHeaders = {
   contentType: string;
 };
 
-type StationMetadata = {
+export type StationMetadata = {
   title: string;
 } & StreamHeaders;
 
@@ -35,15 +35,80 @@ type UnicodeConverter = {
 
 export default async function getIcecastMetadata(response: Response, icyMetaInt: number): Promise<StationMetadata> {
   const icyHeaders = parseHeaders(response.headers);
-  return new Promise((resolve) => {
-    new IcecastReadableStream(response, {
-      onMetadata: ({ metadata }) => {
-        const title = metadata?.StreamTitle || metadata?.TITLE || '';
-        resolve({ title: title.trim(), ...icyHeaders });
-      },
-      metadataTypes: ['icy', 'ogg'],
-      icyMetaInt: icyMetaInt,
-    });
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Metadata timeout'));
+    }, 15000);
+
+    try {
+      console.log('Starting metadata stream...');
+      console.log('ICY-MetaInt:', icyMetaInt);
+      console.log('Headers:', {
+        'icy-metaint': response.headers.get('icy-metaint'),
+        'content-type': response.headers.get('content-type'),
+        'icy-name': response.headers.get('icy-name'),
+        'icy-genre': response.headers.get('icy-genre')
+      });
+
+      // Keep track if we've resolved
+      let hasResolved = false;
+      let lastTitle = '';
+      let debounceTimer: NodeJS.Timeout | null = null;
+
+      // Cleanup function
+      const cleanup = () => {
+        if (debounceTimer) {
+          clearTimeout(debounceTimer);
+          debounceTimer = null;
+        }
+        if (response.body) {
+          response.body.cancel().catch(() => {
+            // Ignore cancel errors
+          });
+        }
+      };
+      
+      try {
+        // Create the Icecast stream and store the reference
+        const icecastStream = new IcecastReadableStream(response, {
+          onMetadata: ({ metadata }) => {
+            console.log('Received metadata:', metadata);
+            const title = metadata?.StreamTitle || metadata?.TITLE || '';
+            
+            // Only process if title has changed and we haven't resolved
+            if (title && !hasResolved && title !== lastTitle) {
+              lastTitle = title;
+              
+              // Clear any existing debounce timer
+              if (debounceTimer) {
+                clearTimeout(debounceTimer);
+              }
+              
+              // Set a new debounce timer
+              debounceTimer = setTimeout(() => {
+                console.log('Valid title found:', title);
+                hasResolved = true;
+                clearTimeout(timeout);
+                cleanup();
+                resolve({ title: title.trim(), ...icyHeaders });
+              }, 500); // 500ms debounce
+            }
+          },
+          metadataTypes: ['icy', 'ogg'],
+          icyMetaInt: icyMetaInt,
+        });
+      } catch (streamError) {
+        console.error('Error creating Icecast stream:', streamError);
+        cleanup();
+        if (!hasResolved) {
+          reject(streamError instanceof Error ? streamError : new Error('Failed to create Icecast stream'));
+        }
+      }
+
+    } catch (error: unknown) {
+      clearTimeout(timeout);
+      reject(error instanceof Error ? error : new Error('Unknown error occurred'));
+    }
   });
 }
 

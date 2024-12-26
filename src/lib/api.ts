@@ -21,6 +21,37 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
+// Helper function to create an AbortController with timeout
+function createAbortController(timeoutMs: number = 10000): AbortController {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), timeoutMs);
+  return controller;
+}
+
+// Helper function to make fetch requests with timeout
+async function fetchWithTimeout<T>(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = 10000
+): Promise<T> {
+  const controller = createAbortController(timeoutMs);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return handleResponse<T>(response);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out');
+      }
+    }
+    throw error;
+  }
+}
+
 export async function signup(email: string, firstName: string, lastName: string, password: string) {
   const response = await fetch(`${API_BASE_URL}/auth/signup`, {
     method: 'POST',
@@ -84,14 +115,31 @@ export async function getProfile(sessionId: string) {
 }
 
 // Custom stations endpoints
-export async function getCustomStations(sessionId: string, orderBy = 'created_at', order = 'DESC') {
-  const response = await fetch(`${API_BASE_URL}/stations?orderBy=${orderBy}&order=${order}`, {
-    headers: {
-      'Authorization': `Bearer ${sessionId}`,
-    },
-  });
+export async function getCustomStations (sessionId: string, orderBy = 'created_at', order = 'DESC', retries = 2) {
+  const attempt = async () => {
+    return fetchWithTimeout<{ id: string; name: string; logo: string | null; listen_url: string }[]>(
+      `${API_BASE_URL}/stations?orderBy=${orderBy}&order=${order}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${sessionId}`,
+        },
+      },
+      15000 // Increase timeout to 15 seconds to match server
+    );
+  };
 
-  return handleResponse<{ id: string; name: string; logo: string | null; listen_url: string }[]>(response);
+  let lastError;
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await attempt();
+    } catch (error) {
+      lastError = error;
+      if (i < retries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
+      }
+    }
+  }
+  throw lastError;
 }
 
 export async function getCustomStationById(sessionId: string, id: string) {

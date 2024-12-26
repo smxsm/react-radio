@@ -126,7 +126,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
 
     if (playerContext?.status === 'playing') {
       getNowPlayingInfo(playerContext.station?.listenUrl);
-      intervalRef.current = setInterval(() => getNowPlayingInfo(playerContext.station?.listenUrl), 10000);
+      intervalRef.current = setInterval(() => getNowPlayingInfo(playerContext.station?.listenUrl), 15000);
     }
 
     return () => clearInterval(intervalRef.current);
