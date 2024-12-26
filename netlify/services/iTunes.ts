@@ -1,12 +1,13 @@
-import Fuse from 'https://deno.land/x/fuse@v6.4.1/dist/fuse.esm.min.js';
+import Fuse from 'fuse.js';
 
-type TrackInfo = {
+export type TrackInfo = {
   artist: string;
   title: string;
   album: string;
   releaseDate: Date | null;
   artwork: string;
   appleMusicUrl: string;
+  youTubeUrl?: string;
 };
 
 export default async function iTunesSearch(searchTerm: string): Promise<TrackInfo | null> {
@@ -19,6 +20,7 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
     if (!data?.length) {
       return null;
     }
+    
     // Using Fuse.js to select best match
     let fuse = new Fuse(
       data.map(
@@ -27,18 +29,22 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
       ),
       { useExtendedSearch: true }
     );
+    
     // First run trying to filter out collection albums
     let searchResults = fuse.search(
       `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various`
     );
+    
     if (!searchResults.length) {
-      // If furst run found nothing, try againt without considering album type
+      // If first run found nothing, try again without considering album type
       fuse = new Fuse(data.map(({ artistName, trackName }) => `${artistName} ${trackName}}`));
       searchResults = fuse.search(searchTerm);
     }
+    
     if (!searchResults.length) {
       return null;
     }
+    
     const [{ refIndex }] = searchResults;
     return {
       artist: data[refIndex].artistName || '',
