@@ -78,24 +78,24 @@ export default function Home() {
         {user && (
           <Link to="/stations/custom" className={styles.category}>
             <FontAwesomeIcon icon={faFolder} className={styles.categoryIcon} />
-            <p className={styles.categoryName}>My Stations</p>
+            <p className={styles.categoryName}>{translate('home.mystations')}</p>
           </Link>
         )}
         <Link to="/stations/music/genres" className={styles.category}>
           <FontAwesomeIcon icon={faMusic} className={styles.categoryIcon} />
-          <p className={styles.categoryName}>Music</p>
+          <p className={styles.categoryName}>{translate('home.music')}</p>
         </Link>
         <Link to="/stations/genres/news" className={styles.category}>
           <FontAwesomeIcon icon={faNewspaper} className={styles.categoryIcon} />
-          <p className={styles.categoryName}>News</p>
+          <p className={styles.categoryName}>{translate('home.news')}</p>
         </Link>
         <Link to="/stations/genres/sports" className={styles.category}>
           <FontAwesomeIcon icon={faTableTennis} className={styles.categoryIcon} />
-          <p className={styles.categoryName}>Sports</p>
+          <p className={styles.categoryName}>{translate('home.sports')}</p>
         </Link>
         <Link to="/stations/countries" className={styles.category}>
           <FontAwesomeIcon icon={faGlobeAmericas} className={styles.categoryIcon} />
-          <p className={styles.categoryName}>Countries</p>
+          <p className={styles.categoryName}>{translate('home.countries')}</p>
         </Link>
       </section>
 
@@ -103,14 +103,14 @@ export default function Home() {
         {!!stationHistory?.length && (
           <div className={styles.recommended}>
             <div className={styles.playHistoryTitleContainer}>
-              <h3 className={styles.recommendedTitle}>Recently played</h3>
+              <h3 className={styles.recommendedTitle}>{translate('home.recent')}</h3>
               <Button
                 type="button"
                 disabled={!stationHistory?.length}
                 className={styles.btnClear}
                 onClick={() => clearStationHistory()}
               >
-                Clear
+                {translate('general.clear')}
               </Button>
             </div>
             <CardsList>
@@ -126,7 +126,7 @@ export default function Home() {
           </div>
         )}
         <div className={styles.recommended}>
-          <h3 className={styles.recommendedTitle}>Trending</h3>
+          <h3 className={styles.recommendedTitle}>{translate('home.trending')}</h3>
           <CardsList>
             {trending.map((station) => (
               <RadioStationCard
@@ -140,7 +140,7 @@ export default function Home() {
           </CardsList>
         </div>
         <div className={styles.recommended}>
-          <h3 className={styles.recommendedTitle}>New and updated</h3>
+          <h3 className={styles.recommendedTitle}>{translate('home.new')}</h3>
           <CardsList>
             {newest.map((station, i) => (
               <RadioStationCard

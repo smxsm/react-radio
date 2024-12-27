@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { FieldValues, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Trans, useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 import { UserContext } from '../context/UserContext';
@@ -28,6 +29,8 @@ export default function SignUp() {
   const { register, handleSubmit, formState } = useForm({ mode: 'onTouched', resolver: zodResolver(signUpDataSchema) });
   const [error, setError] = useState<null | Error>(null);
   const { setDocumentTitle } = useContext(DocumentTitleContext)!;
+  const { t } = useTranslation();
+  const translate = t as (key: string) => string;
 
   useEffect(() => {
     setDocumentTitle('Sign up');
@@ -42,22 +45,23 @@ export default function SignUp() {
   return (
     <section className={styles['signup-section']}>
       <div className={styles['form-title']}>
-        <h2>Create a new account</h2>
+        <h2>{translate('user.form.account.create')}</h2>
         <p>
-          or
-          <Link to="/auth/signin"> sign in here</Link>
+          <Trans i18nKey='user.form.loginaction'>
+            or <Link to="/auth/signin"> sign in here</Link>
+          </Trans>
         </p>
       </div>
 
       <form className={styles['signup-form']} onSubmit={handleSubmit(submitHandler)}>
         <Label htmlFor="email" disabled={loading}>
-          E-Mail
+          {translate('user.form.account.email')}
         </Label>
         <Input type="email" id="email" {...register('email')} error={!!formState.errors.email} disabled={loading} />
         <p className={styles['validation-error']}>{formState.errors['email']?.message as string}</p>
 
         <Label htmlFor="firstName" disabled={loading}>
-          First name
+          {translate('user.form.account.firstname')}
         </Label>
         <Input
           type="text"
@@ -69,7 +73,7 @@ export default function SignUp() {
         <p className={styles['validation-error']}>{formState.errors['firstName']?.message as string}</p>
 
         <Label htmlFor="lastName" disabled={loading}>
-          Last name
+          {translate('user.form.account.lastname')}
         </Label>
         <Input
           type="text"
@@ -81,7 +85,7 @@ export default function SignUp() {
         <p className={styles['validation-error']}>{formState.errors['lastName']?.message as string}</p>
 
         <Label htmlFor="password" disabled={loading}>
-          Password
+          {translate('user.form.account.password')}
         </Label>
         <Input
           type="password"
@@ -93,7 +97,7 @@ export default function SignUp() {
         <p className={styles['validation-error']}>{formState.errors['password']?.message as string}</p>
 
         <Label htmlFor="repass" disabled={loading}>
-          Confirm password
+          {translate('user.form.account.password2')}
         </Label>
         <Input
           type="password"
@@ -106,7 +110,7 @@ export default function SignUp() {
 
         <div className={styles['form-actions']}>
           <Button type="submit" loading={loading} error={!!error && !loading} disabled={loading}>
-            Create account
+            {translate('user.form.account.createaction')}
           </Button>
         </div>
       </form>

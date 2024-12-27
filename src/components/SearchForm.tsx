@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
 
 import Button from './ui/Button';
 import Input from './ui/Input';
@@ -15,6 +16,8 @@ type SearchFormProps = {
 export default function SearchForm({ className }: SearchFormProps) {
   const [value, setValue] = useState('');
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const translate = t as (key: string) => string;
 
   const valueChangeHandler = (e: React.FormEvent<HTMLInputElement>) => setValue(e.currentTarget.value);
   const submitHandler = (e: React.FormEvent) => {
@@ -33,7 +36,7 @@ export default function SearchForm({ className }: SearchFormProps) {
           className={`${styles.input} ${className}`.trim()}
           value={value}
           onChange={valueChangeHandler}
-          placeholder="Search..."
+          placeholder={translate('nav.search')}
         />
         <Button className={styles.btn}>
           <FontAwesomeIcon icon={faSearch} />

@@ -1,26 +1,29 @@
 import SearchParamSelect from './SearchParamSelect';
+import { useTranslation } from 'react-i18next';
 
 import styles from './StationsListOptions.module.css';
 
 export default function StationsListOptions() {
+  const { t } = useTranslation();
+  const translate = t as (key: string) => string;
   return (
     <div className={styles.options}>
       <SearchParamSelect
         optionsList={[
-          ['Name', 'name'],
-          ['Popular', 'popularity'],
-          ['Trending', 'trending'],
+          [translate('nav.sort.name'), 'name'],
+          [translate('nav.sort.popular'), 'popularity'],
+          [translate('nav.sort.trending'), 'trending'],
         ]}
-        label="Sort"
+        label={translate('nav.sort')}
         name="sort"
         defaultValue="popularity"
       />
       <SearchParamSelect
         optionsList={[
-          ['Ascending', 'asc'],
-          ['Descending', 'desc'],
+          [translate('nav.order.asc'), 'asc'],
+          [translate('nav.order.desc'), 'desc'],
         ]}
-        label="Order"
+        label={translate('nav.order')}
         name="order"
         defaultValue="desc"
       />
@@ -31,20 +34,20 @@ export default function StationsListOptions() {
           ['80', '80'],
           ['100', '100'],
         ]}
-        label="Limit"
+        label={translate('nav.limit')}
         name="limit"
         defaultValue="40"
       />
       <SearchParamSelect
         optionsList={[
-          ['All', '-1'],
+          [translate ('nav.distance.all'), '-1'],
           ['10 km', '10'],
           ['50 km', '50'],
           ['100 km', '100'],
           ['500 km', '500'],
           ['1000 km', '1000'],
         ]}
-        label="Distance"
+        label={translate('nav.distance')}
         name="distance"
         defaultValue="-1"
       />

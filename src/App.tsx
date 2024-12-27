@@ -24,6 +24,7 @@ import Navigation from './components/Navigation';
 import { useState } from 'react';
 
 import styles from './App.module.css';
+import ForgotPwd from './components/ForgotPwd';
 
 function App() {
   const [mobilePlayerActive, setMobilePlayerActive] = useState(false);
@@ -61,6 +62,7 @@ function App() {
                       <Route element={<ProtectedRoute hasUser={false} redirectTo={'/'} />}>
                         <Route path="/auth/signin" element={<SignIn />} />
                         <Route path="/auth/signup" element={<SignUp />} />
+                        <Route path="/auth/forgot-password" element={<ForgotPwd />} />
                       </Route>
                       <Route path="*" element={<NotFound />} />
                     </Routes>

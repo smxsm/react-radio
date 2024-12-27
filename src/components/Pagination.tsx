@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Button from './ui/Button';
 import styles from './Pagination.module.css';
+import { useTranslation } from 'react-i18next';
 
 type PaginationProps = {
   pages: number;
@@ -18,6 +19,8 @@ export default function Pagination({
   onPageChange,
 }: PaginationProps) {
   const [active, setActive] = useState(current);
+  const { t } = useTranslation();
+  const translate = t as (key: string) => string;
 
   let btnCount = maxVisibleButtons;
   if (btnCount > pages) {
@@ -48,7 +51,7 @@ export default function Pagination({
   return (
     <div className={`${styles.pagination} ${className ? className : ''}`.trim()}>
       <Button type="button" disabled={active === 1} onClick={clickHandler(active - 1)}>
-        Previous
+        {translate('nav.previous')}
       </Button>
       {buttons.map((btn) => (
         <Button
@@ -62,7 +65,7 @@ export default function Pagination({
         </Button>
       ))}
       <Button type="button" disabled={active === pages} onClick={clickHandler(active + 1)}>
-        Next
+        {translate('nav.next')}
       </Button>
     </div>
   );

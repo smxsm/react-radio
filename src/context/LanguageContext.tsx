@@ -8,8 +8,8 @@ type Language = {
 };
 
 const languages: Language[] = [
-  { code: 'en', name: 'English', flag: 'GB' },
   { code: 'de', name: 'Deutsch', flag: 'DE' },
+  { code: 'en', name: 'English', flag: 'GB' },
 ];
 
 type LanguageContextType = {
