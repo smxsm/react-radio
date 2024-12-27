@@ -12,12 +12,12 @@ services:
       - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:3001}
     depends_on:
       - backend
+    restart: unless-stopped
 
   backend:
     build:
       context: ./netlify
       dockerfile: Dockerfile.backend
-    platform: linux/arm64/v8
     ports:
       - "${BACKEND_PORT:-3001}:3001"
     volumes:
@@ -26,3 +26,4 @@ services:
     environment:
       # use .env var with default 3001
       - PORT=${BACKEND_PORT:-3001}
+    restart: unless-stopped
