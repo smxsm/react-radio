@@ -1,9 +1,24 @@
+.menuContainer {
+  position: relative;
+}
+
+.userMenu {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.menuItemText {
+  margin-left: 0.5rem;
+}
+
 .spinner {
-  width: 3rem;
-  height: 3rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .signout-item {
+  color: var(--color-danger);
   padding: 1rem 1rem;
 }
 
@@ -12,22 +27,57 @@
   cursor: pointer;
 }
 
-@media screen and (max-width: 1000px) {
-  .userMenu {
-    font-size: 1.8rem;
-  }
-  .menuItemText {
-    display: none;
-  }
+.languageMenuItem {
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
-@media screen and (max-width: 720px) {
-  .userMenu {
-    flex-direction: column;
-    gap: 1rem;
-    font-size: 1.8rem;
-  }
-  .menuItemText {
-    display: inline;
+.currentFlag {
+  width: 24px !important;
+  height: 16px !important;
+}
+
+.languageDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+}
+
+.languageOption {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  width: 100%;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.languageOption:hover {
+  background-color: var(--color-background-hover);
+}
+
+.flag {
+  width: 24px !important;
+  height: 16px !important;
+}
+
+@media screen and (max-width: 1000px) {
+  .spinner {
+    width: 3rem;
+    height: 3rem;
   }
 }

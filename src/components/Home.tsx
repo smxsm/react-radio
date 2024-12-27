@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Trans, useTranslation } from 'react-i18next';
 import { faFolder, faGlobeAmericas, faMusic, faNewspaper, faTableTennis } from '@fortawesome/free-solid-svg-icons';
 
 import { PlayerContext } from '../context/PlayerContext';
@@ -16,6 +17,8 @@ import styles from './Home.module.css';
 
 export default function Home() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const translate = t as (key: string) => string;
   const playerContext = useContext(PlayerContext);
   const { stations: trending, loading: loadingTrending } = useStations(
     {},
@@ -45,13 +48,17 @@ export default function Home() {
             <img src="/main.svg" alt="Sound wave"></img>
           </figure>
           <header className={styles.header}>
-            <h1 className={styles.heroTitle}>Hear the world</h1>
+            <h1 className={styles.heroTitle}>{translate('home.h1')}</h1>
             <p className={styles.heroText}>
+              <Trans i18nKey='home.intro'>
               Choose from over 30000 radio stations or <Link to="/auth/signup">register an account</Link> to create your
               own library.
+              </Trans>
             </p>
             <p className={styles.heroSubText}>
-              Already have an account? <Link to="/auth/signin">Click here to sign in.</Link>
+              <Trans i18nKey='home.login'>
+                Already have an account? <Link to="/auth/signin">Click here to sign in.</Link>
+              </Trans>
             </p>
             <Button
               type="button"
@@ -59,7 +66,9 @@ export default function Home() {
               className={styles.btnBrowse}
               onClick={() => navigate('/stations/all')}
             >
-              Browse stations
+              <Trans i18nKey='home.browse'>
+                Browse stations
+              </Trans>
             </Button>
           </header>
         </section>

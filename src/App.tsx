@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
+import './i18n';
 import { UserProvider } from './context/UserContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { PlayerProvider } from './context/PlayerContext';
 import { NowPlayingProvider } from './context/NowPlayingContext';
 import { DocumentTitleProvider } from './context/DocumentTitleContext';
@@ -34,9 +36,10 @@ function App() {
   };
   return (
     <>
-      <UserProvider>
-        <PlayerProvider>
-          <NowPlayingProvider>
+      <LanguageProvider>
+        <UserProvider>
+          <PlayerProvider>
+            <NowPlayingProvider>
             <MediaSessionAPI />
             <BrowserRouter>
               <Navigation switchPlayer={switchPlayer} showNowPlaying={!mobilePlayerActive} />
@@ -69,9 +72,10 @@ function App() {
                 </aside>
               </div>
             </BrowserRouter>
-          </NowPlayingProvider>
-        </PlayerProvider>
-      </UserProvider>
+            </NowPlayingProvider>
+          </PlayerProvider>
+        </UserProvider>
+      </LanguageProvider>
     </>
   );
 }
