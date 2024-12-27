@@ -1,15 +1,16 @@
+version: '3'
 services:
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "${FRONTEND_PORT:-3002}:3000"
+      - "${FRONTEND_PORT}:3000"
     volumes:
       - ./:/app
       - /app/node_modules
     environment:
-      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:3001}
+      - REACT_APP_API_URL=${REACT_APP_API_URL}
     depends_on:
       - backend
     restart: unless-stopped
@@ -19,11 +20,12 @@ services:
       context: ./netlify
       dockerfile: Dockerfile.backend
     ports:
-      - "${BACKEND_PORT:-3001}:3001"
+      - "${BACKEND_PORT}:3001"
     volumes:
       - ./netlify/data:/app/data
       - ./netlify/dist:/app/dist
     environment:
       # use .env var with default 3001
-      - PORT=${BACKEND_PORT:-3001}
+      - PORT=${BACKEND_PORT}
     restart: unless-stopped
+    network_mode: "host"
