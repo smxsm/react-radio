@@ -192,7 +192,7 @@ async function startServer() {
 
       // send an email here
       const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/change-password/${resetToken}`;
-      await deliverMail(email, 'Your Radio resetLink', resetLink, resetLink);
+      await deliverMail(email, 'ReactRadio password reset', 'Go here to reset your password: ' + resetLink, '<p>Click this link to reset your password:<br/><a href="' + resetLink + '">' + resetLink +'</a><p>');
       res.json({ response: 'OK' });
     } catch (error) {
       console.error('Forgot password error:', error);
