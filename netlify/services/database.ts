@@ -44,6 +44,12 @@ type StatementsType = {
   createUser: Statement<[{ id: string; email: string; password_hash: string; first_name: string; last_name: string; }], RunResult>;
   getUserByEmail: Statement<[string], DbUser>;
   getUserById: Statement<[string], DbUser>;
+  updateUserPassword: Statement<[{ user_id: string; password_hash: string; }], RunResult>;
+
+  // Password reset
+  createPasswordReset: Statement<[{ token: string; user_id: string; expires_at: string; }], RunResult>;
+  getPasswordReset: Statement<[string], { user_id: string; expires_at: string; }>;
+  deletePasswordReset: Statement<[string], RunResult>;
 
   // Session management
   createSession: Statement<[{ id: string; user_id: string; expires_at: string; }], RunResult>;
@@ -127,6 +133,14 @@ class DatabaseManager {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS password_resets (
+        token TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        expires_at DATETIME NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+
       CREATE TABLE IF NOT EXISTS sessions (
         id TEXT PRIMARY KEY,
         user_id TEXT NOT NULL,
@@ -178,6 +192,7 @@ class DatabaseManager {
 
     // Create indexes
     this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
       CREATE INDEX IF NOT EXISTS idx_tracks_history_user_id ON tracks_history(user_id);
       CREATE INDEX IF NOT EXISTS idx_tracks_history_created_at ON tracks_history(created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_listen_history_user_id ON listen_history(user_id);
@@ -196,6 +211,19 @@ class DatabaseManager {
       `),
       getUserByEmail: this.db.prepare('SELECT * FROM users WHERE email = ?'),
       getUserById: this.db.prepare('SELECT * FROM users WHERE id = ?'),
+      updateUserPassword: this.db.prepare(`
+        UPDATE users 
+        SET password_hash = @password_hash 
+        WHERE id = @user_id
+      `),
+
+      // Password reset
+      createPasswordReset: this.db.prepare(`
+        INSERT INTO password_resets (token, user_id, expires_at)
+        VALUES (@token, @user_id, @expires_at)
+      `),
+      getPasswordReset: this.db.prepare('SELECT user_id, expires_at FROM password_resets WHERE token = ?'),
+      deletePasswordReset: this.db.prepare('DELETE FROM password_resets WHERE token = ?'),
 
       // Session management
       createSession: this.db.prepare(`
@@ -291,8 +319,21 @@ class DatabaseManager {
     }, HEALTH_CHECK_INTERVAL);
   }
 
+  private cleanupExpiredTokens() {
+    if (!this.db) return;
+    
+    try {
+      this.db.prepare("DELETE FROM password_resets WHERE expires_at < datetime('now')").run();
+    } catch (error) {
+      console.error('Failed to cleanup expired tokens:', error);
+    }
+  }
+
   private checkHealth(): boolean {
     try {
+      // Clean up expired tokens every health check
+      this.cleanupExpiredTokens();
+
       if (!this.db?.open) {
         console.error('Database connection is closed, attempting to reconnect...');
         try {

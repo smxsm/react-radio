@@ -8,10 +8,18 @@ import getIcecastMetadata, { StationMetadata } from './services/streamMetadata.j
 import iTunesSearch from './services/iTunes.js';
 import youTubeSearch from './services/youTube.js';
 import PQueue from 'p-queue';
+import nodemailer from 'nodemailer';
 
 // Custom CORS middleware
 function corsMiddleware (req: Request, res: Response, next: NextFunction) {
   const origin = req.headers.origin;
+
+  const frontendUrl = process.env.FRONTEND_URL ?? '';
+  // restrict access to localhost and frontendUrl only
+  if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1' && frontendUrl.indexOf(req.hostname) === -1) {
+    console.log('ACCESS FORBIDDEN', req.hostname);
+    return res.status(403).json({ error: 'Forbidden' });
+  }
 
   // Allow localhost with any port
   if (!origin || /https?:\/\/localhost:?\d{0,5}/.test(origin)) {
@@ -70,6 +78,31 @@ async function startServer() {
   app.use(express.json());
   app.use(corsMiddleware);
 
+  async function deliverMail (recipient: string, subject: string, text: string, html: string) {
+    const transporter = nodemailer.createTransport({
+      service: process.env.SMTP_SERVICE,
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_EMAIL,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_ADMIN,
+      to: recipient,
+      subject: subject,
+      text: text,
+      html: html
+    });
+
+    console.log("Message sent: %s", info.messageId);
+
+    return true;
+  }
+
   // Auth endpoints
   app.post('/auth/signup', async (req: Request, res: Response) => {
     try {
@@ -125,6 +158,79 @@ async function startServer() {
       res.json({ success: true });
     } catch (error) {
       console.error('Signout error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/auth/forgot-password', async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+      }
+
+      const user = auth.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const resetToken = randomUUID();
+      const expiresAt = new Date(Date.now() + 3600000); // 1 hour expiration
+
+      statements.createPasswordReset.run({
+        token: resetToken,
+        user_id: user.id,
+        expires_at: expiresAt.toISOString()
+      });
+
+      // send an email here
+      const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/change-password/${resetToken}`;
+      await deliverMail(email, 'Your Radio resetLink', resetLink, resetLink);
+      res.json({ response: 'OK' });
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/auth/reset-password', async (req: Request, res: Response) => {
+    try {
+      const { token, newPassword } = req.body;
+      if (!token || !newPassword) {
+        return res.status(400).json({ error: 'Token and new password are required' });
+      }
+
+      // Validate password
+      if (newPassword.length < 14) {
+        return res.status(400).json({ error: 'Password must be at least 14 characters long' });
+      }
+      if (!/[A-Z]/.test(newPassword)) {
+        return res.status(400).json({ error: 'Password must contain at least one uppercase letter' });
+      }
+      if (!/[!@#$%^&*(),.?":{}|<>_]/.test(newPassword)) {
+        return res.status(400).json({ error: 'Password must contain at least one special character' });
+      }
+
+      const reset = statements.getPasswordReset.get(token) as { user_id: string, expires_at: string } | undefined;
+      if (!reset) {
+        return res.status(404).json({ error: 'Invalid or expired reset token' });
+      }
+
+      if (new Date(reset.expires_at) < new Date()) {
+        statements.deletePasswordReset.run(token);
+        return res.status(400).json({ error: 'Reset token has expired' });
+      }
+
+      const passwordHash = await auth.hashPassword(newPassword);
+      statements.updateUserPassword.run({
+        user_id: reset.user_id,
+        password_hash: passwordHash
+      });
+
+      statements.deletePasswordReset.run(token);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Reset password error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });

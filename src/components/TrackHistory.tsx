@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+import { useTranslation } from 'react-i18next';
 
 import { NowPlayingContext } from '../context/NowPlayingContext';
 
@@ -15,20 +16,22 @@ type TrackHistoryProps = {
 
 export default function TrackHistory({ className }: TrackHistoryProps) {
   const { songHistory, removeSongFromHistory, clearSongHistory } = useContext(NowPlayingContext)!;
+  const { t } = useTranslation();
+  const translate = t as (key: string) => string;
 
   if (!songHistory?.length) return null;
 
   return (
     <div className={`${styles.history} ${className ? className : ''}.trim()`}>
       <div className={styles.titleContainer}>
-        <h2 className={styles.componentTitle}>Song history</h2>
+        <h2 className={styles.componentTitle}>{translate('tracks.songhistory')}</h2>
         <Button
           type="button"
           disabled={!songHistory?.length}
           className={styles.btnClear}
           onClick={() => clearSongHistory()}
         >
-          Clear
+          {translate('general.clear')}
         </Button>
       </div>
       {songHistory?.map((entry) => (

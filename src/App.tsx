@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
+import './i18n';
 import { UserProvider } from './context/UserContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { PlayerProvider } from './context/PlayerContext';
 import { NowPlayingProvider } from './context/NowPlayingContext';
 import { DocumentTitleProvider } from './context/DocumentTitleContext';
@@ -22,6 +24,8 @@ import Navigation from './components/Navigation';
 import { useState } from 'react';
 
 import styles from './App.module.css';
+import ForgotPwd from './components/ForgotPwd';
+import ChangePwd from './components/ChangePwd';
 
 function App() {
   const [mobilePlayerActive, setMobilePlayerActive] = useState(false);
@@ -34,9 +38,10 @@ function App() {
   };
   return (
     <>
-      <UserProvider>
-        <PlayerProvider>
-          <NowPlayingProvider>
+      <LanguageProvider>
+        <UserProvider>
+          <PlayerProvider>
+            <NowPlayingProvider>
             <MediaSessionAPI />
             <BrowserRouter>
               <Navigation switchPlayer={switchPlayer} showNowPlaying={!mobilePlayerActive} />
@@ -58,6 +63,8 @@ function App() {
                       <Route element={<ProtectedRoute hasUser={false} redirectTo={'/'} />}>
                         <Route path="/auth/signin" element={<SignIn />} />
                         <Route path="/auth/signup" element={<SignUp />} />
+                        <Route path="/auth/forgot-password" element={<ForgotPwd />} />
+                        <Route path="/change-password/:token" element={<ChangePwd />} />
                       </Route>
                       <Route path="*" element={<NotFound />} />
                     </Routes>
@@ -69,9 +76,10 @@ function App() {
                 </aside>
               </div>
             </BrowserRouter>
-          </NowPlayingProvider>
-        </PlayerProvider>
-      </UserProvider>
+            </NowPlayingProvider>
+          </PlayerProvider>
+        </UserProvider>
+      </LanguageProvider>
     </>
   );
 }
