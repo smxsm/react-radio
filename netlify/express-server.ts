@@ -468,6 +468,10 @@ async function startServer() {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const history = statements.getListenHistory.all((req as any).user.id, limit);
+      // set the listenUrl of every history entry for the player context
+      history.forEach((entry: any) => {
+        entry.listenUrl = entry.listen_url;
+      });
       clearTimeout(timeout);
       res.json(history);
     } catch (error: any) {
@@ -576,7 +580,6 @@ const metadataQueue = new PQueue({
   timeout: 15000, // 15 second timeout for each task
   throwOnTimeout: true // Reject the promise when task times out
 }); 
-const CACHE_ITEM_TTL = 60000; // 60 seconds
 
 // Helper function from edge function
 function cleanTitleForSearch(title: string) {
@@ -595,26 +598,10 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'URL parameter is required' });
   }
 
-  try {
-    // Normalize URL for consistent cache keys
-    const normalizedUrl = new URL(url).href;
-    
-    // Check cache using direct key lookup
-    const cachedData = cache.get(normalizedUrl);
-    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_ITEM_TTL) {
-      console.log('Cache hit for URL:', normalizedUrl);
-      return res.json(cachedData.data);
-    }
-    console.log('Cache miss for URL:', normalizedUrl);
-  } catch (error) {
-    console.warn('URL normalization failed:', error);
-  }
-
   return metadataQueue.add(async () => {
     let controller: AbortController | null = new AbortController();
     
     try {
-      console.log('Running metadata queue ...');
       console.log('Fetching metadata for URL:', url);
       const streamResponse = await fetch(url, {
         method: 'GET',
@@ -655,6 +642,8 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
       } else {
         let matchedTrack = await iTunesSearch(searchTerm);
         const matchedTrack2 = await spotifySearch(searchTerm);
+        console.log('iTunes searchResults', matchedTrack);
+        console.log('Spotify searchResults', matchedTrack2);
 
         if (!matchedTrack) {
           matchedTrack = matchedTrack2 ?? null;
@@ -689,37 +678,6 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
             youTubeUrl: matchedTrack.youTubeUrl || '',
             spotifyUrl: matchedTrack.spotifyUrl || ''
           };
-        }
-      }
-
-      // Cache using normalized URL
-      try {
-        const normalizedUrl = new URL(url).href;
-        cache.set(normalizedUrl, {
-          url: normalizedUrl,
-          data,
-          timestamp: Date.now()
-        });
-      } catch (error) {
-        console.warn('Failed to cache result:', error);
-      }
-
-      // Periodic cache cleanup (every 100 requests)
-      if (Math.random() < 0.01) {
-        const now = Date.now();
-        for (const [key, value] of cache.entries()) {
-          if (now - value.timestamp > CACHE_ITEM_TTL) {
-            cache.delete(key);
-          }
-        }
-
-        // Limit cache size to 50 entries
-        if (cache.size > 50) {
-          const entries = Array.from(cache.entries())
-            .sort(([_, a], [__, b]) => b.timestamp - a.timestamp)
-            .slice(0, 50);
-          cache.clear();
-          entries.forEach(([key, value]) => cache.set(key, value));
         }
       }
 

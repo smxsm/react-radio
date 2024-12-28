@@ -86,7 +86,6 @@ export default async function spotifySearch(searchTerm: string): Promise<TrackIn
     if (!searchTerm || !client_id) {
       return null;
     }
-    //console.log('spotify searchTerm', searchTerm);
 
     const token = await getAccessToken();
     if (!token) {
@@ -102,7 +101,6 @@ export default async function spotifySearch(searchTerm: string): Promise<TrackIn
       }
     });
     const data = (await response.json())?.tracks?.items;
-    //console.log('Spotify data', data);
 
     if (!data?.length) {
       return null;
@@ -116,11 +114,10 @@ export default async function spotifySearch(searchTerm: string): Promise<TrackIn
       ),
       { useExtendedSearch: true }
     );
-    //console.log(fuse);
     
     // First run trying to filter out collection albums
     let searchResults = fuse.search(
-      `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various`
+      `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various !mix`
     );
     
     if (!searchResults.length) {
@@ -133,7 +130,6 @@ export default async function spotifySearch(searchTerm: string): Promise<TrackIn
       return null;
     }
 
-    console.log('Spotify searchResults', searchResults);
     const [{ refIndex }] = searchResults;
     const item = data[refIndex];
     return {

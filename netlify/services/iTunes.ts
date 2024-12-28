@@ -29,7 +29,7 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
     
     // First run trying to filter out collection albums
     let searchResults = fuse.search(
-      `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various`
+      `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various !mix`
     );
     
     if (!searchResults.length) {
