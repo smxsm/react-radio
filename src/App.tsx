@@ -25,6 +25,7 @@ import { useState } from 'react';
 
 import styles from './App.module.css';
 import ForgotPwd from './components/ForgotPwd';
+import ChangePwd from './components/ChangePwd';
 
 function App() {
   const [mobilePlayerActive, setMobilePlayerActive] = useState(false);
@@ -63,6 +64,7 @@ function App() {
                         <Route path="/auth/signin" element={<SignIn />} />
                         <Route path="/auth/signup" element={<SignUp />} />
                         <Route path="/auth/forgot-password" element={<ForgotPwd />} />
+                        <Route path="/change-password/:token" element={<ChangePwd />} />
                       </Route>
                       <Route path="*" element={<NotFound />} />
                     </Routes>

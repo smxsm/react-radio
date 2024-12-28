@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 import { UserContext } from '../context/UserContext';
 import { DocumentTitleContext } from '../context/DocumentTitleContext';
+import { forgotPassword } from '../lib/api';
 
 import Input from './ui/Input';
 import Label from './ui/Label';
@@ -15,31 +16,53 @@ import Button from './ui/Button';
 
 import styles from './ForgotPwd.module.css';
 
-const signInDataSchema = z.object({
+const forgotPwdSchema = z.object({
   email: z.string().trim().email('Invalid e-mail address'),
-  password: z.string(),
-  remember: z.boolean(),
 });
 
-export default function ForgotPwd () {
-  const { user, signin, loading } = useContext(UserContext)!;
-  const { register, handleSubmit, formState } = useForm({ mode: 'onTouched', resolver: zodResolver(signInDataSchema) });
+export default function ForgotPwd() {
+  const { user } = useContext(UserContext)!;
+  const { register, handleSubmit, formState } = useForm({ 
+    mode: 'onTouched', 
+    resolver: zodResolver(forgotPwdSchema) 
+  });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<null | Error>(null);
   const { setDocumentTitle } = useContext(DocumentTitleContext)!;
   const { t } = useTranslation();
   const translate = t as (key: string) => string;
 
-
   useEffect(() => {
-    setDocumentTitle(translate('user.signin'));
+    setDocumentTitle(translate('user.forgotpwd'));
   }, [setDocumentTitle, translate]);
 
-  const submitHandler = async ({ email, password, remember }: FieldValues) => {
-    setError(await signin(email, password, remember));
+  const submitHandler = async ({ email }: FieldValues) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await forgotPassword(email);
+      setSuccess(true);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (user) {
     return <Navigate to="/" />;
+  }
+
+  if (success) {
+    return (
+      <section className={styles['signin-section']}>
+        <div className={styles['form-title']}>
+          <h2>{translate('user.form.forgotpwdsuccess')}</h2>
+        </div>
+        <p>{translate('user.form.forgotpwdsuccessmsg')}</p>
+      </section>
+    );
   }
 
   return (

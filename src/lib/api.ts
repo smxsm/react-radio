@@ -96,6 +96,30 @@ export async function signout(sessionId: string) {
   return handleResponse<{ success: boolean }>(response);
 }
 
+export async function forgotPassword(email: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  return handleResponse<{ resetLink: string }>(response);
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ token, newPassword }),
+  });
+
+  return handleResponse<{ success: boolean }>(response);
+}
+
 export interface RadioStation {
   id: string;
   name: string;
