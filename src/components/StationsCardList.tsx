@@ -6,6 +6,8 @@ import { DocumentTitleContext } from '../context/DocumentTitleContext';
 import { useStations } from '../hooks/useStations';
 import useCustomStations from '../hooks/useCustomStations';
 
+import { useTranslation } from 'react-i18next';
+
 import Spinner from './ui/Spinner';
 import CardsList from './ui/CardsList';
 import Pagination from './Pagination';
@@ -37,6 +39,8 @@ export default function StationsCardList() {
   const playerContext = useContext(PlayerContext);
   const { addCustomStation, getCustomStations, loading: addingCustomStation } = useCustomStations();
   const { setDocumentTitle } = useContext(DocumentTitleContext)!;
+  const { t } = useTranslation();
+  const translate = t as (key: string) => string;
 
   useEffect(() => {
     setDocumentTitle('Browse stations');
@@ -50,7 +54,7 @@ export default function StationsCardList() {
     getCustomStations(station.id)
       .then((result) =>
         result.length
-          ? window.confirm(`${station.name} is already in your library. Are you sure you want to replace it?`)
+          ? window.confirm(`${station.name} ${translate('info.tracks.inlibrary')}`)
           : true
       )
       .then((result) => (result ? addCustomStation(station) : false));

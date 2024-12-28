@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FieldValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 import useCustomStations from '../hooks/useCustomStations';
 
@@ -22,6 +23,8 @@ export default function UpsertCustomStation() {
   const { id } = useParams();
   const { loading, error, getCustomStations, addCustomStation, stations } = useCustomStations();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const translate = t as (key: string) => string;
   const { register, handleSubmit, formState, setValue } = useForm({
     mode: 'onTouched',
     resolver: zodResolver(customStationValues),
@@ -53,8 +56,8 @@ export default function UpsertCustomStation() {
   return (
     <section className={styles.section}>
       <div className={styles.formTitle}>
-        {!id && <h2>Add your station</h2>}
-        {id && <h2>Edit your station</h2>}
+        {!id && <h2>{translate('stations.add')}</h2>}
+        {id && <h2>{translate('stations.edit')}</h2>}
         {error && <p>{error.message}</p>}
       </div>
 
@@ -83,10 +86,10 @@ export default function UpsertCustomStation() {
 
         <div className={styles.formActions}>
           <Button type="button" disabled={loading} onClick={() => navigate(-1)}>
-            Cancel
+            {translate('stations.cancelaction')}
           </Button>
           <Button type="submit" loading={loading} error={!!error} disabled={loading}>
-            {id ? 'Confirm' : 'Add'}
+            {id ? translate('stations.confirmaction') : translate('stations.addaction')}
           </Button>
         </div>
       </form>

@@ -35,7 +35,7 @@ export default function Home() {
     getCustomStations(station.id)
       .then((result) =>
         result.length
-          ? window.confirm(`${station.name} is already in your library. Are you sure you want to replace it?`)
+          ? window.confirm(`${station.name} ${translate('info.tracks.inlibrary')}`)
           : true
       )
       .then((result) => (result ? addCustomStation(station) : false));

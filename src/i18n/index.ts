@@ -35,6 +35,11 @@ const resources = {
       'stations.search': 'Search',
       'stations.countries': 'Countries',
       'stations.genres': 'Genres',
+      'stations.add': 'Add your station',
+      'stations.edit': 'Edit your station',
+      'stations.confirmaction': 'Save',
+      'stations.addaction': 'Add',
+      'stations.cancelaction': 'Cancel',
       // User Menu
       'user.signin': 'Sign In',
       'user.signup': 'Sign Up',
@@ -88,6 +93,9 @@ const resources = {
       'errors.password.minlen': 'Password must be at least 14 characters',
       'errors.password.uppercase': 'Password must contain at least one uppercase letter',
       'errors.password.specialchar': 'Password must contain at least one special character',
+      // Info
+      'info.tracks.inlibrary': 'is already in your library. Are you sure you want to replace it?',
+      'info.station.delete': 'Are you sure you want to delete',
     }
   },
   de: {
@@ -123,6 +131,11 @@ const resources = {
       'stations.search': 'Suche',
       'stations.countries': 'Länder',
       'stations.genres': 'Genres',
+      'stations.add': 'Füge deinen Sender hinzu',
+      'stations.edit': 'Bearbeite deinen Sender',
+      'stations.confirmaction': 'Speichern',
+      'stations.addaction': 'Hinzufügen',
+      'stations.cancelaction': 'Abbrechen',
       // User Menu
       'user.signin': 'Anmelden',
       'user.signup': 'Registrieren',
@@ -176,6 +189,9 @@ const resources = {
       'errors.password.minlen': 'Passwort muss mindestens 14 Zeichen lang sein',
       'errors.password.uppercase': 'Passwort muss mindestens eine Großbuchstabe enthalten',
       'errors.password.specialchar': 'Passwort muss mindestens ein Sonderzeichen enthalten',
+      // Info
+      'info.tracks.inlibrary': 'ist bereits in deiner Bibliothek. Möchtest du es wirklich ersetzen?',
+      'info.station.delete': 'Willst du diese Station wirklich löschen:',
     }
   }
 };

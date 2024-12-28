@@ -1,6 +1,7 @@
 import { useContext, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useTranslation } from 'react-i18next';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import { UserContext } from '../context/UserContext';
@@ -24,6 +25,8 @@ export default function CustomStation() {
   const { getCustomStations, deleteCustomStation, stations, loading: stationsLoading } = useCustomStations();
   const { setDocumentTitle } = useContext(DocumentTitleContext)!;
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const translate = t as (key: string) => string;
 
   useEffect(() => {
     setDocumentTitle('My stations');
@@ -36,7 +39,7 @@ export default function CustomStation() {
   const playHandler = (index: number) => () => playerContext?.play(stations, index);
   const editHandler = ({ id }: RadioStation) => navigate(`edit/${id}`);
   const deleteHandler = ({ id, name }: RadioStation) =>
-    window.confirm(`Are you sure you want to delete ${name}?`) &&
+    window.confirm(`${translate('info.station.delete')} ${name}?`) &&
     deleteCustomStation(id).then(() => getCustomStations('', sort, order !== 'desc'));
 
   if (stationsLoading) {
