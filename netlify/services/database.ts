@@ -306,7 +306,7 @@ class DatabaseManager {
         ORDER BY created_at DESC
         LIMIT ?
       `),
-      deleteListenHistory: this.db.prepare('DELETE FROM listen_history WHERE station_id = ? AND user_id = ?'),
+      deleteListenHistory: this.db.prepare('DELETE FROM listen_history WHERE id = ? AND user_id = ?'),
       clearListenHistory: this.db.prepare('DELETE FROM listen_history WHERE user_id = ?')
     };
   }
