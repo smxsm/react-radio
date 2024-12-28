@@ -14,18 +14,19 @@ import Button from './ui/Button';
 
 import styles from './ForgotPwd.module.css';
 
-const changePwdSchema = z.object({
-  password: z.string()
-    .min(14, 'Password must be at least 14 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[!@#$%^&*(),.?":{}|<>_]/, 'Password must contain at least one special character'),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
 export default function ChangePwd() {
+  const { t } = useTranslation();
+  const translate = t as (key: string) => string;
+  const changePwdSchema = z.object({
+    password: z.string()
+      .min(14, translate('errors.password.minlen'))
+      .regex(/[A-Z]/, translate('errors.password.uppercase'))
+      .regex(/[!@#$%^&*(),.?":{}|<>_]/, translate('errors.password.specialchar')),
+    confirmPassword: z.string()
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: translate('errors.password.nomatch'),
+    path: ["confirmPassword"],
+  });
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { register, handleSubmit, formState } = useForm({ 
@@ -35,8 +36,6 @@ export default function ChangePwd() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<null | Error>(null);
   const { setDocumentTitle } = useContext(DocumentTitleContext)!;
-  const { t } = useTranslation();
-  const translate = t as (key: string) => string;
 
   useEffect(() => {
     setDocumentTitle(translate('user.changepwd'));

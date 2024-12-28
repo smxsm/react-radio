@@ -15,20 +15,18 @@ import Button from './ui/Button';
 
 import styles from './SignIn.module.css';
 
-const signInDataSchema = z.object({
-  email: z.string().trim().email('Invalid e-mail address'),
-  password: z.string(),
-  remember: z.boolean(),
-});
-
 export default function SignIn() {
   const { user, signin, loading } = useContext(UserContext)!;
-  const { register, handleSubmit, formState } = useForm({ mode: 'onTouched', resolver: zodResolver(signInDataSchema) });
   const [error, setError] = useState<null | Error>(null);
   const { setDocumentTitle } = useContext(DocumentTitleContext)!;
   const { t } = useTranslation();
   const translate = t as (key: string) => string;
-
+  const signInDataSchema = z.object({
+    email: z.string().trim().email(translate('errors.email.invalid')),
+    password: z.string(),
+    remember: z.boolean(),
+  });
+  const { register, handleSubmit, formState } = useForm({ mode: 'onTouched', resolver: zodResolver(signInDataSchema) });
 
   useEffect(() => {
     setDocumentTitle(translate('user.signin'));

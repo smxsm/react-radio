@@ -83,6 +83,11 @@ const resources = {
       // Errors
       'errors.404.message': 'This page could not be found.',
       'errors.404.home': 'Click here to go to the homepage',
+      'errors.email.invalid': 'Invalid e-mail address',
+      'errors.password.nomatch': 'Passwords do not match',
+      'errors.password.minlen': 'Password must be at least 14 characters',
+      'errors.password.uppercase': 'Password must contain at least one uppercase letter',
+      'errors.password.specialchar': 'Password must contain at least one special character',
     }
   },
   de: {
@@ -166,6 +171,11 @@ const resources = {
       // Errors
       'errors.404.message': 'Hoppla, hier gibt es nichts zu sehen ...',
       'errors.404.home': 'Zurück nach Hause',
+      'errors.email.invalid': 'Ungültige E-Mail Adresse',
+      'errors.password.nomatch': 'Passwörter stimmen nicht überein',
+      'errors.password.minlen': 'Passwort muss mindestens 14 Zeichen lang sein',
+      'errors.password.uppercase': 'Passwort muss mindestens eine Großbuchstabe enthalten',
+      'errors.password.specialchar': 'Passwort muss mindestens ein Sonderzeichen enthalten',
     }
   }
 };
