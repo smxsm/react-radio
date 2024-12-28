@@ -69,7 +69,7 @@ type StatementsType = {
   deleteStation: Statement<[string], RunResult>;
 
   // Track management
-  upsertTrackMatch: Statement<[{ id: string; artist: string; title: string; album: string | null; release_date: string | null; artwork: string | null; apple_music_url: string; youtube_url: string; }], RunResult>;
+  upsertTrackMatch: Statement<[{ id: string; artist: string; title: string; album: string | null; release_date: string | null; artwork: string | null; apple_music_url: string; youtube_url: string; spotify_url: string; }], RunResult>;
   addTrackHistory: Statement<[{ track_id: string; user_id: string; }], RunResult>;
   getTrackHistory: Statement<[string, number], any[]>;
   deleteTrackHistory: Statement<[string, string], RunResult>;
@@ -166,6 +166,7 @@ class DatabaseManager {
         artwork TEXT,
         apple_music_url TEXT,
         youtube_url TEXT,
+        spotify_url TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -256,11 +257,11 @@ class DatabaseManager {
       upsertTrackMatch: this.db.prepare(`
         INSERT INTO track_matches (
           id, artist, title, album, release_date,
-          artwork, apple_music_url, youtube_url
+          artwork, apple_music_url, youtube_url, spotify_url
         )
         VALUES (
           @id, @artist, @title, @album, @release_date,
-          @artwork, @apple_music_url, @youtube_url
+          @artwork, @apple_music_url, @youtube_url, @spotify_url
         )
         ON CONFLICT(id) DO UPDATE SET
           artist=@artist,
@@ -269,7 +270,8 @@ class DatabaseManager {
           release_date=@release_date,
           artwork=@artwork,
           apple_music_url=@apple_music_url,
-          youtube_url=@youtube_url
+          youtube_url=@youtube_url,
+          spotify_url=@spotify_url
       `),
       addTrackHistory: this.db.prepare(`
         INSERT INTO tracks_history (track_id, user_id)
@@ -285,7 +287,8 @@ class DatabaseManager {
           tm.release_date,
           tm.artwork,
           tm.apple_music_url,
-          tm.youtube_url
+          tm.youtube_url,
+          tm.spotify_url
         FROM tracks_history th
         JOIN track_matches tm ON th.track_id = tm.id
         WHERE th.user_id = ?

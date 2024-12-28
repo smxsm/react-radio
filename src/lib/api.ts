@@ -213,6 +213,7 @@ export interface TrackInfo {
   heardAt: Date | null;
   artwork: string | null;
   appleMusicUrl?: string;
+  spotifyUrl?: string;
   youTubeUrl?: string;
 }
 

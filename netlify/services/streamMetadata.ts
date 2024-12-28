@@ -24,6 +24,8 @@ type StreamHeaders = {
   contentType: string;
 };
 
+const debug = false;
+
 export type StationMetadata = {
   title: string;
 } & StreamHeaders;
@@ -41,14 +43,16 @@ export default async function getIcecastMetadata(response: Response, icyMetaInt:
     }, 15000);
 
     try {
-      console.log('Starting metadata stream...');
-      console.log('ICY-MetaInt:', icyMetaInt);
-      console.log('Headers:', {
-        'icy-metaint': response.headers.get('icy-metaint'),
-        'content-type': response.headers.get('content-type'),
-        'icy-name': response.headers.get('icy-name'),
-        'icy-genre': response.headers.get('icy-genre')
-      });
+      if (debug) {
+        console.log('Starting metadata stream...');
+        console.log('ICY-MetaInt:', icyMetaInt);
+        console.log('Headers:', {
+          'icy-metaint': response.headers.get('icy-metaint'),
+          'content-type': response.headers.get('content-type'),
+          'icy-name': response.headers.get('icy-name'),
+          'icy-genre': response.headers.get('icy-genre')
+        });
+      }
 
       // Keep track if we've resolved
       let hasResolved = false;
@@ -72,7 +76,9 @@ export default async function getIcecastMetadata(response: Response, icyMetaInt:
         // Create the Icecast stream and store the reference
         new IcecastReadableStream(response, {
           onMetadata: ({ metadata }) => {
-            console.log('Received metadata:', metadata);
+            if (debug) {
+              console.log('Received metadata:', metadata);
+            }
             const title = metadata?.StreamTitle || metadata?.TITLE || '';
             
             // Only process if title has changed and we haven't resolved

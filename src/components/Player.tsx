@@ -78,6 +78,11 @@ export default function Player(props: any) {
       </div>
 
       <div className={styles.musicLinks}>
+        {matchedTrack?.spotifyUrl && (
+          <a target="_blank" rel="noreferrer" href={matchedTrack.spotifyUrl} onClick={() => playerContext?.stop()}>
+            <img src="/spotify.svg" alt="Spotify" />
+          </a>
+        )}
         {matchedTrack?.appleMusicUrl && (
           <a target="_blank" rel="noreferrer" href={matchedTrack.appleMusicUrl} onClick={() => playerContext?.stop()}>
             <img src="/apple-music.svg" alt="Apple Musc" />

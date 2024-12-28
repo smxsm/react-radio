@@ -26,6 +26,7 @@ Overview of changes:
 , replaces Netlify edge functions
 * Added localization (DE, EN) with language switch for the UI via `react-i18next`
 * added forgot-password functionality via `nodemailer` package
+* add Spotify url and icon to player
 
 ## Description
 

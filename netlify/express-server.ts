@@ -6,6 +6,7 @@ import * as auth from './services/auth';
 import { statements } from './services/database';
 import getIcecastMetadata, { StationMetadata } from './services/streamMetadata.js';
 import iTunesSearch from './services/iTunes.js';
+import spotifySearch from './services/spotify.js';
 import youTubeSearch from './services/youTube.js';
 import PQueue from 'p-queue';
 import nodemailer from 'nodemailer';
@@ -554,6 +555,7 @@ interface MatchedTrack {
   artwork: string | null;
   appleMusicUrl: string;
   youTubeUrl: string;
+  spotifyUrl: string;
 }
 
 interface MetadataResponse {
@@ -629,7 +631,6 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
         console.warn('No ICY-MetaInt header found, using default value');
       }
 
-      console.log('Fetching metadata...');
       const stationMetadata = await getIcecastMetadata(streamResponse, icyMetaInt);
       console.log('Metadata received:', stationMetadata);
 
@@ -652,7 +653,15 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
       if (existingMatch) {
         data = { ...data, matchedTrack: existingMatch };
       } else {
-        const matchedTrack = await iTunesSearch(searchTerm);
+        let matchedTrack = await iTunesSearch(searchTerm);
+        const matchedTrack2 = await spotifySearch(searchTerm);
+
+        if (!matchedTrack) {
+          matchedTrack = matchedTrack2 ?? null;
+        } else {
+          matchedTrack.spotifyUrl = matchedTrack2?.spotifyUrl || '';
+        }
+
         if (matchedTrack) {
           matchedTrack.youTubeUrl = await youTubeSearch(searchTerm) || '';
 
@@ -665,7 +674,8 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
             artwork: matchedTrack.artwork,
             release_date: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
             apple_music_url: matchedTrack.appleMusicUrl || '',
-            youtube_url: matchedTrack.youTubeUrl || ''
+            youtube_url: matchedTrack.youTubeUrl || '',
+            spotify_url: matchedTrack.spotifyUrl || ''
           });
 
           data.matchedTrack = {
@@ -676,7 +686,8 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
             releaseDate: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
             artwork: matchedTrack.artwork,
             appleMusicUrl: matchedTrack.appleMusicUrl || '',
-            youTubeUrl: matchedTrack.youTubeUrl || ''
+            youTubeUrl: matchedTrack.youTubeUrl || '',
+            spotifyUrl: matchedTrack.spotifyUrl || ''
           };
         }
       }

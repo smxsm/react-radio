@@ -1,14 +1,5 @@
 import Fuse from 'fuse.js';
-
-export type TrackInfo = {
-  artist: string;
-  title: string;
-  album: string;
-  releaseDate: Date | null;
-  artwork: string;
-  appleMusicUrl: string;
-  youTubeUrl?: string;
-};
+import { TrackInfo } from '../types/mediaTypes';
 
 interface iTunesItem {
   artistName: string;
@@ -59,6 +50,7 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
       releaseDate: new Date(data[refIndex].releaseDate) || null,
       artwork: data[refIndex].artworkUrl100,
       appleMusicUrl: data[refIndex].trackViewUrl,
+      spotifyUrl: '',
     };
   } catch (err) {
     return null;
