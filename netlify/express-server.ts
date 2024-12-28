@@ -14,6 +14,13 @@ import nodemailer from 'nodemailer';
 function corsMiddleware (req: Request, res: Response, next: NextFunction) {
   const origin = req.headers.origin;
 
+  const frontendUrl = process.env.FRONTEND_URL ?? '';
+  // restrict access to localhost and frontendUrl only
+  if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1' && frontendUrl.indexOf(req.hostname) === -1) {
+    console.log('ACCESS FORBIDDEN', req.hostname);
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
   // Allow localhost with any port
   if (!origin || /https?:\/\/localhost:?\d{0,5}/.test(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin || '*');
@@ -176,11 +183,10 @@ async function startServer() {
         expires_at: expiresAt.toISOString()
       });
 
-      // In a real app, you would send an email here
-      // For demo purposes, we'll just return the reset link
+      // send an email here
       const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/change-password/${resetToken}`;
       await deliverMail(email, 'Your Radio resetLink', resetLink, resetLink);
-      res.json({ resetLink });
+      res.json({ response: 'OK' });
     } catch (error) {
       console.error('Forgot password error:', error);
       res.status(500).json({ error: 'Internal server error' });
