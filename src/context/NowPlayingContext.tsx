@@ -66,6 +66,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   const [matchedTrack, setMatchedTrack] = useState<TrackInfo | undefined>();
   const intervalRef = useRef<NodeJS.Timer | number>(0);
   const abortControllerRef = useRef(new AbortController());
+  const lastAddedTrackRef = useRef<string | null>();
 
   const loadTrackHistory = useCallback(async () => {
     if (!user) return;
@@ -132,11 +133,15 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
     return () => clearInterval(intervalRef.current);
   }, [playerContext?.station, playerContext?.status, station?.listenUrl]);
 
-  // Add matched track to history
+  // Add matched track to history only if it's different from the last added track
   useEffect(() => {
     if (!user || !matchedTrack?.id) return;
-    addTrackToHistory(matchedTrack).then(loadTrackHistory);
-  }, [user, matchedTrack?.id, addTrackToHistory, loadTrackHistory]);
+    // save artwork to identify if already added to history
+    if (lastAddedTrackRef.current !== matchedTrack.artwork) {
+      lastAddedTrackRef.current = matchedTrack.artwork;
+      addTrackToHistory(matchedTrack).then(loadTrackHistory);
+    }
+  }, [user, matchedTrack, addTrackToHistory, loadTrackHistory]);
 
   useEffect(() => {
     if (!user) return;
