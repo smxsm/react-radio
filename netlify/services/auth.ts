@@ -69,6 +69,9 @@ export async function createUser(
 export function isAuthenticated (req: Request): boolean {
   const authHeader = req.header('X-Authentication-Token');
 
+  // for now allow OPTIONS and GET
+  if (req.method === 'OPTIONS' || req.method === 'GET') return true;
+
   if (!authHeader) {
     console.log('No X-Authentication-Token header present');
     return false;

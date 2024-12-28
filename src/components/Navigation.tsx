@@ -35,6 +35,10 @@ export default function Navigation({ showNowPlaying = false, switchPlayer }: Nav
     if ((e.target as HTMLElement).tagName === 'INPUT') {
       return;
     }
+    // if language flag img clicked, do not toggle menu
+    if ((e.target as HTMLElement).tagName === 'IMG') {
+      return;
+    }
     menuClickHandler();
     switchPlayer && switchPlayer(false);
   };
