@@ -14,7 +14,6 @@ import nodemailer from 'nodemailer';
 function corsMiddleware (req: Request, res: Response, next: NextFunction) {
   const origin = req.headers.origin ?? '';
 
-  console.log('origin', req.headers);
   // Allow localhost with any port
   if (!origin || /https?:\/\/localhost:?\d{0,5}/.test(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin || '*');
