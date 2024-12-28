@@ -19,6 +19,14 @@ npm run dev
 
 This will start the Express server at port 3001 (see __.env.dist__, rename to _.env_ and adjust if needed).
 
+Overview of changes:
+
+* Removed Supabase integration, SQLite database for local storage
+* Custom Express backend server for authentication and data synchronization
+, replaces Netlify edge functions
+* Added localization (DE, EN) with language switch for the UI via `react-i18next`
+* added forgot-password functionality via `nodemailer` package
+
 ## Description
 
 The app aims to be a completely functional online radio player similar to the popular TuneIn service with a catalog of more than 30000 radio station from all over the world provided by [Radio Browser API](https://www.radio-browser.info). The stations can be browsed by music genres, news, sports and countries.
