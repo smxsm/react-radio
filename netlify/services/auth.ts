@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcryptjs';
 import { statements } from './database';
+import type { Request } from 'express';
 
 const SALT_ROUNDS = 10;
 const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
@@ -65,6 +66,28 @@ export async function createUser(
   };
 }
 
+export function isAuthenticated (req: Request): boolean {
+  const authHeader = req.header('X-Authentication-Token');
+
+  if (!authHeader) {
+    console.log('No X-Authentication-Token header present');
+    return false;
+  }
+
+  // Check for Bearer token
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0].trim() !== 'Bearer') {
+    console.log('No Bearer token present');
+    return false;
+  }
+
+  const token = parts[1];
+
+  const isValidToken = token === process.env.CLIENT_SECRET_TOKEN || false;
+  console.log('Token valid? ' + isValidToken);
+
+  return isValidToken;
+}
 export function getUserByEmail(email: string): User | null {
   const user = statements.getUserByEmail.get(email) as DbUser | undefined;
   if (!user) return null;

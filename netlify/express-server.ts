@@ -12,16 +12,9 @@ import nodemailer from 'nodemailer';
 
 // Custom CORS middleware
 function corsMiddleware (req: Request, res: Response, next: NextFunction) {
-  const origin = req.headers.origin;
+  const origin = req.headers.origin ?? '';
 
-  const frontendUrl = process.env.FRONTEND_URL ?? '';
-  const backendUrl = process.env.BACKEND_URL ?? '';
-  // restrict access to localhost and frontendUrl only
-  if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1' && frontendUrl.indexOf(req.hostname) === -1 && backendUrl.indexOf(req.hostname) === -1) {
-    console.log('ACCESS FORBIDDEN', req.hostname);
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-
+  console.log('origin', req.headers);
   // Allow localhost with any port
   if (!origin || /https?:\/\/localhost:?\d{0,5}/.test(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin || '*');
@@ -33,7 +26,7 @@ function corsMiddleware (req: Request, res: Response, next: NextFunction) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Requested-With'
+    'Content-Type, Authorization, X-Requested-With, X-Authentication-Token'
   );
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
@@ -42,6 +35,19 @@ function corsMiddleware (req: Request, res: Response, next: NextFunction) {
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return;
+  }
+
+  const frontendUrl = process.env.FRONTEND_URL ?? '';
+  const backendUrl = process.env.BACKEND_URL ?? '';
+  // restrict access to localhost and frontendUrl only
+  if (origin !== 'localhost' && origin !== '127.0.0.1' && frontendUrl.indexOf(origin) === -1 && backendUrl.indexOf(origin) === -1) {
+    console.log('ACCESS FORBIDDEN', origin);
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  // check for auth header
+  if (!auth.isAuthenticated(req)) {
+    console.log('NO AUTH', req.hostname);
+    return res.status(401).json({ error: 'Access denied' });
   }
 
   next();

@@ -1,4 +1,5 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const SERVER_SECRET_TOKEN = process.env.REACT_APP_SERVER_SECRET_TOKEN || '';
 
 export interface User {
   id: string;
@@ -57,6 +58,7 @@ export async function signup(email: string, firstName: string, lastName: string,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
     body: JSON.stringify({
       email,
@@ -74,6 +76,7 @@ export async function signin(email: string, password: string) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
     body: JSON.stringify({
       email,
@@ -89,6 +92,7 @@ export async function signout(sessionId: string) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
       'Authorization': `Bearer ${sessionId}`,
     },
   });
@@ -101,6 +105,7 @@ export async function forgotPassword(email: string) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
     body: JSON.stringify({ email }),
   });
@@ -113,6 +118,7 @@ export async function resetPassword(token: string, newPassword: string) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
     body: JSON.stringify({ token, newPassword }),
   });
@@ -132,6 +138,7 @@ export async function getProfile(sessionId: string) {
   const response = await fetch(`${API_BASE_URL}/user/profile`, {
     headers: {
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
   });
 
@@ -146,6 +153,7 @@ export async function getCustomStations (sessionId: string, orderBy = 'created_a
       {
         headers: {
           'Authorization': `Bearer ${sessionId}`,
+          'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
         },
       },
       15000 // Increase timeout to 15 seconds to match server
@@ -170,6 +178,7 @@ export async function getCustomStationById(sessionId: string, id: string) {
   const response = await fetch(`${API_BASE_URL}/stations/${id}`, {
     headers: {
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
   });
 
@@ -182,6 +191,7 @@ export async function addCustomStation(sessionId: string, station: { id: string;
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
     body: JSON.stringify({
       id: station.id,
@@ -215,6 +225,7 @@ export async function deleteCustomStation(sessionId: string, id: string) {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
   });
 
@@ -226,6 +237,7 @@ export async function getTrackHistory(sessionId: string, limit = 50) {
   const response = await fetch(`${API_BASE_URL}/tracks/history?limit=${limit}`, {
     headers: {
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
   });
 
@@ -238,6 +250,7 @@ export async function addTrackToHistory(sessionId: string, trackInfo: TrackInfo)
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
     body: JSON.stringify({
       track_id: trackInfo.id,
@@ -252,6 +265,7 @@ export async function deleteTrackFromHistory(sessionId: string, trackId: string)
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
   });
 
@@ -263,6 +277,7 @@ export async function clearTrackHistory(sessionId: string) {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
   });
 
@@ -274,6 +289,7 @@ export async function getListenHistory(sessionId: string, limit = 50) {
   const response = await fetch(`${API_BASE_URL}/listen/history?limit=${limit}`, {
     headers: {
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
   });
 
@@ -286,6 +302,7 @@ export async function addStationToHistory(sessionId: string, station: RadioStati
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
     body: JSON.stringify({
       station_id: station.id,
@@ -303,6 +320,7 @@ export async function deleteStationFromHistory(sessionId: string, stationId: str
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
   });
 
@@ -314,6 +332,7 @@ export async function clearListenHistory(sessionId: string) {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
   });
 
