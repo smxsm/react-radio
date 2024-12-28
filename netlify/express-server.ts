@@ -15,8 +15,9 @@ function corsMiddleware (req: Request, res: Response, next: NextFunction) {
   const origin = req.headers.origin;
 
   const frontendUrl = process.env.FRONTEND_URL ?? '';
+  const backendUrl = process.env.BACKEND_URL ?? '';
   // restrict access to localhost and frontendUrl only
-  if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1' && frontendUrl.indexOf(req.hostname) === -1) {
+  if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1' && frontendUrl.indexOf(req.hostname) === -1 && backendUrl.indexOf(req.hostname) === -1) {
     console.log('ACCESS FORBIDDEN', req.hostname);
     return res.status(403).json({ error: 'Forbidden' });
   }

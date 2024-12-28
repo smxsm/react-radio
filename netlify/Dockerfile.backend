@@ -25,7 +25,7 @@ COPY package*.json ./
     ###apt-get clean && \
     ###rm -rf /var/lib/apt/lists/*
 
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy source files
 COPY . .
