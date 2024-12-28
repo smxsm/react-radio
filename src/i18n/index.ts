@@ -40,6 +40,10 @@ const resources = {
       'stations.confirmaction': 'Save',
       'stations.addaction': 'Add',
       'stations.cancelaction': 'Cancel',
+      'stations.name': 'Sender Name',
+      'stations.logourl': 'Logo URL',
+      'stations.listenurl': 'Listen URL',
+      'stations.addnew': 'Add',
       // User Menu
       'user.signin': 'Sign In',
       'user.signup': 'Sign Up',
@@ -93,6 +97,9 @@ const resources = {
       'errors.password.minlen': 'Password must be at least 14 characters',
       'errors.password.uppercase': 'Password must contain at least one uppercase letter',
       'errors.password.specialchar': 'Password must contain at least one special character',
+      'errors.station.namerequired': 'Station name is required',
+      'errors.station.namemaxlen': 'Station name cannot be longer than 30 characters',
+      'errors.station.invalidurl': 'Invalid URL',
       // Info
       'info.tracks.inlibrary': 'is already in your library. Are you sure you want to replace it?',
       'info.station.delete': 'Are you sure you want to delete',
@@ -136,6 +143,10 @@ const resources = {
       'stations.confirmaction': 'Speichern',
       'stations.addaction': 'Hinzufügen',
       'stations.cancelaction': 'Abbrechen',
+      'stations.name': 'Sender-Name',
+      'stations.logourl': 'Logo URL',
+      'stations.listenurl': 'Stream URL',
+      'stations.addnew': 'Hinzufügen',
       // User Menu
       'user.signin': 'Anmelden',
       'user.signup': 'Registrieren',
@@ -189,6 +200,9 @@ const resources = {
       'errors.password.minlen': 'Passwort muss mindestens 14 Zeichen lang sein',
       'errors.password.uppercase': 'Passwort muss mindestens eine Großbuchstabe enthalten',
       'errors.password.specialchar': 'Passwort muss mindestens ein Sonderzeichen enthalten',
+      'errors.station.namerequired': 'Sender-Name ist erforderlich',
+      'errors.station.namemaxlen': 'Sender-Name darf nicht länger als 30 Zeichen sein',
+      'errors.station.invalidurl': 'Ungültige URL',
       // Info
       'info.tracks.inlibrary': 'ist bereits in deiner Bibliothek. Möchtest du es wirklich ersetzen?',
       'info.station.delete': 'Willst du diese Station wirklich löschen:',

@@ -13,18 +13,18 @@ import Label from './ui/Label';
 
 import styles from './UpsertCustomStation.module.css';
 
-const customStationValues = z.object({
-  name: z.string().min(1, 'Station name is required').max(30, 'Station name cannot be longer than 30 characters'),
-  logo: z.string().url('Invalid URL'),
-  listenUrl: z.string().url('Invalid URL'),
-});
-
 export default function UpsertCustomStation() {
   const { id } = useParams();
   const { loading, error, getCustomStations, addCustomStation, stations } = useCustomStations();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const translate = t as (key: string) => string;
+  const customStationValues = z.object({
+    name: z.string().min(1, translate('errors.station.namerequired')).max(30, translate('errors.station.namemaxlen')),
+    logo: z.string().url(translate('errors.station.invalidurl')),
+    listenUrl: z.string().url(translate('errors.station.invalidurl')),
+  });
+
   const { register, handleSubmit, formState, setValue } = useForm({
     mode: 'onTouched',
     resolver: zodResolver(customStationValues),
@@ -63,17 +63,17 @@ export default function UpsertCustomStation() {
 
       <form className={styles.form} onSubmit={handleSubmit(submitHandler)}>
         <Label htmlFor="name" disabled={loading}>
-          Name
+          {translate('stations.name')}
         </Label>
         <Input type="text" id="name" {...register('name')} error={!!formState.errors.name} disabled={loading} />
         <p className={styles.validationError}>{formState.errors['name']?.message as string}</p>
         <Label htmlFor="logo" disabled={loading}>
-          Logo URL
+          {translate('stations.logourl')}
         </Label>
         <Input type="text" id="logo" {...register('logo')} error={!!formState.errors.logo} disabled={loading} />
         <p className={styles.validationError}>{formState.errors['logo']?.message as string}</p>
         <Label htmlFor="listenUrl" disabled={loading}>
-          Listen URL
+          {translate('stations.listenurl')}
         </Label>
         <Input
           type="text"

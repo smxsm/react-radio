@@ -52,7 +52,7 @@ export default function CustomStation() {
         <CustomStationsListOptions />
         <Button className={styles.btnAdd} onClick={() => navigate('/stations/custom/add')}>
           <FontAwesomeIcon icon={faPlus} />
-          Add
+          {translate('stations.addnew')}
         </Button>
       </div>
       <CardsList className={styles.cardsList}>
