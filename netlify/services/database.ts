@@ -292,7 +292,7 @@ class DatabaseManager {
         ORDER BY th.created_at DESC
         LIMIT ?
       `),
-      deleteTrackHistory: this.db.prepare('DELETE FROM tracks_history WHERE track_id = ? AND user_id = ?'),
+      deleteTrackHistory: this.db.prepare('DELETE FROM tracks_history WHERE id = ? AND user_id = ?'),
       clearTrackHistory: this.db.prepare('DELETE FROM tracks_history WHERE user_id = ?'),
 
       // Listen history
