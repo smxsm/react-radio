@@ -663,9 +663,10 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
         .find(entry => entry.data?.stationMetadata?.title === stationMetadata.title)
         ?.data?.matchedTrack;
 
+      console.log(`stationName: ${stationName} searchTerm: ${stationMetadata.title}`);
       if (existingMatch) {
         data = { ...data, matchedTrack: existingMatch };
-      } else if(stationName === searchTerm) {
+      } else if (stationName === stationMetadata.title) {
         data.matchedTrack = undefined;
       } else {
         let matchedTrack = await iTunesSearch(searchTerm);
