@@ -24,6 +24,9 @@ export default function StationsMenu({ className }: StationsMenuProps) {
   
   return (
     <Menu className={`${styles.stationsMenu} ${className ? className : ''}`.trim()}>
+      <div className={styles.logoContainer}>
+        <a href='/'><img src="/main.svg" alt="React Radio" title='React Radio' className={styles.logo} /></a>
+      </div>
       <MenuItem href="/">
         <FontAwesomeIcon icon={faHome} title={translate('nav.home')} />
         <span className={styles.menuItemText}>{translate('nav.home')}</span>
