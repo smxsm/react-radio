@@ -53,6 +53,11 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
             />
           </div>
           <div className={styles.streamLinks}>
+            {entry.spotifyUrl && (
+              <a target="_blank" rel="noreferrer" href={entry.spotifyUrl}>
+                <img src="/spotify.svg" alt="Spotify" className={styles.streamLink} />
+              </a>
+            )}
             {entry.appleMusicUrl && (
               <a target="_blank" rel="noreferrer" href={entry.appleMusicUrl}>
                 <img src="/apple-music.svg" alt="Apple Musc" className={styles.streamLink} />
@@ -61,11 +66,6 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
             {entry.youTubeUrl && (
               <a target="_blank" rel="noreferrer" href={entry.youTubeUrl}>
                 <img src="/youtube.png" alt="Apple Musc" className={styles.streamLink} />
-              </a>
-            )}
-            {entry.spotifyUrl && (
-              <a target="_blank" rel="noreferrer" href={entry.spotifyUrl}>
-                <img src="/spotify.svg" alt="Spotify" className={styles.streamLink} />
               </a>
             )}
           </div>
