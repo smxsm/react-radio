@@ -117,7 +117,7 @@ export default async function spotifySearch(searchTerm: string): Promise<TrackIn
     
     // First run trying to filter out collection albums
     let searchResults = fuse.search(
-      `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various !mix`
+      `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various !mix !advertisement`
     );
     
     if (!searchResults.length) {
