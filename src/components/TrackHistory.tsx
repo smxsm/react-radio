@@ -63,6 +63,11 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
                 <img src="/youtube.png" alt="Apple Musc" className={styles.streamLink} />
               </a>
             )}
+            {entry.spotifyUrl && (
+              <a target="_blank" rel="noreferrer" href={entry.spotifyUrl}>
+                <img src="/spotify.svg" alt="Spotify" className={styles.streamLink} />
+              </a>
+            )}
           </div>
         </Card>
       ))}

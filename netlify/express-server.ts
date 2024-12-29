@@ -386,6 +386,13 @@ async function startServer() {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const tracks = statements.getTrackHistory.all((req as any).user.id, limit);
+      // edit some fields for each track
+      (tracks as unknown as Track[]).forEach(track => {
+        track.heardAt = track.created_at;
+        track.spotifyUrl = track.spotify_url;
+        track.youTubeUrl = track.youtube_url;
+        track.appleMusicUrl = track.apple_music_url;
+      });
       clearTimeout(timeout);
       res.json(tracks);
     } catch (error: any) {
@@ -561,6 +568,24 @@ interface MatchedTrack {
   youTubeUrl: string;
   spotifyUrl: string;
 }
+interface Track {
+  id: string;
+  artist: string;
+  title: string;
+  album: string | null;
+  release_date: string | null;
+  artwork: string | null;
+  apple_music_url: string;
+  youtube_url: string;
+  spotify_url: string;
+  created_at: string | Date;
+  // "virtual" properties to convert from db fields
+  heardAt?: string | Date;
+  appleMusicUrl: string;
+  youTubeUrl: string;
+  spotifyUrl: string;
+  // Add other properties that exist on your track objects
+}
 
 interface MetadataResponse {
   stationMetadata: StationMetadata;
@@ -619,6 +644,7 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
       }
 
       const stationMetadata = await getIcecastMetadata(streamResponse, icyMetaInt);
+      const stationName = stationMetadata.icyName;
       console.log('Metadata received:', stationMetadata);
 
       if (!stationMetadata.title) {
@@ -639,6 +665,8 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
 
       if (existingMatch) {
         data = { ...data, matchedTrack: existingMatch };
+      } else if(stationName === searchTerm) {
+        data.matchedTrack = undefined;
       } else {
         let matchedTrack = await iTunesSearch(searchTerm);
         const matchedTrack2 = await spotifySearch(searchTerm);
