@@ -646,6 +646,7 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
       const stationMetadata = await getIcecastMetadata(streamResponse, icyMetaInt);
       const stationName = stationMetadata.icyName;
       console.log('Metadata received:', stationMetadata);
+      const cacheKey = `station:${stationMetadata.title}`;
 
       if (!stationMetadata.title) {
         throw new Error('No metadata collected');
@@ -659,13 +660,12 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
       let data: MetadataResponse = { stationMetadata };
 
       // Try to find existing track match
-      const existingMatch = Array.from(cache.values())
-        .find(entry => entry.data?.stationMetadata?.title === stationMetadata.title)
-        ?.data?.matchedTrack;
+      const existingMatch = cache.get(cacheKey)?.data?.matchedTrack;
 
       console.log(`stationName: ${stationName} searchTerm: ${stationMetadata.title}`);
       if (existingMatch) {
         data = { ...data, matchedTrack: existingMatch };
+        console.log('Cache hit', data);
       } else if (stationName === stationMetadata.title) {
         data.matchedTrack = undefined;
       } else {
@@ -707,6 +707,16 @@ app.get('/station-metadata', async (req: Request, res: Response) => {
             youTubeUrl: matchedTrack.youTubeUrl || '',
             spotifyUrl: matchedTrack.spotifyUrl || ''
           };
+
+          // now store in cache
+          if (cache) {
+            const cacheEntry: CacheEntry = {
+              url: matchedTrack.artwork,
+              data: data,
+              timestamp: Date.now()
+            };
+            cache.set(cacheKey, cacheEntry);
+          }
         }
       }
 
