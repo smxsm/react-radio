@@ -1,39 +1,7 @@
 import { IcecastReadableStream } from 'icecast-metadata-js';
-
-type IcyAudioInfo = {
-  bitRate: number;
-  quality: number;
-  channels: number;
-  sampleRate: number;
-};
-
-type StreamHeaders = {
-  server: string;
-  icyGenre: string[];
-  icyAudioInfo: IcyAudioInfo;
-  icyName: string;
-  icyDescription: string;
-  icyUrl: string;
-  icyBr: number;
-  icySr: number;
-  icyLogo: string;
-  icyCountryCode: string;
-  icyCountrySubdivisionCode: string;
-  icyLanguageCodes: string[];
-  icyGeoLatLong: string;
-  contentType: string;
-};
+import { IcyAudioInfo, StreamHeaders, StationMetadata, UnicodeConverter } from '../types/mediaTypes';
 
 const debug = false;
-
-export type StationMetadata = {
-  title: string;
-} & StreamHeaders;
-
-type UnicodeConverter = {
-  fix: (text: string) => string;
-  load: (start: number, end: number) => void;
-};
 
 export default async function getIcecastMetadata(response: Response, icyMetaInt: number): Promise<StationMetadata> {
   const icyHeaders = parseHeaders(response.headers);

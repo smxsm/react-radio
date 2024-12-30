@@ -1,13 +1,14 @@
 import express from 'express';
-import type { Request, Response, NextFunction } from 'express';
 import 'dotenv/config';
+import type { Request, Response, NextFunction } from 'express';
+import { CacheEntry, MetadataResponse, Track } from './types/mediaTypes';
 import { randomUUID } from 'crypto';
 import * as auth from './services/auth';
 import { statements } from './services/database';
-import getIcecastMetadata, { StationMetadata } from './services/streamMetadata.js';
-import iTunesSearch from './services/iTunes.js';
-import spotifySearch from './services/spotify.js';
-import youTubeSearch from './services/youTube.js';
+import getIcecastMetadata from './services/streamMetadata';
+import iTunesSearch from './services/iTunes';
+import spotifySearch from './services/spotify';
+import youTubeSearch from './services/youTube';
 import PQueue from 'p-queue';
 import nodemailer from 'nodemailer';
 
@@ -555,49 +556,6 @@ async function startServer () {
     }
   });
 
-
-  // Types for metadata handling
-  interface MatchedTrack {
-    id: string;
-    artist: string;
-    title: string;
-    album: string | null;
-    releaseDate: string | null;
-    artwork: string | null;
-    appleMusicUrl: string;
-    youTubeUrl: string;
-    spotifyUrl: string;
-  }
-  interface Track {
-    id: string;
-    artist: string;
-    title: string;
-    album: string | null;
-    release_date: string | null;
-    artwork: string | null;
-    apple_music_url: string;
-    youtube_url: string;
-    spotify_url: string;
-    created_at: string | Date;
-    // "virtual" properties to convert from db fields
-    heardAt?: string | Date;
-    appleMusicUrl: string;
-    youTubeUrl: string;
-    spotifyUrl: string;
-    // Add other properties that exist on your track objects
-  }
-
-  interface MetadataResponse {
-    stationMetadata: StationMetadata;
-    matchedTrack?: MatchedTrack;
-  }
-
-  interface CacheEntry {
-    url: string;
-    data: MetadataResponse;
-    timestamp: number;
-  }
-
   // Cache setup
   const cache = new Map<string, CacheEntry>();
   const CACHE_EXPIRATION_MS = 60 * 60 * 1000; // 1 hour
@@ -606,18 +564,19 @@ async function startServer () {
     timeout: 15000, // 15 second timeout for each task
     throwOnTimeout: true // Reject the promise when task times out
   });
-
   function getCache (key: string): any | undefined {
     const entry = cache.get(key);
-    if (entry && (Date.now() - entry.timestamp) < CACHE_EXPIRATION_MS) {
+    if (!entry) {
+      return undefined;
+    }
+    if ((Date.now() - entry.timestamp) < CACHE_EXPIRATION_MS) {
       return entry;
     }
-    console.log('Deleting lookup cache, expired!');
-    cache.delete(key); // Remove expired entry
+    console.log('Deleting lookup cache entry, expired!', entry);
+    cache.delete(key);
     return undefined;
   }
 
-  // Helper function from edge function
   function cleanTitleForSearch (title: string) {
     const filterTerms = ['ft', 'feat', 'vs'];
     return title
@@ -730,7 +689,6 @@ async function startServer () {
             }
           }
         }
-
         res.json(data);
       } catch (err) {
         console.error('Metadata error:', err);
@@ -796,6 +754,7 @@ async function startServer () {
     });
   });
 
+  // housekeeping
   setInterval(() => {
     const now = Date.now();
     for (const [key, entry] of cache.entries()) {
