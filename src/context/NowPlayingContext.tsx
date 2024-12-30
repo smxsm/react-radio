@@ -3,6 +3,7 @@ import { PlayerContext } from './PlayerContext';
 import { UserContext } from './UserContext';
 import { useHistory } from '../hooks/useHistory';
 import { TrackInfo, RadioStation } from '../lib/api';
+import useUserTracks from '../hooks/useUserTracks';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
@@ -35,10 +36,17 @@ interface NowPlayingContextType {
   matchedTrack?: TrackInfo;
   stationHistory?: RadioStation[];
   songHistory?: TrackInfo[];
+  userTracks?: TrackInfo[];
+  userTracksLoading?: boolean;
+  userTracksError?: Error | null;
   removeSongFromHistory: (id: string) => Promise<void>;
+  addSongToTracks: (id: string) => Promise<void>;
   clearSongHistory: () => Promise<void>;
   removeStationFromHistory: (id: string) => Promise<void>;
   clearStationHistory: () => Promise<void>;
+  getUserTracks: (id?: string, sort?: string, ascending?: boolean, limit?: number) => Promise<void>;
+  clearUserTracks: () => Promise<void>;
+  deleteUserTrack: (id: string) => Promise<void>;
 }
 
 type NowPlayingInfoProviderProps = PropsWithChildren & {};
@@ -60,6 +68,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
     clearTrackHistory,
     clearStationHistory,
   } = useHistory();
+  const { getUserTracks: getTracksFromHook, addUserTrack, deleteUserTrack, tracks: userTracks, loading: userTracksLoading, error: userTracksError, clearUserTracks } = useUserTracks(); 
 
   const [station, setStation] = useState<RadioStation | undefined>();
   const [stationMetadata, setStationMetadata] = useState<StationMetadata | undefined>();
@@ -72,6 +81,20 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
     if (!user) return;
     await getTrackHistory();
   }, [user, getTrackHistory]);
+
+  const getUserTracks = useCallback(
+    async (id = '', sort = 'created_at', ascending = true, limit = 50) => {
+      if (!user) return;
+      await getTracksFromHook(id, sort, ascending, limit);
+    },
+    [user, getTracksFromHook]
+  );
+
+  // Initial load of user tracks
+  const refreshUserTracks = useCallback(async () => {
+    if (!user) return;
+    await getUserTracks();
+  }, [user, getUserTracks]);
 
   const loadStationHistory = useCallback(async () => {
     if (!user) return;
@@ -146,9 +169,18 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   useEffect(() => {
     if (!user) return;
     loadStationHistory();
+    refreshUserTracks();
     loadTrackHistory();
-  }, [user, loadStationHistory, loadTrackHistory]);
+  }, [user, loadStationHistory, loadTrackHistory, refreshUserTracks]);
 
+  const addSongToTracks = useCallback(
+    async (id: string) => {
+      if (!user || !id) return;
+      await addUserTrack(id);
+      await refreshUserTracks(); // Refresh the tracks list after adding
+    },
+    [user, addUserTrack, refreshUserTracks]
+  );
   const removeSongFromHistory = useCallback(
     async (id: string) => {
       if (!user || !id) return;
@@ -187,10 +219,17 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
         matchedTrack,
         songHistory,
         stationHistory,
+        userTracks,
+        userTracksLoading,
+        userTracksError,
         removeSongFromHistory,
+        addSongToTracks,
         clearSongHistory: clearSongHistoryHandler,
         removeStationFromHistory,
         clearStationHistory: clearStationHistoryHandler,
+        getUserTracks,
+        clearUserTracks,
+        deleteUserTrack
       }}
     >
       {children}

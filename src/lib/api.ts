@@ -133,7 +133,6 @@ export interface RadioStation {
   listenUrl: string;
   isOwner?: boolean;
 }
-
 export async function getProfile(sessionId: string) {
   const response = await fetch(`${API_BASE_URL}/user/profile`, {
     headers: {
@@ -203,9 +202,21 @@ export async function addCustomStation(sessionId: string, station: { id: string;
 
   return handleResponse<{ id: string; name: string; logo: string | null; listen_url: string }>(response);
 }
+export async function deleteCustomStation (sessionId: string, id: string) {
+  const response = await fetch(`${API_BASE_URL}/stations/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
+    },
+  });
+
+  return handleResponse<{ success: boolean }>(response);
+}
 
 export interface TrackInfo {
   id: string;
+  track_id: string;
   artist: string;
   title: string;
   album: string | null;
@@ -214,15 +225,81 @@ export interface TrackInfo {
   artwork: string | null;
   appleMusicUrl?: string;
   spotifyUrl?: string;
-  youTubeUrl?: string;
+  youTubeUrl?: string;  
 }
 
 export interface TrackHistory extends TrackInfo {
   heardAt: Date;
 }
 
-export async function deleteCustomStation(sessionId: string, id: string) {
-  const response = await fetch(`${API_BASE_URL}/stations/${id}`, {
+// User track endpoints
+export async function getUserTracks (sessionId: string, orderBy = 'created_at', order = 'DESC', retries = 2) {
+  const attempt = async () => {
+    return fetchWithTimeout<{ id: string; track_id: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; heardAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string }[]>(
+      `${API_BASE_URL}/usertracks?orderBy=${orderBy}&order=${order}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${sessionId}`,
+          'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
+        },
+      },
+      15000 // Increase timeout to 15 seconds to match server
+    );
+  };
+
+  let lastError;
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await attempt();
+    } catch (error) {
+      lastError = error;
+      if (i < retries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
+      }
+    }
+  }
+  throw lastError;
+}
+
+export async function getUserTrackById (sessionId: string, id: string) {
+  const response = await fetch(`${API_BASE_URL}/usertracks/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
+    },
+  });
+
+  return handleResponse<{ id: string; track_id: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; heardAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string }>(response);
+}
+
+export async function addUserTrack (sessionId: string, id: string) {
+  const response = await fetch(`${API_BASE_URL}/usertracks`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
+    },
+    body: JSON.stringify({
+      id: id,
+    }),
+  });
+
+  return handleResponse<{ id: string; }>(response);
+}
+export async function deleteUserTrack (sessionId: string, id: string) {
+  const response = await fetch(`${API_BASE_URL}/usertracks/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${sessionId}`,
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
+    },
+  });
+
+  return handleResponse<{ success: boolean }>(response);
+}
+export async function clearUserTracks (sessionId: string) {
+  const response = await fetch(`${API_BASE_URL}/usertracks`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${sessionId}`,

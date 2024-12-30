@@ -284,6 +284,7 @@ async function startServer () {
     });
 
     try {
+      const userId = (req as any).user.id;
       const orderBy = (req.query.orderBy as string) || 'created_at';
       const order = (req.query.order as string)?.toUpperCase() || 'DESC';
 
@@ -296,7 +297,7 @@ async function startServer () {
 
       // Race between the database operation and timeout
       const stations = await Promise.race([
-        Promise.resolve(statement.all()),
+        Promise.resolve(statement.all(userId)),
         timeoutPromise
       ]);
 
@@ -321,7 +322,8 @@ async function startServer () {
     }, 5000);
 
     try {
-      const station = statements.getStationById.get(req.params.id);
+      const userId = (req as any).user.id;
+      const station = statements.getStationById.get(req.params.id, userId);
       clearTimeout(timeout);
 
       if (!station) {
@@ -345,8 +347,9 @@ async function startServer () {
 
     try {
       const { id, name, logo, listen_url } = req.body;
-      statements.upsertStation.run({ id, name, logo, listen_url });
-      const station = statements.getStationById.get(id);
+      const userId = (req as any).user.id;
+      statements.upsertStation.run({ id, user_id: userId, name, logo, listen_url });
+      const station = statements.getStationById.get(id, userId);
       clearTimeout(timeout);
       res.json(station);
     } catch (error: any) {
@@ -365,12 +368,141 @@ async function startServer () {
     }, 5000);
 
     try {
-      statements.deleteStation.run(req.params.id);
+      const userId = (req as any).user.id;
+      statements.deleteStation.run(req.params.id, userId);
       clearTimeout(timeout);
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Delete station error:', error);
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
+      });
+    }
+  });
+
+  // Custom stations endpoints
+  app.get('/usertracks', requireAuth, async (req: Request, res: Response) => {
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 10000);
+    });
+
+    try {
+      const userId = (req as any).user.id;
+      const orderBy = (req.query.orderBy as string) || 'created_at';
+      const order = (req.query.order as string)?.toUpperCase() || 'DESC';
+
+      let statement;
+      if (orderBy === 'name') {
+        statement = order === 'ASC' ? statements.getAllUserTracks.byTitleAsc : statements.getAllUserTracks.byTitle;
+      } else {
+        statement = order === 'ASC' ? statements.getAllUserTracks.byCreatedAtAsc : statements.getAllUserTracks.byCreatedAt;
+      }
+
+      // Race between the database operation and timeout
+      const stations = await Promise.race([
+        Promise.resolve(statement.all(userId)),
+        timeoutPromise
+      ]);
+
+      res.json(stations);
+    } catch (error: any) {
+      console.error('Get stations error:', error);
+
+      if (error.message === 'Request timeout') {
+        res.status(504).json({ error: 'Request timeout' });
+      } else {
+        res.status(500).json({
+          error: 'Database error',
+          details: error?.message || 'Unknown database error'
+        });
+      }
+    }
+  });
+
+  app.get('/usertracks/:id', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
+    try {
+      const userId = (req as any).user.id;
+      const track = statements.getUserTrackById.get(req.params.id, userId);
+      clearTimeout(timeout);
+
+      if (!track) {
+        return res.status(404).json({ error: 'Track not found' });
+      }
+      res.json(track);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      console.error('Get user track error:', error);
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
+      });
+    }
+  });
+
+  app.post('/usertracks', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
+    try {
+      const { id } = req.body;
+      const userId = (req as any).user.id;
+      const track = statements.getUserTrackById.get(id, userId);
+      // only add if not already on user list
+      if (!track) {
+        statements.addUserTrack.run({ track_id: id, user_id: userId });
+      }
+      clearTimeout(timeout);
+      res.json({ success: true });
+    } catch (error: any) {
+      clearTimeout(timeout);
+      console.error('Create user track error:', error);
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
+      });
+    }
+  });
+
+  app.delete('/usertracks/:id', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
+    try {
+      const userId = (req as any).user.id;
+      statements.deleteUserTrack.run(req.params.id, userId);
+      clearTimeout(timeout);
+      res.json({ success: true });
+    } catch (error: any) {
+      clearTimeout(timeout);
+      console.error('Delete user track error:', error);
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
+      });
+    }
+  });
+  app.delete('/usertracks', requireAuth, (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
+    try {
+      const userId = (req as any).user.id;
+      statements.clearUserTracks.run(userId);
+      clearTimeout(timeout);
+      res.json({ success: true });
+    } catch (error: any) {
+      clearTimeout(timeout);
+      console.error('Delete user track error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -712,7 +844,7 @@ async function startServer () {
 
     try {
       // Test database connection with a simple query
-      const dbTest = statements.getAllStations.byCreatedAt.get();
+      const dbTest = statements.getUserById.get('test');
       const dbStatus = dbTest !== undefined ? 'ok' : 'error';
 
       clearTimeout(timeout);

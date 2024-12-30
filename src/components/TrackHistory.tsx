@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 
 import { NowPlayingContext } from '../context/NowPlayingContext';
@@ -15,7 +16,7 @@ type TrackHistoryProps = {
 };
 
 export default function TrackHistory({ className }: TrackHistoryProps) {
-  const { songHistory, removeSongFromHistory, clearSongHistory } = useContext(NowPlayingContext)!;
+  const { songHistory, removeSongFromHistory, clearSongHistory, addSongToTracks } = useContext(NowPlayingContext)!;
   const { t } = useTranslation();
   const translate = t as (key: string) => string;
 
@@ -50,6 +51,12 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
               className={styles.actionIcon}
               title={`Remove`}
               onClick={() => removeSongFromHistory(entry.id)}
+            />
+            <FontAwesomeIcon
+              icon={faPlus}
+              className={styles.actionIcon}
+              title={`Add ${entry.title} to your tracks`}
+              onClick={() => addSongToTracks(entry.track_id)}
             />
           </div>
           <div className={styles.streamLinks}>

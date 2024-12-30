@@ -48,6 +48,34 @@
   height: 16px !important;
 }
 
+.submenu {
+  position: absolute;
+  top: 100%;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+}
+
+.submenuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  width: 100%;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.submenuItem:hover {
+  background-color: var(--color-background-hover);
+}
+
 .languageDropdown {
   position: absolute;
   top: 100%;

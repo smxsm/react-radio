@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStepBackward, faPlay, faStepForward, faStop } from '@fortawesome/free-solid-svg-icons';
+import { faStepBackward, faPlay, faStepForward, faStop, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import { PlayerContext } from '../context/PlayerContext';
 import { NowPlayingContext } from '../context/NowPlayingContext';
@@ -12,7 +12,7 @@ import styles from './Player.module.css';
 
 export default function Player(props: any) {
   const playerContext = useContext(PlayerContext)!;
-  const { station, stationMetadata, matchedTrack } = useContext(NowPlayingContext)!;
+  const { station, stationMetadata, matchedTrack, addSongToTracks } = useContext(NowPlayingContext)!;
 
   let classes = styles.player;
   if (playerContext?.status === 'loading') classes += ' ' + styles.loading;
@@ -92,6 +92,22 @@ export default function Player(props: any) {
           <a target="_blank" rel="noreferrer" href={matchedTrack.youTubeUrl} onClick={() => playerContext?.stop()}>
             <img src="/youtube.png" alt="Apple Musc" />
           </a>
+        )}
+        {matchedTrack?.id && (
+          <FontAwesomeIcon
+            icon={faPlus}
+            className={styles.actionIcon}
+            title={`Add ${matchedTrack?.title} to your tracks`}
+            onClick={async () => {
+              try {
+                await addSongToTracks(matchedTrack.id);
+                // Could add a toast notification here if you have a notification system
+                console.log('Player: Track added successfully');
+              } catch (error) {
+                console.error('Player: Failed to add track:', error);
+              }
+            }}
+          />
         )}
       </div>
     </div>

@@ -1,0 +1,77 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  overflow: auto;
+  width: 100%;
+  padding: 0 1rem;
+  padding-top: 1rem;
+}
+
+.optionsContaienr {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
+}
+.userTracksTitleContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.btnAdd {
+  display: flex;
+  gap: 1rem;
+  padding: 0.25rem 1.4rem;
+}
+
+.cardsList {
+  overflow: auto;
+  flex-grow: 1;
+  place-content: flex-start;
+}
+
+.spinner {
+  margin: 2rem auto;
+}
+
+.userTracksCard {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.userTracksTrackInfo {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userTracksCardTitle {
+  font-weight: 600;
+}
+
+.userTracksCardDate {
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+.streamLinks {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease-in;
+}
+.streamLink {
+  width: 24px;
+}
+
+@container (max-width: 380px) {
+  .optionsContaienr {
+    flex-wrap: wrap-reverse;
+  }
+}

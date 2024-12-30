@@ -17,6 +17,7 @@ import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import UpsertCustomStation from './components/UpsertCustomStation';
 import CustomStations from './components/CustomStations';
+import UserTracks from './components/UserTracks';
 import TrackHistory from './components/TrackHistory';
 import NotFound from './components/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -37,17 +38,16 @@ function App() {
     setMobilePlayerActive(visible);
   };
   return (
-    <>
-      <LanguageProvider>
+    <LanguageProvider>
+      <BrowserRouter>
         <UserProvider>
           <PlayerProvider>
             <NowPlayingProvider>
-            <MediaSessionAPI />
-            <BrowserRouter>
-              <Navigation switchPlayer={switchPlayer} showNowPlaying={!mobilePlayerActive} />
-              <div className={styles.container}>
-                <main className={styles.content}>
-                  <DocumentTitleProvider>
+              <DocumentTitleProvider>
+                <MediaSessionAPI />
+                <Navigation switchPlayer={switchPlayer} showNowPlaying={!mobilePlayerActive} />
+                <div className={styles.container}>
+                  <main className={styles.content}>
                     <Routes>
                       <Route path="/" element={<Home />} />
                       <Route path="/stations/all" element={<StationsCardList />} />
@@ -57,6 +57,7 @@ function App() {
                       <Route path="/stations/:category?/:value?" element={<StationsCardList />} />
                       <Route element={<ProtectedRoute hasUser={true} redirectTo={'/auth/signin'} />}>
                         <Route path="/stations/custom" element={<CustomStations />} />
+                        <Route path="/user/tracks" element={<UserTracks />} />
                         <Route path="/stations/custom/add" element={<UpsertCustomStation />} />
                         <Route path="/stations/custom/edit/:id" element={<UpsertCustomStation />} />
                       </Route>
@@ -68,19 +69,18 @@ function App() {
                       </Route>
                       <Route path="*" element={<NotFound />} />
                     </Routes>
-                  </DocumentTitleProvider>
-                </main>
-                <aside className={`${styles.sidePanel} ${mobilePlayerActive ? styles.playerActive : ''}`.trim()}>
-                  <Player />
-                  <TrackHistory className={styles.trackHistory} />
-                </aside>
-              </div>
-            </BrowserRouter>
+                  </main>
+                  <aside className={`${styles.sidePanel} ${mobilePlayerActive ? styles.playerActive : ''}`.trim()}>
+                    <Player />
+                    <TrackHistory className={styles.trackHistory} />
+                  </aside>
+                </div>
+              </DocumentTitleProvider>
             </NowPlayingProvider>
           </PlayerProvider>
         </UserProvider>
-      </LanguageProvider>
-    </>
+      </BrowserRouter>
+    </LanguageProvider>
   );
 }
 

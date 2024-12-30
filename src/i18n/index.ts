@@ -50,6 +50,8 @@ const resources = {
       'user.signout': 'Sign Out',
       'user.language': 'Language',
       'user.mystations': 'My Stations',
+      'user.mytracks': 'My Songs',
+      'user.mymusic': 'My Music',
       // User forms
       'user.form.signinheader': 'Sign in to your account',
       'user.form.signinaction': 'or <1>create a new account</1>',
@@ -79,6 +81,7 @@ const resources = {
       'home.intro': 'Choose from over 30000 radio stations or <1>register an account</1> to create your own library.',
       'home.login': 'Already have an account? <1>Click here to sign in.</1>',
       'home.browse': 'Browse stations',
+      'home.mytracks': 'My Tracks',
       'home.mystations': 'My Stations',
       'home.music': 'Music',
       'home.news': 'News',
@@ -103,6 +106,8 @@ const resources = {
       // Info
       'info.tracks.inlibrary': 'is already in your library. Are you sure you want to replace it?',
       'info.station.delete': 'Are you sure you want to delete',
+      'info.track.delete': 'Are you sure you want to delete',
+      'info.track.deleteall': 'Are you sure you want to delete all your songs?',
     }
   },
   de: {
@@ -153,6 +158,8 @@ const resources = {
       'user.signout': 'Abmelden',
       'user.language': 'Sprache',
       'user.mystations': 'Meine Sender',
+      'user.mytracks': 'Meine Songs',
+      'user.mymusic': 'Meine Musik',
       // User forms
       'user.form.signinheader': 'Melde Dich in deinem Konto an',
       'user.form.signinaction': 'oder <1>lege ein neues Konto an</1>',
@@ -182,6 +189,7 @@ const resources = {
       'home.intro': "Wähle aus über 30000 Radio-Stationen oder <1>registriere einen Account</1>, um deine eigene Bibliothek zu erstellen.",
       'home.login': 'Du hast schon ein Konto? <1>Einfach hier einloggen.</1>',
       'home.browse': 'Stationen entdecken',
+      'home.mytracks': 'Meine Songs',
       'home.mystations': 'Meine Sender',
       'home.music': 'Musik',
       'home.news': 'Nachrichten',
@@ -206,6 +214,8 @@ const resources = {
       // Info
       'info.tracks.inlibrary': 'ist bereits in deiner Bibliothek. Möchtest du es wirklich ersetzen?',
       'info.station.delete': 'Willst du diese Station wirklich löschen:',
+      'info.track.delete': 'Willst Du diesen Song wirklich löschen:',
+      'info.track.deleteall': 'Willst Du wirklich alle Deine Songs löschen?',
     }
   }
 };

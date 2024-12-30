@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Trans, useTranslation } from 'react-i18next';
-import { faFolder, faGlobeAmericas, faMusic, faNewspaper, faTableTennis } from '@fortawesome/free-solid-svg-icons';
+import { faCompactDisc, faFolder, faGlobeAmericas, faMusic, faNewspaper, faTableTennis } from '@fortawesome/free-solid-svg-icons';
 
 import { PlayerContext } from '../context/PlayerContext';
 import { UserContext } from '../context/UserContext';
@@ -76,10 +76,13 @@ export default function Home() {
 
       <section className={styles.categoriesSection}>
         {user && (
-          <Link to="/stations/custom" className={styles.category}>
+          <><Link to="/stations/custom" className={styles.category}>
             <FontAwesomeIcon icon={faFolder} className={styles.categoryIcon} />
             <p className={styles.categoryName}>{translate('home.mystations')}</p>
-          </Link>
+          </Link><Link to="/user/tracks" className={styles.category}>
+              <FontAwesomeIcon icon={faCompactDisc} className={styles.categoryIcon} />
+              <p className={styles.categoryName}>{translate('home.mytracks')}</p>
+            </Link></>
         )}
         <Link to="/stations/music/genres" className={styles.category}>
           <FontAwesomeIcon icon={faMusic} className={styles.categoryIcon} />

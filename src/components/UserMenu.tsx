@@ -1,6 +1,6 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder, faRightFromBracket, faRightToBracket, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { faFolder, faMusic, faRightFromBracket, faRightToBracket, faUserPlus, faCompactDisc } from '@fortawesome/free-solid-svg-icons';
 import ReactCountryFlag from 'react-country-flag';
 import { useTranslation } from 'react-i18next';
 
@@ -23,15 +23,31 @@ export default function UserMenu({ className }: UserMenuProps) {
   const translate = t as (key: string) => string;
   const { currentLanguage, languages, changeLanguage } = useLanguage();
   const [showLanguages, setShowLanguages] = useState(false);
+  const [showMyMusic, setShowMyMusic] = useState(false);
+  const myMusicRef = useRef<HTMLDivElement>(null);
 
   const signOutClickHandler = () => signout();
   
   const toggleLanguageMenu = () => setShowLanguages(!showLanguages);
+  const toggleMyMusicMenu = () => setShowMyMusic(!showMyMusic);
   
   const handleLanguageChange = (code: string) => {
     changeLanguage(code);
     setShowLanguages(false);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (myMusicRef.current && !myMusicRef.current.contains(event.target as Node)) {
+        setShowMyMusic(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const renderLanguageMenu = () => {
     if (!showLanguages) return null;
@@ -55,6 +71,22 @@ export default function UserMenu({ className }: UserMenuProps) {
     );
   };
 
+  const renderMyMusicMenu = () => {
+    if (!showMyMusic) return null;
+    return (
+      <div className={styles.submenu}>
+        <MenuItem href="/stations/custom" className={styles.submenuItem}>
+          <FontAwesomeIcon icon={faFolder} title={translate('user.mystations')} />
+          <span>{translate('user.mystations')}</span>
+        </MenuItem>
+        <MenuItem href="/user/tracks" className={styles.submenuItem}>
+          <FontAwesomeIcon icon={faCompactDisc} title={translate('user.mytracks')} />
+          <span>{translate('user.mytracks')}</span>
+        </MenuItem>
+      </div>
+    );
+  };
+
   if (loading) {
     return <Spinner className={`${styles['user-menu']} ${styles.spinner}`} />;
   }
@@ -62,10 +94,13 @@ export default function UserMenu({ className }: UserMenuProps) {
     return (
       <div className={styles.menuContainer}>
         <Menu className={`${styles.userMenu} ${className ? className : ''}`.trim()}>
-          <MenuItem href="/stations/custom">
-            <FontAwesomeIcon icon={faFolder} title={translate('user.mystations')} />
-            <span className={styles.menuItemText}>{translate('user.mystations')}</span>
-          </MenuItem>
+          <div ref={myMusicRef}>
+            <MenuItem onClick={toggleMyMusicMenu} markActive={false}>
+              <FontAwesomeIcon icon={faMusic} title={translate('user.mymusic')} />
+              <span className={`${styles.menuItemText} hasSubMenu`}>{translate('user.mymusic')}</span>
+            </MenuItem>
+            {renderMyMusicMenu()}
+          </div>
           <MenuItem href="" className={styles['signout-item']} onClick={signOutClickHandler} markActive={false}>
             <FontAwesomeIcon icon={faRightFromBracket} title={translate('user.signout')} />
             <span className={styles.menuItemText}>{translate('user.signout')}</span>
