@@ -1,8 +1,10 @@
 import Fuse from 'fuse.js';
 import { TrackInfo } from '../types/mediaTypes';
 
-const client_id = process.env.SPOTIFY_CLIENT_ID;
-const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
+const client_id = process.env.SPOTIFY_CLIENT_ID ?? '';
+const client_secret = process.env.SPOTIFY_CLIENT_SECRET ?? '';
+// score = 0 is perfect match, score = 1 is no match!
+const score_threshold = parseFloat(process.env.SPOTIFY_FUSE_SCORE_THRESHOLD ?? '0.6');
 
 interface SpotifyItem {
   album: {
@@ -68,6 +70,11 @@ interface SpotifyItem {
   is_local: boolean;
 }
 
+const options = {
+  useExtendedSearch: true,
+  includeScore: true
+};
+
 async function getAccessToken () {
   const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
@@ -110,21 +117,27 @@ export default async function spotifySearch(searchTerm: string): Promise<TrackIn
     let fuse = new Fuse(
       data.map(
         ({ name, artists, album }: SpotifyItem) =>
-          `${artists.map(artist => artist.name).join(' ')} ${name} ${album.name}`
-      ),
-      { useExtendedSearch: true }
+          `${artists.map(artist => artist.name).join(' ')} ${name !== undefined ? ` ${name}` : ''} ${album.name}`
+      ), options
     );
     
     // First run trying to filter out collection albums
     let searchResults = fuse.search(
       `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various !mix !advertisement !adwtag`
     );
+    // filter items with score >= score_threshold
+    searchResults = searchResults.filter((result) => {
+      return typeof result.score === 'number' && result.score <= score_threshold;
+    });
     
     if (!searchResults.length) {
       // If first run found nothing, try again without considering album type
-      console.log('Hold on, running second fuse.js search ...');
-      fuse = new Fuse(data.map(({ name, artists }: SpotifyItem) => `${artists.map(artist => artist.name).join(' ')} ${name}}`));
+      fuse = new Fuse(data.map(({ name, artists }: SpotifyItem) => `${artists.map(artist => artist.name).join(' ')} ${name}`), options);
       searchResults = fuse.search(searchTerm);
+      console.log('Spotify fuse.js results 2 before filter', searchResults);
+      searchResults = searchResults.filter((result) => {
+        return typeof result.score === 'number' && result.score <= score_threshold;
+      });
     }
     
     if (!searchResults.length) {

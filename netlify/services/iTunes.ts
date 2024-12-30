@@ -7,6 +7,12 @@ interface iTunesItem {
   collectionName: string;
   collectionArtistName: string;
 }
+const options = {
+  useExtendedSearch: true,
+  includeScore: true
+};
+// score = 0 is perfect match, score = 1 is no match!
+const score_threshold = parseFloat(process.env.ITUNES_FUSE_SCORE_THRESHOLD ?? '0.6');
 export default async function iTunesSearch(searchTerm: string): Promise<TrackInfo | null> {
   try {
     if (!searchTerm) {
@@ -22,20 +28,27 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
     let fuse = new Fuse(
       data.map(
         ({ artistName, trackName, collectionName, collectionArtistName }: iTunesItem) =>
-          `${artistName} ${trackName} ${collectionArtistName} ${collectionName}`
-      ),
-      { useExtendedSearch: true }
+          `${artistName} ${trackName}${collectionArtistName !== undefined ? ` ${collectionArtistName}` : ''} ${collectionName}`
+      ), options
     );
     
     // First run trying to filter out collection albums
     let searchResults = fuse.search(
       `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various !mix !advertisement !adwtag`
     );
+    // filter items with score >= score_threshold
+    searchResults = searchResults.filter((result) => {
+      return typeof result.score === 'number' && result.score <= score_threshold;
+    });
     
     if (!searchResults.length) {
       // If first run found nothing, try again without considering album type
-      fuse = new Fuse(data.map(({ artistName, trackName }: iTunesItem) => `${artistName} ${trackName}}`));
+      fuse = new Fuse(data.map(({ artistName, trackName }: iTunesItem) => `${artistName} ${trackName}`), options);
       searchResults = fuse.search(searchTerm);
+      // filter items with score >= score_threshold
+      searchResults = searchResults.filter((result) => {
+        return typeof result.score === 'number' && result.score <= score_threshold;
+      });
     }
     
     if (!searchResults.length) {
