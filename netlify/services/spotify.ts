@@ -117,11 +117,12 @@ export default async function spotifySearch(searchTerm: string): Promise<TrackIn
     
     // First run trying to filter out collection albums
     let searchResults = fuse.search(
-      `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various !mix !advertisement`
+      `${searchTerm} !greatest !ultimate !collection !best !hits !essential !single !live !various !mix !advertisement !adwtag`
     );
     
     if (!searchResults.length) {
       // If first run found nothing, try again without considering album type
+      console.log('Hold on, running second fuse.js search ...');
       fuse = new Fuse(data.map(({ name, artists }: SpotifyItem) => `${artists.map(artist => artist.name).join(' ')} ${name}}`));
       searchResults = fuse.search(searchTerm);
     }

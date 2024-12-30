@@ -29,8 +29,8 @@ export default function CustomStation() {
   const translate = t as (key: string) => string;
 
   useEffect(() => {
-    setDocumentTitle('My stations');
-  }, [setDocumentTitle]);
+    setDocumentTitle(translate('user.mystations'));
+  }, [setDocumentTitle, translate]);
 
   useEffect(() => {
     getCustomStations('', sort, order !== 'desc');

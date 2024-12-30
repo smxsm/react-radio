@@ -53,7 +53,7 @@ function corsMiddleware (req: Request, res: Response, next: NextFunction) {
   next();
 }
 
-async function startServer() {
+async function startServer () {
   const app = express();
   const port = process.env.PORT || 3001;
 
@@ -61,9 +61,9 @@ async function startServer() {
   app.use((req: Request, res: Response, next: NextFunction) => {
     const start = Date.now();
     const requestId = Math.random().toString(36).substring(7);
-    
+
     console.log(`[${requestId}] ${req.method} ${req.url} started`);
-    
+
     res.on('finish', () => {
       const duration = Date.now() - start;
       console.log(`[${requestId}] ${req.method} ${req.url} completed in ${duration}ms with status ${res.statusCode}`);
@@ -75,9 +75,9 @@ async function startServer() {
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     console.error('Unhandled error:', err);
-    res.status(500).json({ 
-      error: 'Internal server error', 
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined 
+    res.status(500).json({
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   });
 
@@ -114,7 +114,7 @@ async function startServer() {
   app.post('/auth/signup', async (req: Request, res: Response) => {
     try {
       const { email, password, firstName, lastName } = req.body;
-      
+
       if (!email || !password || !firstName || !lastName) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
@@ -137,7 +137,7 @@ async function startServer() {
   app.post('/auth/signin', async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
-      
+
       if (!email || !password) {
         return res.status(400).json({ error: 'Missing email or password' });
       }
@@ -192,7 +192,7 @@ async function startServer() {
 
       // send an email here
       const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/change-password/${resetToken}`;
-      await deliverMail(email, 'ReactRadio password reset', 'Go here to reset your password: ' + resetLink, '<p>Click this link to reset your password:<br/><a href="' + resetLink + '">' + resetLink +'</a><p>');
+      await deliverMail(email, 'ReactRadio password reset', 'Go here to reset your password: ' + resetLink, '<p>Click this link to reset your password:<br/><a href="' + resetLink + '">' + resetLink + '</a><p>');
       res.json({ response: 'OK' });
     } catch (error) {
       console.error('Forgot password error:', error);
@@ -313,7 +313,7 @@ async function startServer() {
       }
     }
   });
-  
+
   app.get('/stations/:id', requireAuth, (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
@@ -322,7 +322,7 @@ async function startServer() {
     try {
       const station = statements.getStationById.get(req.params.id);
       clearTimeout(timeout);
-      
+
       if (!station) {
         return res.status(404).json({ error: 'Station not found' });
       }
@@ -330,9 +330,9 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Get station error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
@@ -351,9 +351,9 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Create station error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
@@ -370,9 +370,9 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Delete station error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
@@ -398,9 +398,9 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Get track history error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
@@ -421,9 +421,9 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Add track history error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
@@ -440,9 +440,9 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Delete track history error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
@@ -459,9 +459,9 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Clear track history error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
@@ -484,9 +484,9 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Get listen history error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
@@ -510,9 +510,9 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Add listen history error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
@@ -529,9 +529,9 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Delete listen history error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
@@ -548,223 +548,234 @@ async function startServer() {
     } catch (error: any) {
       clearTimeout(timeout);
       console.error('Clear listen history error:', error);
-      res.status(500).json({ 
-        error: 'Database error', 
-        details: error?.message || 'Unknown database error' 
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
       });
     }
   });
 
 
   // Types for metadata handling
-interface MatchedTrack {
-  id: string;
-  artist: string;
-  title: string;
-  album: string | null;
-  releaseDate: string | null;
-  artwork: string | null;
-  appleMusicUrl: string;
-  youTubeUrl: string;
-  spotifyUrl: string;
-}
-interface Track {
-  id: string;
-  artist: string;
-  title: string;
-  album: string | null;
-  release_date: string | null;
-  artwork: string | null;
-  apple_music_url: string;
-  youtube_url: string;
-  spotify_url: string;
-  created_at: string | Date;
-  // "virtual" properties to convert from db fields
-  heardAt?: string | Date;
-  appleMusicUrl: string;
-  youTubeUrl: string;
-  spotifyUrl: string;
-  // Add other properties that exist on your track objects
-}
-
-interface MetadataResponse {
-  stationMetadata: StationMetadata;
-  matchedTrack?: MatchedTrack;
-}
-
-interface CacheEntry {
-  url: string;
-  data: MetadataResponse;
-  timestamp: number;
-}
-
-// Cache setup
-const cache = new Map<string, CacheEntry>();
-const metadataQueue = new PQueue({ 
-  concurrency: 2, // Limit concurrent metadata processing
-  timeout: 15000, // 15 second timeout for each task
-  throwOnTimeout: true // Reject the promise when task times out
-}); 
-
-// Helper function from edge function
-function cleanTitleForSearch(title: string) {
-  const filterTerms = ['ft', 'feat', 'vs'];
-  return title
-    .match(/[a-zA-Z]+(?![^(]*\))/g)
-    ?.filter((term) => !filterTerms.includes(term.toLowerCase()))
-    .join(' ');
-}
-
-// Main endpoint
-app.get('/station-metadata', async (req: Request, res: Response) => {
-  const url = req.query.url as string | undefined;
-  
-  if (!url) {
-    return res.status(400).json({ error: 'URL parameter is required' });
+  interface MatchedTrack {
+    id: string;
+    artist: string;
+    title: string;
+    album: string | null;
+    releaseDate: string | null;
+    artwork: string | null;
+    appleMusicUrl: string;
+    youTubeUrl: string;
+    spotifyUrl: string;
+  }
+  interface Track {
+    id: string;
+    artist: string;
+    title: string;
+    album: string | null;
+    release_date: string | null;
+    artwork: string | null;
+    apple_music_url: string;
+    youtube_url: string;
+    spotify_url: string;
+    created_at: string | Date;
+    // "virtual" properties to convert from db fields
+    heardAt?: string | Date;
+    appleMusicUrl: string;
+    youTubeUrl: string;
+    spotifyUrl: string;
+    // Add other properties that exist on your track objects
   }
 
-  return metadataQueue.add(async () => {
-    let controller: AbortController | null = new AbortController();
-    
-    try {
-      console.log('Fetching metadata for URL:', url);
-      const streamResponse = await fetch(url, {
-        method: 'GET',
-        headers: { 'Icy-MetaData': '1' },
-        signal: controller.signal
-      });
+  interface MetadataResponse {
+    stationMetadata: StationMetadata;
+    matchedTrack?: MatchedTrack;
+  }
 
-      if (!streamResponse.ok) {
-        throw new Error(`Stream response error: ${streamResponse.status} ${streamResponse.statusText}`);
-      }
+  interface CacheEntry {
+    url: string;
+    data: MetadataResponse;
+    timestamp: number;
+  }
 
-      const icyMetaInt = parseInt(streamResponse.headers.get('Icy-MetaInt') || '0');
-      if (!icyMetaInt) {
-        console.warn('No ICY-MetaInt header found, using default value');
-      }
+  // Cache setup
+  const cache = new Map<string, CacheEntry>();
+  const CACHE_EXPIRATION_MS = 60 * 60 * 1000; // 1 hour
+  const metadataQueue = new PQueue({
+    concurrency: 2, // Limit concurrent metadata processing
+    timeout: 15000, // 15 second timeout for each task
+    throwOnTimeout: true // Reject the promise when task times out
+  });
 
-      const stationMetadata = await getIcecastMetadata(streamResponse, icyMetaInt);
-      const stationName = stationMetadata.icyName;
-      console.log('Metadata received:', stationMetadata);
-      const cacheKey = `station:${stationMetadata.title}`;
+  function getCache (key: string): any | undefined {
+    const entry = cache.get(key);
+    if (entry && (Date.now() - entry.timestamp) < CACHE_EXPIRATION_MS) {
+      return entry;
+    }
+    console.log('Deleting lookup cache, expired!');
+    cache.delete(key); // Remove expired entry
+    return undefined;
+  }
 
-      if (!stationMetadata.title) {
-        throw new Error('No metadata collected');
-      }
+  // Helper function from edge function
+  function cleanTitleForSearch (title: string) {
+    const filterTerms = ['ft', 'feat', 'vs'];
+    return title
+      .match(/[a-zA-Z]+(?![^(]*\))/g)
+      ?.filter((term) => !filterTerms.includes(term.toLowerCase()))
+      .join(' ').trim();
+  }
 
-      const searchTerm = cleanTitleForSearch(stationMetadata.title);
-      if (!searchTerm) {
-        throw new Error('Search string is empty');
-      }
+  // Main endpoint
+  app.get('/station-metadata', async (req: Request, res: Response) => {
+    const url = req.query.url as string | undefined;
 
-      let data: MetadataResponse = { stationMetadata };
+    if (!url) {
+      return res.status(400).json({ error: 'URL parameter is required' });
+    }
 
-      // Try to find existing track match
-      const existingMatch = cache.get(cacheKey)?.data?.matchedTrack;
+    return metadataQueue.add(async () => {
+      let controller: AbortController | null = new AbortController();
 
-      console.log(`stationName: ${stationName} searchTerm: ${stationMetadata.title}`);
-      if (existingMatch) {
-        data = { ...data, matchedTrack: existingMatch };
-        console.log('Cache hit', data);
-      } else if (stationName === stationMetadata.title) {
-        data.matchedTrack = undefined;
-      } else {
-        let matchedTrack = await iTunesSearch(searchTerm);
-        const matchedTrack2 = await spotifySearch(searchTerm);
-        console.log('iTunes searchResults', matchedTrack);
-        console.log('Spotify searchResults', matchedTrack2);
+      try {
+        console.log('Fetching metadata for URL:', url);
+        const streamResponse = await fetch(url, {
+          method: 'GET',
+          headers: { 'Icy-MetaData': '1' },
+          signal: controller.signal
+        });
 
-        if (!matchedTrack) {
-          matchedTrack = matchedTrack2 ?? null;
-        } else {
-          matchedTrack.spotifyUrl = matchedTrack2?.spotifyUrl || '';
+        if (!streamResponse.ok) {
+          throw new Error(`Stream response error: ${streamResponse.status} ${streamResponse.statusText}`);
         }
 
-        if (matchedTrack) {
-          matchedTrack.youTubeUrl = await youTubeSearch(searchTerm) || '';
+        const icyMetaInt = parseInt(streamResponse.headers.get('Icy-MetaInt') || '0');
+        if (!icyMetaInt) {
+          console.warn('No ICY-MetaInt header found, using default value');
+        }
 
-          const trackId = randomUUID();
-          statements.upsertTrackMatch.run({
-            id: trackId,
-            artist: matchedTrack.artist,
-            title: matchedTrack.title,
-            album: matchedTrack.album,
-            artwork: matchedTrack.artwork,
-            release_date: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
-            apple_music_url: matchedTrack.appleMusicUrl || '',
-            youtube_url: matchedTrack.youTubeUrl || '',
-            spotify_url: matchedTrack.spotifyUrl || ''
-          });
+        const stationMetadata = await getIcecastMetadata(streamResponse, icyMetaInt);
+        const stationName = cleanTitleForSearch(stationMetadata.icyName);
+        console.log('Metadata received:', stationMetadata);
+        const cacheKey = `station:${stationMetadata.title}`;
 
-          data.matchedTrack = {
-            id: trackId,
-            artist: matchedTrack.artist,
-            title: matchedTrack.title,
-            album: matchedTrack.album,
-            releaseDate: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
-            artwork: matchedTrack.artwork,
-            appleMusicUrl: matchedTrack.appleMusicUrl || '',
-            youTubeUrl: matchedTrack.youTubeUrl || '',
-            spotifyUrl: matchedTrack.spotifyUrl || ''
-          };
+        if (!stationMetadata.title) {
+          throw new Error('No metadata collected');
+        }
 
-          // now store in cache
-          if (cache) {
-            const cacheEntry: CacheEntry = {
-              url: matchedTrack.artwork,
-              data: data,
-              timestamp: Date.now()
+        const searchTerm = cleanTitleForSearch(stationMetadata.title);
+        if (!searchTerm) {
+          throw new Error('Search string is empty');
+        }
+
+        let data: MetadataResponse = { stationMetadata };
+
+        // Try to find existing track match
+        const existingMatch = getCache(cacheKey)?.data?.matchedTrack;
+
+        console.log(`stationName: ${stationName} searchTerm: ${searchTerm}`);
+        if (existingMatch) {
+          data = { ...data, matchedTrack: existingMatch };
+          console.log('Cache hit', data);
+        } else if (stationName === searchTerm) {
+          data.matchedTrack = undefined;
+        } else {
+          let matchedTrack = await iTunesSearch(searchTerm);
+          const matchedTrack2 = await spotifySearch(searchTerm);
+          console.log('iTunes searchResults', matchedTrack);
+          console.log('Spotify searchResults', matchedTrack2);
+
+          if (!matchedTrack) {
+            matchedTrack = matchedTrack2 ?? null;
+          } else {
+            matchedTrack.spotifyUrl = matchedTrack2?.spotifyUrl || '';
+          }
+
+          if (matchedTrack) {
+            matchedTrack.youTubeUrl = await youTubeSearch(searchTerm) || '';
+
+            const trackId = randomUUID();
+            statements.upsertTrackMatch.run({
+              id: trackId,
+              artist: matchedTrack.artist,
+              title: matchedTrack.title,
+              album: matchedTrack.album,
+              artwork: matchedTrack.artwork,
+              release_date: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
+              apple_music_url: matchedTrack.appleMusicUrl || '',
+              youtube_url: matchedTrack.youTubeUrl || '',
+              spotify_url: matchedTrack.spotifyUrl || ''
+            });
+
+            data.matchedTrack = {
+              id: trackId,
+              artist: matchedTrack.artist,
+              title: matchedTrack.title,
+              album: matchedTrack.album,
+              releaseDate: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
+              artwork: matchedTrack.artwork,
+              appleMusicUrl: matchedTrack.appleMusicUrl || '',
+              youTubeUrl: matchedTrack.youTubeUrl || '',
+              spotifyUrl: matchedTrack.spotifyUrl || ''
             };
-            cache.set(cacheKey, cacheEntry);
+
+            // now store in cache
+            if (cache) {
+              const cacheEntry: CacheEntry = {
+                url: matchedTrack.artwork,
+                data: data,
+                timestamp: Date.now()
+              };
+              cache.set(cacheKey, cacheEntry);
+            }
           }
         }
-      }
 
-      res.json(data);
-    } catch (err) {
-      console.error('Metadata error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch metadata';
-      console.error('Metadata error details:', errorMessage);
-      res.status(500).json({ error: errorMessage });
-    } finally {
-      if (controller) {
-        controller.abort();
-        controller = null;
+        res.json(data);
+      } catch (err) {
+        console.error('Metadata error:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch metadata';
+        console.error('Metadata error details:', errorMessage);
+        res.status(500).json({ error: errorMessage });
+      } finally {
+        if (controller) {
+          controller.abort();
+          controller = null;
+        }
       }
+    });
+  });
+
+  // Health check endpoint
+  app.get('/health', (_req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Health check timeout' });
+    }, 5000);
+
+    try {
+      // Test database connection with a simple query
+      const dbTest = statements.getAllStations.byCreatedAt.get();
+      const dbStatus = dbTest !== undefined ? 'ok' : 'error';
+
+      clearTimeout(timeout);
+      res.json({
+        status: 'ok',
+        database: dbStatus,
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      clearTimeout(timeout);
+      console.error('Health check error:', error);
+      res.status(500).json({
+        status: 'error',
+        database: 'error',
+        error: error?.message || 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
     }
   });
-});
-
-// Health check endpoint
-app.get('/health', (_req: Request, res: Response) => {
-  const timeout = setTimeout(() => {
-    res.status(504).json({ error: 'Health check timeout' });
-  }, 5000);
-
-  try {
-    // Test database connection with a simple query
-    const dbTest = statements.getAllStations.byCreatedAt.get();
-    const dbStatus = dbTest !== undefined ? 'ok' : 'error';
-    
-    clearTimeout(timeout);
-    res.json({ 
-      status: 'ok',
-      database: dbStatus,
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      timestamp: new Date().toISOString()
-    });
-  } catch (error: any) {
-    clearTimeout(timeout);
-    console.error('Health check error:', error);
-    res.status(500).json({ 
-      status: 'error',
-      database: 'error',
-      error: error?.message || 'Unknown error',
-      timestamp: new Date().toISOString()
-    });
-  }
-});
 
   // Start server
   const server = app.listen(port, () => {
@@ -784,6 +795,16 @@ app.get('/health', (_req: Request, res: Response) => {
       process.exit(0);
     });
   });
+
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of cache.entries()) {
+      if (now - entry.timestamp >= CACHE_EXPIRATION_MS) {
+        console.log('Auto-Removing entry from cache', entry);
+        cache.delete(key);
+      }
+    }
+  }, CACHE_EXPIRATION_MS);
 }
 
 // Run the server
