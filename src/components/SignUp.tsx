@@ -28,7 +28,6 @@ export default function SignUp() {
         .min(14, translate('errors.password.minlen'))
         .regex(/[A-Z]/, translate('errors.password.uppercase'))
         .regex(/[!@#$%^&*(),.?":{}|<>_]/, translate('errors.password.specialchar')),
-      confirmPassword: z.string(),
       rePass: z.string(),
     })
     .refine((data) => data.password === data.rePass, { message: translate('errors.password.nomatch'), path: ['rePass'] });
@@ -41,6 +40,7 @@ export default function SignUp() {
   }, [setDocumentTitle]);
 
   const submitHandler = async ({ email, firstName, lastName, password }: FieldValues) => {
+    console.log(email);
     setError(await signup(email, firstName, lastName, password));
   };
 
