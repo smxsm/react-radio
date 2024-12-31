@@ -290,7 +290,7 @@ class DatabaseManager {
         byName: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? ORDER BY name DESC'),
         byNameAsc: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? ORDER BY name ASC')
       },
-      getStationById: this.db.prepare('SELECT * FROM user_stations WHERE id = ? AND user_id = ?'),
+      getStationById: this.db.prepare('SELECT * FROM user_stations WHERE station_id = ? AND user_id = ?'),
       upsertStation: this.db.prepare(`
         INSERT INTO user_stations (station_id, user_id, name, logo, listen_url)
         VALUES (@station_id, @user_id, @name, @logo, @listen_url)
