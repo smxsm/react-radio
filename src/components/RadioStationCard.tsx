@@ -39,7 +39,15 @@ export default function RadioStationCard({
       className={styles.card}
     >
       <figure>
-        <img src={station.logo ? station.logo : '/sound-wave.png'} alt="" className={styles['card-img']} />
+        <img 
+          src={station.logo ? station.logo : '/sound-wave.png'} 
+          alt="" 
+          className={styles['card-img']} 
+          onError={(e) => {
+            e.currentTarget.onerror = null; // Prevent infinite loop
+            e.currentTarget.src = '/sound-wave.png';
+          }}
+        />
         {!disabled && onPlay && (
           <FontAwesomeIcon icon={faPlay} className={styles.btnPlay} onClick={() => onPlay(station)} />
         )}
