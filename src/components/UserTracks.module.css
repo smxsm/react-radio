@@ -52,6 +52,11 @@
 .userTracksCardTitle {
   font-weight: 600;
 }
+.userTracksCard:hover .streamLinks,
+.userTracksCard:hover .actions {
+  opacity: 1;
+  transition: all 0s;
+}
 
 .userTracksCardDate {
   font-size: 1rem;
@@ -64,6 +69,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  opacity: 0;
   transition: all 0.2s ease-in;
 }
 .streamLink {
