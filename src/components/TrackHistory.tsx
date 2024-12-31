@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 
 import { NowPlayingContext } from '../context/NowPlayingContext';
@@ -53,7 +53,7 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
               onClick={() => removeSongFromHistory(entry.id)}
             />
             <FontAwesomeIcon
-              icon={faPlus}
+              icon={faHeart}
               className={styles.actionIcon}
               title={`Add ${entry.title} to your tracks`}
               onClick={() => addSongToTracks(entry.track_id)}

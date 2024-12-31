@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStepBackward, faPlay, faStepForward, faStop, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faStepBackward, faPlay, faStepForward, faStop, faHeart as faHeartSolid } from '@fortawesome/free-solid-svg-icons';
+//import { faHeart } from '@fortawesome/free-regular-svg-icons';
 
 import { PlayerContext } from '../context/PlayerContext';
 import { NowPlayingContext } from '../context/NowPlayingContext';
@@ -95,7 +96,7 @@ export default function Player(props: any) {
         )}
         {matchedTrack?.id && (
           <FontAwesomeIcon
-            icon={faPlus}
+            icon={faHeartSolid}
             className={styles.actionIcon}
             title={`Add ${matchedTrack?.title} to your tracks`}
             onClick={async () => {

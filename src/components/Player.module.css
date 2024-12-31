@@ -21,6 +21,15 @@
   justify-self: center;
 }
 .actionIcon {
+  display: block;
+  font-weight: 700;
+  font-size: 2.1rem;
+  color: var(--color);
+  margin-bottom: 2px;
+}
+
+.actionIcon:hover {
+  color: white;
   cursor: pointer;
 }
 .button-container {
