@@ -84,7 +84,7 @@ type StatementsType = {
     byNameAsc: Statement<[string], DbStation[]>;
   };
   getStationById: Statement<[string, string], DbStation>;
-  upsertStation: Statement<[{ id: string; user_id: string; name: string; logo: string | null; listen_url: string; }], RunResult>;
+  upsertStation: Statement<[{ station_id: string; user_id: string; name: string; logo: string | null; listen_url: string; }], RunResult>;
   deleteStation: Statement<[string, string], RunResult>;
 
   // Track management
@@ -182,7 +182,8 @@ class DatabaseManager {
       );
 
       CREATE TABLE IF NOT EXISTS user_stations (
-        id TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        station_id TEXT,
         user_id TEXT NOT NULL,
         name TEXT NOT NULL,
         logo TEXT,
@@ -291,9 +292,10 @@ class DatabaseManager {
       },
       getStationById: this.db.prepare('SELECT * FROM user_stations WHERE id = ? AND user_id = ?'),
       upsertStation: this.db.prepare(`
-        INSERT INTO user_stations (id, user_id, name, logo, listen_url)
-        VALUES (@id, @user_id, @name, @logo, @listen_url)
+        INSERT INTO user_stations (station_id, user_id, name, logo, listen_url)
+        VALUES (@station_id, @user_id, @name, @logo, @listen_url)
         ON CONFLICT(id) DO UPDATE SET
+          station_id=@station_id,
           name=@name,
           logo=@logo,
           listen_url=@listen_url

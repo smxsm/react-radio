@@ -323,6 +323,7 @@ async function startServer () {
 
     try {
       const userId = (req as any).user.id;
+      console.log('Station search', userId, req.params.id);
       const station = statements.getStationById.get(req.params.id, userId);
       clearTimeout(timeout);
 
@@ -348,8 +349,10 @@ async function startServer () {
     try {
       const { id, name, logo, listen_url } = req.body;
       const userId = (req as any).user.id;
-      statements.upsertStation.run({ id, user_id: userId, name, logo, listen_url });
+      console.log('Station upsert', userId, id);
+      statements.upsertStation.run({ station_id: id, user_id: userId, name, logo, listen_url });
       const station = statements.getStationById.get(id, userId);
+      console.log('station', station);
       clearTimeout(timeout);
       res.json(station);
     } catch (error: any) {
