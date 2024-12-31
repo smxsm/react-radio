@@ -68,13 +68,14 @@ async function migrateStations() {
     if (stationCount.count !== backupCount.count) {
       throw new Error(`Migration verification failed: ${stationCount.count} stations in new table vs ${backupCount.count} in backup`);
     }
+    console.log('Now dropping table user_stations_backup');
+    db.prepare('DROP TABLE IF EXISTS user_stations_backup').run(); 
 
     // Commit transaction
     db.prepare('COMMIT').run();
     
     console.log('Migration completed successfully!');
     console.log(`Migrated ${stationCount.count} stations to user ${firstUser.id}`);
-    console.log('You can now drop the backup table with: DROP TABLE user_stations_backup');
 
   } catch (error) {
     // Rollback on error

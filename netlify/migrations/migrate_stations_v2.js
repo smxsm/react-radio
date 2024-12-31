@@ -21,6 +21,7 @@ async function migrateStationsV2() {
 
     // Create backup table
     console.log('Creating backup table...');
+    db.prepare('DROP TABLE IF EXISTS user_stations_backup').run(); 
     db.prepare('CREATE TABLE user_stations_backup AS SELECT * FROM user_stations').run();
 
     // Add station_id column
@@ -71,13 +72,14 @@ async function migrateStationsV2() {
     db.prepare('CREATE INDEX IF NOT EXISTS idx_user_stations_user_id ON user_stations(user_id)').run();
     db.prepare('CREATE INDEX IF NOT EXISTS idx_user_stations_created_at ON user_stations(created_at DESC)').run();
     db.prepare('CREATE INDEX IF NOT EXISTS idx_user_stations_station_id ON user_stations(station_id)').run();
+    console.log('Now dropping table user_stations_backup');
+    db.prepare('DROP TABLE IF EXISTS user_stations_backup').run(); 
 
     // Commit transaction
     db.prepare('COMMIT').run();
     
     console.log('Migration completed successfully!');
     console.log(`Migrated ${newCount.count} stations`);
-    console.log('You can now drop the backup table with: DROP TABLE user_stations_backup');
 
   } catch (error) {
     // Rollback on error
