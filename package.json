@@ -17,13 +17,13 @@
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "hls.js": "^1.3.4",
-    "i18next": "^24.2.0",
+    "i18next": "^23.7.16",
     "process": "^0.11.10",
     "react": "^18.2.0",
     "react-country-flag": "^3.1.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.43.7",
-    "react-i18next": "^15.2.0",
+    "react-i18next": "^14.0.0",
     "react-router-dom": "^6.8.2",
     "react-scripts": "5.0.1",
     "typescript": "^4.9.5",
@@ -42,6 +42,10 @@
       "react-app/jest"
     ]
   },
+    "overrides": {
+      "react": "^18.2.0",
+      "react-dom": "^18.2.0"
+    },
   "browserslist": {
     "production": [
       ">0.2%",
