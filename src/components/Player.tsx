@@ -7,7 +7,8 @@ import { PlayerContext } from '../context/PlayerContext';
 import { NowPlayingContext } from '../context/NowPlayingContext';
 
 import ScrollingText from './ui/ScrollingText';
-import SpectrumAnalyzer from './SpectrumAnalyzer';
+//import SpectrumAnalyzer from './SpectrumAnalyzer';
+import AudioVisualizer from './AudioVisualizer';
 
 import styles from './Player.module.css';
 
@@ -28,7 +29,7 @@ export default function Player(props: any) {
         className={styles.artwork}
       />
 
-      <SpectrumAnalyzer
+      <AudioVisualizer
         source={playerContext?.sourceNode}
         audioCtx={playerContext?.audioContext}
         className={styles.visualizer}
