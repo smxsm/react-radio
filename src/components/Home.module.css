@@ -63,8 +63,26 @@
   width: 100%;
   height: 100%;
   max-width: 5rem;
+  color: #00B4D8;
+  padding: 10px;
 }
-
+.mysongsIcon {
+  color: #48CAE4;
+}
+.musicIcon {
+  color: #90E0EF;
+}
+.newsIcon {
+  color: #ADE8F4;
+}.sportsIcon {
+  color: #0077B6;
+}.countryIcon {
+  color: #023E8A;
+}
+.homeIcon:hover {
+  border: 1px solid rgb(48, 110, 232);
+    box-shadow: 0px 0px 2rem rgba(23, 92, 230, 0.7);
+}
 .categoryName {
   text-align: center;
 }

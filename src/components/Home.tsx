@@ -77,27 +77,27 @@ export default function Home() {
       <section className={styles.categoriesSection}>
         {user && (
           <><Link to="/stations/custom" className={styles.category}>
-            <FontAwesomeIcon icon={faFolder} className={styles.categoryIcon} />
+            <div className={styles.homeIcon}><FontAwesomeIcon icon={faFolder} className={styles.categoryIcon} /></div>
             <p className={styles.categoryName}>{translate('home.mystations')}</p>
           </Link><Link to="/user/tracks" className={styles.category}>
-              <FontAwesomeIcon icon={faCompactDisc} className={styles.categoryIcon} />
+              <div className={styles.homeIcon}><FontAwesomeIcon icon={faCompactDisc} className={`${styles.categoryIcon} ${styles.mysongsIcon}`} spin /></div>
               <p className={styles.categoryName}>{translate('home.mytracks')}</p>
             </Link></>
         )}
         <Link to="/stations/music/genres" className={styles.category}>
-          <FontAwesomeIcon icon={faMusic} className={styles.categoryIcon} />
+          <div className={styles.homeIcon}><FontAwesomeIcon icon={faMusic} className={`${styles.categoryIcon} ${styles.musicIcon}`} /></div>
           <p className={styles.categoryName}>{translate('home.music')}</p>
         </Link>
         <Link to="/stations/genres/news" className={styles.category}>
-          <FontAwesomeIcon icon={faNewspaper} className={styles.categoryIcon} />
+          <div className={styles.homeIcon}><FontAwesomeIcon icon={faNewspaper} className={`${styles.categoryIcon} ${styles.newsIcon}`} /></div>
           <p className={styles.categoryName}>{translate('home.news')}</p>
         </Link>
         <Link to="/stations/genres/sports" className={styles.category}>
-          <FontAwesomeIcon icon={faTableTennis} className={styles.categoryIcon} />
+          <div className={styles.homeIcon}><FontAwesomeIcon icon={faTableTennis} className={`${styles.categoryIcon} ${styles.sportsIcon}`} /></div>
           <p className={styles.categoryName}>{translate('home.sports')}</p>
         </Link>
         <Link to="/stations/countries" className={styles.category}>
-          <FontAwesomeIcon icon={faGlobeAmericas} className={styles.categoryIcon} />
+          <div className={styles.homeIcon}><FontAwesomeIcon icon={faGlobeAmericas} className={`${styles.categoryIcon} ${styles.countryIcon}`} /></div>
           <p className={styles.categoryName}>{translate('home.countries')}</p>
         </Link>
       </section>
