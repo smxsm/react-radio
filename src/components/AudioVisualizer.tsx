@@ -84,21 +84,31 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
                     for (let i = 0; i < bufferLength; i++) {
                         const prevValue = previousDataRef.current![i];
                         
-                        // Base frequency response curve (higher in bass, lower in treble)
-                        const freqResponse = Math.pow(1 - (i / bufferLength), 0.5);
+                        // Dynamic frequency response (stronger in bass, with resonant peaks)
+                        const freqResponse = Math.pow(1 - (i / bufferLength), 1.5) * 
+                            (1 + Math.exp(-((i - bufferLength * 0.2) ** 2) / 100)) * // Bass resonance
+                            (1 + Math.exp(-((i - bufferLength * 0.6) ** 2) / 200)); // Mid resonance
                         
-                        // Add some natural movement
+                        // Multiple oscillators at different frequencies and phases
                         const time = Date.now() / 1000;
-                        const oscillation = Math.sin(time * 2 + i * 0.1) * 0.2;
+                        const oscillation = 
+                            Math.sin(time * 1.5 + i * 0.2) * 0.15 + // Slow wave
+                            Math.sin(time * 3.7 + i * 0.1) * 0.1 + // Medium wave
+                            Math.sin(time * 7.3 + i * 0.15) * 0.05; // Fast wave
                         
-                        // Random variations
-                        const noise = (Math.random() - 0.5) * 0.1;
+                        // Enhanced random variations
+                        const noise = (Math.random() - 0.5) * 0.25;
                         
-                        // Combine and smooth with previous value
-                        let newValue = prevValue * 0.9 + // Smoothing
-                                     (freqResponse * 0.8 + // Base response
-                                      oscillation + // Natural movement
-                                      noise) * 0.1; // Small variations
+                        // Sudden peaks simulation (bass hits)
+                        const bassHit = Math.random() < 0.03 && i < bufferLength * 0.3 ? 
+                            Math.random() * 0.5 : 0;
+                        
+                        // Combine with less smoothing for more dynamic movement
+                        let newValue = prevValue * 0.7 + // Reduced smoothing
+                                     (freqResponse * 0.6 + // Base response
+                                      oscillation + // Complex movement
+                                      noise + // Increased randomness
+                                      bassHit) * 0.3; // More influence from current frame
                         
                         // Ensure value stays in range
                         newValue = Math.max(0.1, Math.min(1, newValue));
