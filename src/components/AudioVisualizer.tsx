@@ -1,6 +1,11 @@
 import { useContext, useEffect, useRef } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
 
+// Extend AnalyserNode type to include our custom property
+interface ExtendedAnalyserNode extends AnalyserNode {
+    _lastData?: Uint8Array;
+}
+
 export default function AudioVisualizer({ source, audioCtx, className }: {
     source: AudioNode | undefined,
     audioCtx: AudioContext | undefined,
@@ -8,10 +13,9 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
 }) {
     const playerContext = useContext(PlayerContext);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const analyserRef = useRef<AnalyserNode | null>(null);
+    const analyserRef = useRef<ExtendedAnalyserNode | null>(null);
     const animationFrameRef = useRef<number>();
-    const fallbackContextRef = useRef<AudioContext | null>(null);
-    const previousDataRef = useRef<Float32Array | null>(null);
+    const workletNodeRef = useRef<AudioWorkletNode | null>(null);
     
     // Check if the browser is Safari WebKit and return a boolean
     const isSafariWebkit = Boolean(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
@@ -31,40 +35,22 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
         resize();
         window.addEventListener('resize', resize);
 
-        // Try to get audio data from either the main source or create a fallback
-        let analyser: AnalyserNode | null = null;
-        if (audioCtx && source && audioCtx.state === 'running' && source.context === audioCtx && !isSafariWebkit) {
-            // Main audio context path
-            analyser = audioCtx.createAnalyser();
-            source.connect(analyser);
-            console.log('Using main AudioContext');
-        } else if (playerContext?.status === 'playing') {
-            // Create a new audio context for visualization only
-            try {
-                fallbackContextRef.current = new AudioContext();
-                analyser = fallbackContextRef.current.createAnalyser();
-                console.log('Using fallback visualization');
-            } catch (error) {
-                console.error('Failed to create fallback visualization:', error);
-            }
-        }
-
-        if (analyser) {
-            analyser.fftSize = 256;
-            analyser.smoothingTimeConstant = 0.8;
+        // Initialize analyzer function
+        const initializeAnalyzer = (analyser: AnalyserNode) => {
+            // Configure analyzer for better sensitivity
+            analyser.fftSize = 2048; // Larger FFT size for more detail
+            analyser.minDecibels = -90; // Lower minimum to catch quieter sounds
+            analyser.maxDecibels = -10; // Upper limit
+            analyser.smoothingTimeConstant = 0.4; // Faster response
             analyserRef.current = analyser;
 
             // Prepare data array
             const bufferLength = analyser.frequencyBinCount;
+            console.log('bufferLength', bufferLength);
             const dataArray = new Uint8Array(bufferLength);
             
-            // Initialize previous data if needed
-            if (!previousDataRef.current) {
-                previousDataRef.current = new Float32Array(bufferLength);
-            }
-            
             // Animation function
-            const draw = () => {
+            function draw() {
                 if (!analyserRef.current || !ctx) return;
 
                 animationFrameRef.current = requestAnimationFrame(draw);
@@ -77,41 +63,46 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
                 const barSpacing = 2;
                 let x = 0;
 
-                if (!isSafariWebkit) {
-                    analyserRef.current.getByteFrequencyData(dataArray);
+                // Get visualization data
+                if (isSafariWebkit && analyserRef.current?._lastData) {
+                    // Use worklet data directly for Safari
+                    dataArray.set(analyserRef.current._lastData);
                 } else {
-                    // For Safari, create realistic-looking frequency data
-                    for (let i = 0; i < bufferLength; i++) {
-                        const prevValue = previousDataRef.current![i];
-                        
-                        // Base frequency response curve (higher in bass, lower in treble)
-                        const freqResponse = Math.pow(1 - (i / bufferLength), 0.5);
-                        
-                        // Add some natural movement
-                        const time = Date.now() / 1000;
-                        const oscillation = Math.sin(time * 2 + i * 0.1) * 0.2;
-                        
-                        // Random variations
-                        const noise = (Math.random() - 0.5) * 0.1;
-                        
-                        // Combine and smooth with previous value
-                        let newValue = prevValue * 0.9 + // Smoothing
-                                     (freqResponse * 0.8 + // Base response
-                                      oscillation + // Natural movement
-                                      noise) * 0.1; // Small variations
-                        
-                        // Ensure value stays in range
-                        newValue = Math.max(0.1, Math.min(1, newValue));
-                        previousDataRef.current![i] = newValue;
-                        
-                        // Convert to byte range (0-255)
-                        dataArray[i] = Math.floor(newValue * 255);
+                    // Use analyzer for other browsers
+                    analyserRef.current?.getByteTimeDomainData(dataArray);
+                }
+                
+                // Debug: log some values periodically
+                if (Date.now() % 1000 < 16) { // Log roughly every second
+                    // Calculate RMS value to detect audio activity
+                    let rms = 0;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        // Convert to -1 to 1 range
+                        const amplitude = (dataArray[i] - 128) / 128;
+                        rms += amplitude * amplitude;
+                    }
+                    rms = Math.sqrt(rms / dataArray.length);
+                    
+                    if (rms < 0.01) { // Very low activity threshold
+                        console.log('Low audio activity detected:', {
+                            rms: rms,
+                            sourceType: source?.constructor.name,
+                            contextState: audioCtx?.state,
+                            playerStatus: playerContext?.status,
+                            sourceNode: source instanceof MediaElementAudioSourceNode ? {
+                                mediaElement: (source as MediaElementAudioSourceNode).mediaElement.currentTime,
+                                paused: (source as MediaElementAudioSourceNode).mediaElement.paused,
+                                readyState: (source as MediaElementAudioSourceNode).mediaElement.readyState
+                            } : 'unknown'
+                        });
                     }
                 }
 
-                // Draw frequency bars
+                // Draw waveform bars
                 for (let i = 0; i < bufferLength; i++) {
-                    const barHeight = (dataArray[i] / 255) * canvas.height;
+                    // Convert byte data to amplitude
+                    const amplitude = Math.abs((dataArray[i] - 128) / 128);
+                    const barHeight = amplitude * canvas.height;
 
                     // Create gradient with more vibrant colors
                     const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
@@ -128,17 +119,154 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
             };
 
             draw();
+        };
+
+        // Try to set up the analyzer with the provided source
+        const setupAnalyzer = async (): Promise<AnalyserNode | null> => {
+            if (!audioCtx || !source) {
+                console.log('Cannot set up analyzer, missing context or source:', {
+                    hasContext: !!audioCtx,
+                    hasSource: !!source,
+                    sourceType: source?.constructor.name,
+                    isSafari: isSafariWebkit,
+                    playerStatus: playerContext?.status
+                });
+                return null;
+            }
+
+            // Ensure context is running
+            if (audioCtx.state === 'suspended') {
+                console.log('Resuming AudioContext for analyzer');
+                try {
+                    await audioCtx.resume();
+                    console.log('AudioContext resumed:', audioCtx.state);
+                } catch (error) {
+                    console.error('Failed to resume AudioContext:', error);
+                    return null;
+                }
+            }
+
+            // Create and configure nodes
+            const analyser = audioCtx.createAnalyser() as ExtendedAnalyserNode;
+            analyser.fftSize = 2048;
+            analyser.minDecibels = -90;
+            analyser.maxDecibels = -10;
+            analyser.smoothingTimeConstant = 0.4;
+
+            // Create a gain node for proper signal routing
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.value = 1.0;
+
+            // Connect source to gain node first
+            source.connect(gainNode);
+
+            if (isSafariWebkit) {
+                console.log('Using AudioWorklet for Safari');
+                try {
+                    // Load and register the worklet
+                    await audioCtx.audioWorklet.addModule('/audioWorklet.js');
+                    const workletNode = new AudioWorkletNode(audioCtx, 'safari-audio-processor');
+                    workletNodeRef.current = workletNode;
+
+                    // Handle audio data from worklet
+                    workletNode.port.onmessage = (event) => {
+                        if (event.data.samples && analyserRef.current) {
+                            // Data is already in byte format (0-255)
+                            const dataArray = event.data.samples;
+                            
+                            // Debug: log data characteristics periodically
+                            if (Date.now() % 1000 < 16) {
+                                const avg = dataArray.reduce((a: number, b: number) => a + b, 0) / dataArray.length;
+                                const min = Math.min(...dataArray);
+                                const max = Math.max(...dataArray);
+                                console.log('Worklet data received:', {
+                                    size: dataArray.length,
+                                    average: avg,
+                                    min,
+                                    max,
+                                    hasActivity: Math.abs(avg - 128) > 1 || (max - min) > 2
+                                });
+                            }
+
+                            // Create a new array of the correct size and copy data safely
+                            const fullArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+                            fullArray.fill(128); // Fill with center value
+                            // Only copy what fits, using Math.min to prevent out of bounds
+                            const copyLength = Math.min(dataArray.length, analyserRef.current.frequencyBinCount);
+                            fullArray.set(new Uint8Array(dataArray.buffer, 0, copyLength));
+                            analyserRef.current._lastData = fullArray;
+                        }
+                    };
+
+                    // Connect gain node to both worklet and destination
+                    gainNode.connect(workletNode);
+                    gainNode.connect(analyser);
+                    gainNode.connect(audioCtx.destination);
+                    
+                    console.log('Audio routing setup:', {
+                        sourceConnected: true,
+                        workletConnected: true,
+                        contextState: audioCtx.state
+                    });
+                    
+                    console.log('AudioWorklet initialized and connected');
+                } catch (error) {
+                    console.error('Failed to initialize AudioWorklet:', error);
+                    // Fallback: direct connection to destination
+                    source.connect(audioCtx.destination);
+                    console.log('Fallback audio routing setup');
+                }
+            } else {
+                // Non-Safari browsers: connect gain node to analyzer and destination
+                gainNode.connect(analyser);
+                gainNode.connect(audioCtx.destination);
+            }
+
+            // Log connection attempt
+            console.log('Analyzer connected to source:', {
+                sourceType: source.constructor.name,
+                contextState: audioCtx.state,
+                analyzerState: {
+                    fftSize: analyser.fftSize,
+                    frequencyBinCount: analyser.frequencyBinCount,
+                    minDecibels: analyser.minDecibels,
+                    maxDecibels: analyser.maxDecibels
+                }
+            });
+
+            return analyser;
+        };
+
+        // Set up analyzer when we have a valid source
+        if (playerContext?.status === 'playing') {
+            setupAnalyzer().then(analyser => {
+                if (analyser) {
+                    initializeAnalyzer(analyser);
+                }
+            });
         }
 
         return () => {
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
             }
-            if (analyserRef.current && source && !isSafariWebkit) {
-                source.disconnect(analyserRef.current);
+            // Cleanup in reverse order of connection
+            if (workletNodeRef.current) {
+                try {
+                    workletNodeRef.current.port.onmessage = null;
+                    workletNodeRef.current.disconnect();
+                } catch (error) {
+                    console.log('Error disconnecting worklet:', error);
+                }
+                workletNodeRef.current = null;
             }
-            if (fallbackContextRef.current) {
-                fallbackContextRef.current.close();
+            if (analyserRef.current) {
+                try {
+                    analyserRef.current.disconnect();
+                } catch (error) {
+                    console.log('Error disconnecting analyzer:', error);
+                }
+                analyserRef.current = null;
             }
             window.removeEventListener('resize', resize);
         };

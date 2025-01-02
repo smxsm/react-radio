@@ -12,6 +12,9 @@ export type PlayerContextType = {
   previous: () => void;
   next: () => void;
   stop: () => void;
+  // Add audio elements for visualization
+  audioElement?: HTMLAudioElement;
+  audioElement2?: HTMLAudioElement;
 };
 
 type PlayerStatus = 'error' | 'loading' | 'playing' | 'stopped';
@@ -26,6 +29,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   const hlsRef = useRef(new Hls());
   const audioContextRef = useRef(new AudioContext());
   const audioSourceNodeRef = useRef<MediaElementAudioSourceNode>();
+  const audioSourceNode2Ref = useRef<MediaElementAudioSourceNode>();
 
   const [queue, setQueue] = useState<RadioStation[]>([]);
   const [queueCurrentIndex, setQueueCurrentIndex] = useState(0);
@@ -37,6 +41,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   // Initialize
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   useEffect(() => {
+    // Set up event listeners for both audio elements
     audioElementRef.current.addEventListener('playing', () => setStatus('playing'));
     audioElement2Ref.current.addEventListener('playing', () => setStatus('playing'));
     audioElement2Ref.current.addEventListener('error', (e: Event) => {
@@ -45,10 +50,38 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
       }
     });
 
+    // Set up cross-origin for both elements
     audioElementRef.current.crossOrigin = 'anonymous';
+    audioElement2Ref.current.crossOrigin = 'anonymous';
+
+    // Set up audio context and source nodes for both audio elements
+    if (audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+
+    // Set up source node for main audio element
     audioSourceNodeRef.current = audioContextRef.current.createMediaElementSource(audioElementRef.current);
     audioSourceNodeRef.current.connect(audioContextRef.current.destination);
     setSourceNode(audioSourceNodeRef.current);
+
+    // Set up source node for second audio element (needed for Safari)
+    audioSourceNode2Ref.current = audioContextRef.current.createMediaElementSource(audioElement2Ref.current);
+    audioSourceNode2Ref.current.connect(audioContextRef.current.destination);
+
+    return () => {
+      // Cleanup event listeners
+      audioElementRef.current.removeEventListener('playing', () => setStatus('playing'));
+      audioElement2Ref.current.removeEventListener('playing', () => setStatus('playing'));
+      audioElement2Ref.current.removeEventListener('error', () => {});
+
+      // Cleanup audio nodes
+      if (audioSourceNodeRef.current) {
+        audioSourceNodeRef.current.disconnect();
+      }
+      if (audioSourceNode2Ref.current) {
+        audioSourceNode2Ref.current.disconnect();
+      }
+    };
   }, []);
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,19 +99,39 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
   // Tries to play the first audio element. Falls back to using the second one (outside AudioContext) on CORS error
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const startPlayback = useCallback(
-    (station: RadioStation) => {
-      audioElementRef.current.play().catch((err) => {
-        if (err.name === 'NotSupportedError') {
+    async (station: RadioStation) => {
+      // Always ensure context is running before any playback
+      if (audioContextRef.current.state === 'suspended') {
+        console.log('Resuming AudioContext before playback');
+        await audioContextRef.current.resume();
+      }
+
+      try {
+        await audioElementRef.current.play();
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'NotSupportedError') {
+          console.log('Falling back to audioElement2 due to NotSupportedError');
           resetAudioElements();
           audioElement2Ref.current.src = station.listenUrl;
-          audioElement2Ref.current.play();
+          
+          // Update source node for visualization when using audioElement2
+          setSourceNode(audioSourceNode2Ref.current);
+          
+          try {
+            await audioElement2Ref.current.play();
+          } catch (error) {
+            console.error('Error playing with audioElement2:', error);
+            if (station.listenUrl === audioElement2Ref.current.src) {
+              setStatus('error');
+            }
+          }
           return;
         }
         // Die silently if station has been changed
         if (station.listenUrl === audioElementRef.current.src) {
           setStatus('error');
         }
-      });
+      }
     },
     [resetAudioElements]
   );
@@ -166,6 +219,9 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
         stop,
         audioContext: audioContextRef.current,
         sourceNode,
+        // Expose audio elements for visualization
+        audioElement: audioElementRef.current,
+        audioElement2: audioElement2Ref.current
       }}
     >
       {children}
