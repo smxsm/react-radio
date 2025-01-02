@@ -73,6 +73,21 @@ export default function Home() {
           </header>
         </section>
       )}
+      {user && (
+        <section className={styles.heroSection}>
+          <figure className={`${styles.heroImg} ${styles.heroImgUser}`}>
+            <img src="/main.svg" alt="React Radio"></img>
+          </figure>
+          <header className={styles.header}>
+            <h1 className={styles.heroTitle}>{translate('home.h1.user')}</h1>
+            <p className={styles.heroText}>
+              <Trans i18nKey='home.intro.user'>
+                Choose from over 30000 radio stations and create your own library.
+              </Trans>
+            </p>
+          </header>
+        </section>
+      )}
 
       <section className={styles.categoriesSection}>
         {user && (

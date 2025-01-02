@@ -48,6 +48,10 @@ export default function CustomStation() {
 
   return (
     <section className={styles.section}>
+      <div className={styles.userTracksTitleContainer}>
+        <h3 className={styles.recommendedTitle}>{translate('user.mystations')}</h3>
+      </div>
+
       <div className={styles.optionsContaienr}>
         <CustomStationsListOptions />
         <Button className={styles.btnAdd} onClick={() => navigate('/stations/custom/add')}>

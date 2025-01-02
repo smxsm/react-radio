@@ -78,7 +78,9 @@ const resources = {
       'user.forgotpwd': 'Forgot password',
       // home
       'home.h1': 'Hear the world',
+      'home.h1.user': 'React Radio',
       'home.intro': 'Choose from over 30000 radio stations or <1>register an account</1> to create your own library.',
+      'home.intro.user': 'Choose from over 30000 radio stations and create your own library.',
       'home.login': 'Already have an account? <1>Click here to sign in.</1>',
       'home.browse': 'Browse stations',
       'home.mytracks': 'My Tracks',
@@ -186,7 +188,9 @@ const resources = {
       'user.forgotpwd': 'Password vergessen',
       // home
       'home.h1': 'Die Welt im Ohr',
+      'home.h1.user': 'React Radio',
       'home.intro': "Wähle aus über 30000 Radio-Stationen oder <1>registriere einen Account</1>, um deine eigene Bibliothek zu erstellen.",
+      'home.intro.user': "Wähle aus über 30000 Radio-Stationen und erstelle deine eigene Bibliothek!",
       'home.login': 'Du hast schon ein Konto? <1>Einfach hier einloggen.</1>',
       'home.browse': 'Stationen entdecken',
       'home.mytracks': 'Meine Songs',

@@ -14,7 +14,11 @@
   min-width: 300px;
   max-width: 600px;
 }
-
+.heroImgUser {
+  width: 30%;
+  min-width: 100px;
+  max-width: 250px;
+}
 .header {
   display: flex;
   flex-direction: column;
@@ -119,7 +123,9 @@
 
 @container (max-width: 680px) {
   .heroImg {
-    display: none;
+    width: 40%;
+    min-width: 100px;
+    max-width: 200px;
   }
   .categoriesSection {
     justify-content: space-between;
