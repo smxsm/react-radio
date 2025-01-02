@@ -27,7 +27,7 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
         // Set canvas size
         const resize = () => {
             canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight || 40; // Set a default height if offsetHeight is 0
+            canvas.height = (canvas.offsetHeight > 120 ? 120 : canvas.offsetHeight) || 40; // Set a default height if offsetHeight is 0
         };
         resize();
         window.addEventListener('resize', resize);
