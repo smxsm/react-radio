@@ -1,0 +1,8 @@
+.genreCard {
+  border: 1px solid rgb(48, 110, 232);
+  box-shadow: 0px 0px 1rem rgba(23, 92, 230, 0.7);
+  text-align: center;
+}
+.genreCard:hover {
+  box-shadow: 0px 0px 1.5rem rgba(23, 92, 230, 0.7);
+}

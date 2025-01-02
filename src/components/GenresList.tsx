@@ -1,7 +1,10 @@
 import { useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import styles from './GenresList.module.css';
 
 import { DocumentTitleContext } from '../context/DocumentTitleContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faVolumeHigh } from '@fortawesome/free-solid-svg-icons';
 
 import Card from './ui/Card';
 import CardsList from './ui/CardsList';
@@ -48,7 +51,9 @@ export default function GenresList() {
     <CardsList>
       {genres.map((genre) => (
         <Link to={genre.tag} key={genre.tag}>
-          <Card>{genre.name}</Card>
+          <Card className={styles.genreCard}>
+            <FontAwesomeIcon icon={faVolumeHigh} />
+            {genre.name}</Card>
         </Link>
       ))}
     </CardsList>
