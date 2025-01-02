@@ -107,8 +107,8 @@
 
 .artwork {
   display: block;
-  width: 180px;
-  height: 180px;
+  width: 175px;
+  height: 175px;
   border-radius: 14px;
   aspect-ratio: 1/1;
   object-fit: contain;
@@ -119,7 +119,7 @@
   width: 100%;
   max-width: 257px;
   overflow: hidden;
-  height: 50px;
+  height: 70px;
   flex-shrink: 0;
   grid-area: track-info;
   align-self: start;
