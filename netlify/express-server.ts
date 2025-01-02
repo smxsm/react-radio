@@ -11,6 +11,7 @@ import spotifySearch from './services/spotify';
 import youTubeSearch from './services/youTube';
 import PQueue from 'p-queue';
 import nodemailer from 'nodemailer';
+import net from 'net';
 
 // Custom CORS middleware
 function corsMiddleware (req: Request, res: Response, next: NextFunction) {
@@ -276,6 +277,9 @@ async function startServer () {
     res.json({ user: (req as any).user });
   });
 
+  interface Station {
+    listen_url: string;
+  }
   // Custom stations endpoints
   app.get('/stations', requireAuth, async (req: Request, res: Response) => {
     // Create a timeout promise
@@ -295,13 +299,27 @@ async function startServer () {
         statement = order === 'ASC' ? statements.getAllStations.byCreatedAtAsc : statements.getAllStations.byCreatedAt;
       }
 
-      // Race between the database operation and timeout
-      const stations = await Promise.race([
+      const result = await Promise.race([
         Promise.resolve(statement.all(userId)),
         timeoutPromise
       ]);
 
-      res.json(stations);
+      if (Array.isArray(result)) {
+        const stations: Station[] = result;
+        /*
+        stations.forEach((station: Station) => {
+          station.listen_url = `http://localhost:3001/proxy?url=${encodeURIComponent(station.listen_url)}`;
+          console.error('station url', station.listen_url);
+        });
+        */
+        res.json(stations);
+      } else {
+        // Handle the case where the timeout occurred
+        console.error('Database query timed out');
+        // You might want to throw an error or handle this case differently
+        res.json(result);
+      }
+
     } catch (error: any) {
       console.error('Get stations error:', error);
 
@@ -330,6 +348,8 @@ async function startServer () {
       if (!station) {
         return res.status(404).json({ error: 'Station not found' });
       }
+      //station.listen_url = `http://localhost:3001/proxy?url=${encodeURIComponent(station.listen_url)}`;
+
       res.json(station);
     } catch (error: any) {
       clearTimeout(timeout);
@@ -614,6 +634,7 @@ async function startServer () {
       // set the listenUrl of every history entry for the player context
       history.forEach((entry: any) => {
         entry.listenUrl = entry.listen_url;
+        //entry.listenUrl = `http://localhost:3001/proxy?url=${encodeURIComponent(entry.listen_url)}`;
       });
       clearTimeout(timeout);
       res.json(history);
@@ -688,6 +709,75 @@ async function startServer () {
         error: 'Database error',
         details: error?.message || 'Unknown database error'
       });
+    }
+  });
+
+  // Proxy endpoint
+  app.get('/proxy', async (req, res) => {
+    const streamUrl = req.query.url as string;
+
+    if (!streamUrl) {
+      return res.status(400).send('Missing stream URL');
+    }
+
+    try {
+      const parsedUrl = new URL(streamUrl);
+      const port = parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80);
+      const host = parsedUrl.hostname;
+
+      // Add CORS headers
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Or specify your domain instead of '*'
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Range');
+      res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range');
+
+      // Set content type for audio streaming
+      res.setHeader('Content-Type', 'audio/mpeg'); // Adjust if you're using a different audio format
+      res.setHeader('Accept-Ranges', 'bytes');
+
+      // Additional headers that might help with streaming
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+
+      // Create a TCP connection to the streaming server
+      let portNumber: number;
+      if (typeof port === 'string') {
+        portNumber = parseInt(port, 10);
+        if (isNaN(portNumber)) {
+          throw new Error('Invalid port number');
+        }
+      } else if (typeof port === 'number') {
+        portNumber = port;
+      } else {
+        throw new Error('Port must be a string or number');
+      }
+
+      const client = net.createConnection({ host, port: portNumber }, () => {
+
+        // Send an HTTP GET request manually
+        client.write(`GET ${parsedUrl.pathname} HTTP/1.1\r\n`);
+        client.write(`Host: ${host}\r\n`);
+        client.write('Connection: close\r\n');
+        client.write('\r\n');
+      });
+
+      // Forward data from the streaming server to the client
+      client.on('data', (data) => {
+        res.write(data);
+      });
+
+      client.on('end', () => {
+        res.end();
+      });
+
+      client.on('error', (err) => {
+        console.error('Proxy error:', err);
+        res.status(500).send('Proxy error');
+      });
+    } catch (err) {
+      console.error('Error parsing URL:', err);
+      res.status(400).send('Invalid stream URL');
     }
   });
 

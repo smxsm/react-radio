@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react';
 
-export default function SpectrumAnalyzer({ source, audioCtx, className }: any) {
+export default function SpectrumAnalyzer ({ source, audioCtx, className }: {
+  source: AudioNode | undefined,
+  audioCtx: AudioContext | undefined,
+  className?: string
+}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const analyser = useRef<AnalyserNode | undefined>();

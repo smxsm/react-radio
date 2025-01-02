@@ -15,6 +15,7 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
     
     // Check if the browser is Safari WebKit and return a boolean
     const isSafariWebkit = Boolean(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
+    //const isSafariWebkit = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) && /Apple/i.test(navigator.vendor);
     console.log('navigator.userAgent', navigator.userAgent, isSafariWebkit);
 
     useEffect(() => {
