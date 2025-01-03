@@ -69,10 +69,28 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
     (station: RadioStation) => {
       audioElementRef.current.play().catch((err) => {
         if (err.name === 'NotSupportedError') {
+          console.log('URL not supported, trying via proxy ...');
           resetAudioElements();
-          audioElement2Ref.current.src = station.listenUrl;
-          audioElement2Ref.current.play();
-          return;
+          //audioElement2Ref.current.src = station.listenUrl;
+          //audioElement2Ref.current.play();
+          try {
+            // only try to play if proxy fetch successful first
+            audioElementRef.current.src = `${process.env.REACT_APP_API_URL}/proxy?url=${encodeURIComponent(station.listenUrl)}`;
+            fetch(`${process.env.REACT_APP_API_URL}/proxy?url=${encodeURIComponent(station.listenUrl)}`)
+              .then((response) => {
+                if (response.ok) {
+                  return audioElementRef.current.play();
+                }
+                // If response is not ok, we return a resolved promise
+                return Promise.resolve();
+              })
+              .catch((error) => {
+                console.error('Error fetching audio:', error);
+              });
+            return;
+          } catch (err) {
+            resetAudioElements();
+          }
         }
         // Die silently if station has been changed
         if (station.listenUrl === audioElementRef.current.src) {
@@ -144,6 +162,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
     } catch (err) {
       if (err instanceof TypeError) {
         // Probably CORS. Try to play anyway and fallback to second audio element (outside AudioContext) on error
+        console.log('Cors error!?', err);
         audioElementRef.current.src = station.listenUrl;
         startPlayback(station);
       } else {

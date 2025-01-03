@@ -19,7 +19,7 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
     console.log('navigator.userAgent', navigator.userAgent, isSafariWebkit);
 
     useEffect(() => {
-        if (!canvasRef.current) return;
+        if (!audioCtx || !source || !canvasRef.current) return;
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d')!;
