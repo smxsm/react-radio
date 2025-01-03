@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { CacheEntry, MetadataResponse, Track } from './types/mediaTypes';
 import { randomUUID } from 'crypto';
 import * as auth from './services/auth';
-import { statements } from './services/database';
+import { statements, mapDbToFrontend, type DbUserTrack } from './services/database';
 import getIcecastMetadata from './services/streamMetadata';
 import iTunesSearch from './services/iTunes';
 import spotifySearch from './services/spotify';
@@ -424,13 +424,20 @@ async function startServer () {
         statement = order === 'ASC' ? statements.getAllUserTracks.byCreatedAtAsc : statements.getAllUserTracks.byCreatedAt;
       }
 
-      // Race between the database operation and timeout
-      const stations = await Promise.race([
+      // Get tracks with timeout
+      const result = await Promise.race([
         Promise.resolve(statement.all(userId)),
         timeoutPromise
       ]);
 
-      res.json(stations);
+      if (!Array.isArray(result)) {
+        throw new Error('Request timeout');
+      }
+
+      // Map database tracks to frontend format
+      const tracks = (result as DbUserTrack[]).map(track => mapDbToFrontend(track));
+
+      res.json(tracks);
     } catch (error: any) {
       console.error('Get stations error:', error);
 

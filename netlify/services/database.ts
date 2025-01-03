@@ -46,16 +46,54 @@ interface DbUserTrack {
   title: string;
   artwork: string | null;
   album: string | null;
-  releaseDate: Date | null;
-  heardAt: Date | null;
-  appleMusicUrl?: string;
-  spotifyUrl?: string;
-  youTubeUrl?: string;
   release_date: Date | null;
   heard_at: Date | null;
   apple_music_url?: string;
   spotify_url?: string;
   youtube_url?: string;
+}
+
+interface FrontendUserTrack {
+  id: string;
+  artist: string;
+  title: string;
+  artwork: string | null;
+  album: string | null;
+  releaseDate: Date | null;
+  heardAt: Date | null;
+  appleMusicUrl?: string;
+  spotifyUrl?: string;
+  youTubeUrl?: string;
+}
+
+function mapDbToFrontend(dbTrack: DbUserTrack): FrontendUserTrack {
+  return {
+    id: dbTrack.id,
+    artist: dbTrack.artist,
+    title: dbTrack.title,
+    artwork: dbTrack.artwork,
+    album: dbTrack.album,
+    releaseDate: dbTrack.release_date,
+    heardAt: dbTrack.heard_at,
+    appleMusicUrl: dbTrack.apple_music_url,
+    spotifyUrl: dbTrack.spotify_url,
+    youTubeUrl: dbTrack.youtube_url,
+  };
+}
+
+function mapFrontendToDb(frontendTrack: FrontendUserTrack): DbUserTrack {
+  return {
+    id: frontendTrack.id,
+    artist: frontendTrack.artist,
+    title: frontendTrack.title,
+    artwork: frontendTrack.artwork,
+    album: frontendTrack.album,
+    release_date: frontendTrack.releaseDate,
+    heard_at: frontendTrack.heardAt,
+    apple_music_url: frontendTrack.appleMusicUrl,
+    spotify_url: frontendTrack.spotifyUrl,
+    youtube_url: frontendTrack.youTubeUrl,
+  };
 }
 
 type StatementsType = {
@@ -564,8 +602,12 @@ const statements = dbManager.getStatements();
 export {
   getDb,
   statements,
+  mapDbToFrontend,
+  mapFrontendToDb,
   type DbUser,
   type DbSession,
   type DbStation,
+  type DbUserTrack,
+  type FrontendUserTrack,
   type StatementsType
 };
