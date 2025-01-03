@@ -133,6 +133,8 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
       }
       station = stations[index];
     }
+    console.log('Playing station:', station);
+    // Check if station is valid before proceeding
     if (!station) return;
 
     resetAudioElements();
@@ -166,6 +168,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
         audioElementRef.current.src = station.listenUrl;
         startPlayback(station);
       } else {
+        console.log('Unexpected error!', err);
         console.log((err as Error).message);
         setStatus('error');
       }
