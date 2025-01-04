@@ -118,7 +118,7 @@ async function startServer () {
       html: html
     });
 
-    logger.logger.writeInfo("Message sent: %s", info.messageId);
+    logger.writeInfo("Message sent: %s", info.messageId);
 
     return true;
   }
@@ -352,7 +352,7 @@ async function startServer () {
 
     try {
       const userId = (req as any).user.id;
-      logger.writeDebug('Station search', userId, req.params.id);
+      logger.writeDebug('Station search', {userId, id: req.params.id});
       const station = statements.getStationById.get(req.params.id, userId);
       clearTimeout(timeout);
 
@@ -384,7 +384,7 @@ async function startServer () {
       if (!stationId) {
         stationId = generateUniqueId();
       }
-      logger.writeInfo('Station upsert', userId, stationId);
+      logger.writeInfo('Station upsert', {userId, stationId});
       statements.upsertStation.run({ station_id: stationId, user_id: userId, name, logo, listen_url });
       clearTimeout(timeout);
       res.status(200).json({ success: true });
@@ -1024,4 +1024,4 @@ async function startServer () {
 }
 
 // Run the server
-startServer().catch(logger.writeError);
+startServer().catch(error => logger.writeError(error.message || 'Failed to start server'));

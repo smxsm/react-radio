@@ -61,22 +61,22 @@ function writeLogEntry (
     fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n');
 }
 
-function writeFatal (message: string, ...context: any): void {
+function writeFatal (message: string, context: any = undefined): void {
     writeLogEntry(message, LogLevels.FATAL, '', 'logs/radio-server-error.log', context);
 }
-function writeError (message: string, context: any): void {
+function writeError (message: string, context: any = undefined): void {
     writeLogEntry(message, LogLevels.ERROR, '', 'logs/radio-server-error.log', context);
 }
-function writeInfo (message: string, ...context: any): void {
+function writeInfo (message: string, context: any = undefined): void {
     writeLogEntry(message, LogLevels.INFO, '', 'logs/radio-server-info.log', context);
 }
-function writeDebug (message: string, ...context: any): void {
+function writeDebug (message: string, context: any  = undefined): void {
     writeLogEntry(message, LogLevels.DEBUG, '', 'logs/radio-server-info.log', context);
 }
-function writeTrace (message: string, ...context: any): void {
+function writeTrace (message: string, context: any = undefined): void {
     writeLogEntry(message, LogLevels.TRACE, '', 'logs/radio-server-info.log', context);
 }
-function writeWarn (message: string, ...context: any): void {
+function writeWarn (message: string, context: any = undefined): void {
     writeLogEntry(message, LogLevels.WARN, '', 'logs/radio-server-info.log', context);
 }
 
