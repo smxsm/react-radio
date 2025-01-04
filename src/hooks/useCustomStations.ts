@@ -26,12 +26,13 @@ export default function useCustomStations() {
           );
         }
 
-        const stations = data.map<api.RadioStation>(({ id, name, logo, listen_url }) => ({
+        const stations = data.map<api.RadioStation>(({ id, name, logo, listen_url, station_id }) => ({
           id,
           name,
           logo: logo || '',
           listenUrl: listen_url,
           isOwner: true,
+          stationId: station_id,
         }));
 
         setStations(stations);

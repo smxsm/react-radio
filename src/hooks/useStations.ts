@@ -68,7 +68,6 @@ export function useStations(
     if (distance !== -1 && "geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log('Geolocation', position);
           setLocation({
             lat: position.coords.latitude.toString(),
             long: position.coords.longitude.toString(),
@@ -80,7 +79,6 @@ export function useStations(
       );
     }
 
-    console.log('distance: ' + distance, geoLocation);
     stationsUrl.searchParams.append('order', routeToApiSort[sort] || 'name');
     stationsUrl.searchParams.append('reverse', order === 'desc' ? 'true' : 'false');
     stationsUrl.searchParams.append('limit', +limit > 0 && +limit < 301 ? limit.toString() : '60');

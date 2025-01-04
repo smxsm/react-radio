@@ -40,7 +40,6 @@ export default function SignUp() {
   }, [setDocumentTitle]);
 
   const submitHandler = async ({ email, firstName, lastName, password }: FieldValues) => {
-    console.log(email);
     setError(await signup(email, firstName, lastName, password));
   };
 

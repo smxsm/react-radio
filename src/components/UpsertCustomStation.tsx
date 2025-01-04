@@ -23,6 +23,7 @@ export default function UpsertCustomStation() {
     name: z.string().min(1, translate('errors.station.namerequired')).max(30, translate('errors.station.namemaxlen')),
     logo: z.string().url(translate('errors.station.invalidurl')),
     listenUrl: z.string().url(translate('errors.station.invalidurl')),
+    stationId: z.string(),
   });
 
   const { register, handleSubmit, formState, setValue } = useForm({
@@ -39,10 +40,11 @@ export default function UpsertCustomStation() {
   useEffect(() => {
     if (!stations.length) return;
 
-    const { name, logo, listenUrl } = stations[0];
+    const { name, logo, listenUrl, stationId } = stations[0];
     setValue('name', name);
     setValue('logo', logo);
     setValue('listenUrl', listenUrl);
+    setValue('stationId', stationId);
   }, [stations, setValue]);
 
   const submitHandler = (values: FieldValues) => {
@@ -62,6 +64,13 @@ export default function UpsertCustomStation() {
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit(submitHandler)}>
+        <Input
+          type="hidden"
+          id="stationId"
+          {...register('stationId')}
+          error={!!formState.errors.stationId}
+          disabled={loading}
+        />
         <Label htmlFor="name" disabled={loading}>
           {translate('stations.name')}
         </Label>

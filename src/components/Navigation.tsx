@@ -39,7 +39,6 @@ export default function Navigation({ showNowPlaying = false, switchPlayer }: Nav
     if ((e.target as HTMLElement).tagName === 'IMG') {
       return;
     }
-    console.log('target', e);
     if ((e.target as HTMLElement).classList.contains('hasSubMenu')) {
       return;
     }

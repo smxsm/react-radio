@@ -30,18 +30,8 @@ export default function UserTracks() {
 
   // Initial fetch and route change handler
   useEffect(() => {
-    console.log('UserTracks: Component mounted or route params changed');
     getUserTracks('', sort, order !== 'desc');
   }, [user, getUserTracks, sort, order]);
-
-  // Log state changes for debugging
-  useEffect(() => {
-    console.log('UserTracks: Tracks state updated:', {
-      count: tracks?.length,
-      loading: userTracksLoading,
-      error: error?.message
-    });
-  }, [tracks, userTracksLoading, error]);
 
   const deleteHandler = (id: string, title: string) =>
     window.confirm(`${translate('info.track.delete')} ${title}?`) &&

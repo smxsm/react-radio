@@ -87,7 +87,6 @@ export function isAuthenticated (req: Request): boolean {
   const token = parts[1];
 
   const isValidToken = token === process.env.CLIENT_SECRET_TOKEN || false;
-  console.log('Token valid? ' + isValidToken);
 
   return isValidToken;
 }

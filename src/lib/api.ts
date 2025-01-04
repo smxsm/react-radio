@@ -130,6 +130,7 @@ export interface RadioStation {
   id: string;
   name: string;
   logo: string;
+  stationId: string;
   listenUrl: string;
   isOwner?: boolean;
 }
@@ -147,7 +148,7 @@ export async function getProfile(sessionId: string) {
 // Custom stations endpoints
 export async function getCustomStations (sessionId: string, orderBy = 'created_at', order = 'DESC', retries = 2) {
   const attempt = async () => {
-    return fetchWithTimeout<{ id: string; name: string; logo: string | null; listen_url: string }[]>(
+    return fetchWithTimeout<{ id: string; name: string; logo: string | null; listen_url: string; is_owner?: boolean; station_id: string; }[]>(
       `${API_BASE_URL}/stations?orderBy=${orderBy}&order=${order}`,
       {
         headers: {
@@ -181,10 +182,10 @@ export async function getCustomStationById(sessionId: string, id: string) {
     },
   });
 
-  return handleResponse<{ id: string; name: string; logo: string | null; listen_url: string }>(response);
+  return handleResponse<{ id: string; name: string; logo: string | null; listen_url: string; station_id: string; }>(response);
 }
 
-export async function addCustomStation(sessionId: string, station: { id: string; name: string; logo: string; listenUrl: string }) {
+export async function addCustomStation(sessionId: string, station: { id: string; name: string; logo: string; listenUrl: string; stationId: string; }) {
   const response = await fetch(`${API_BASE_URL}/stations`, {
     method: 'POST',
     headers: {
@@ -194,6 +195,7 @@ export async function addCustomStation(sessionId: string, station: { id: string;
     },
     body: JSON.stringify({
       id: station.id,
+      station_id: station.stationId,
       name: station.name,
       logo: station.logo,
       listen_url: station.listenUrl,
@@ -214,6 +216,59 @@ export async function deleteCustomStation (sessionId: string, id: string) {
   return handleResponse<{ success: boolean }>(response);
 }
 
+export enum LogLevels {
+  TRACE = 1,
+  DEBUG = 2,
+  INFO = 3,
+  WARN = 4,
+  ERROR = 5,
+  FATAL = 6,
+}
+
+export function logToServer (message: string, level: number = 3, fileName: string = '', context: any = undefined) {
+  let processedContext = context;
+  if (context !== null && context !== undefined) {
+    if (Array.isArray(context)) {
+      processedContext = context.map(item => {
+        if (item instanceof Error) {
+          return {
+            name: item.name,
+            message: item.message,
+            stack: item.stack
+          };
+        }
+        return item;
+      });
+    } else if (context instanceof Error) {
+      processedContext = {
+        name: context.name,
+        message: context.message,
+        stack: context.stack
+      };
+    }
+  }
+
+  fetch(`${API_BASE_URL}/log`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
+    },
+    body: JSON.stringify({
+      level, message, fileName, context: processedContext,
+    }),
+  }).then(response => {
+    // Optional: Handle the response if needed
+    if (!response.ok) {
+      console.error('Failed to send log to server:', response.statusText);
+    }
+  }).catch(error => {
+    // Optional: Handle any errors
+    console.error('Error sending log to server:', error);
+  });
+
+  // The function returns immediately, not waiting for the fetch to complete
+}
 export interface TrackInfo {
   id: string;
   track_id: string;
@@ -383,7 +438,7 @@ export async function addStationToHistory(sessionId: string, station: RadioStati
       'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
     },
     body: JSON.stringify({
-      station_id: station.id,
+      station_id: station.stationId,
       name: station.name,
       logo: station.logo,
       listen_url: station.listenUrl,

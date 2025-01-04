@@ -101,13 +101,7 @@ export default function Player(props: any) {
             className={styles.actionIcon}
             title={`Add ${matchedTrack?.title} to your tracks`}
             onClick={async () => {
-              try {
-                await addSongToTracks(matchedTrack.id);
-                // Could add a toast notification here if you have a notification system
-                console.log('Player: Track added successfully');
-              } catch (error) {
-                console.error('Player: Failed to add track:', error);
-              }
+              await addSongToTracks(matchedTrack.id);
             }}
           />
         )}

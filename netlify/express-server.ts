@@ -12,7 +12,18 @@ import youTubeSearch from './services/youTube';
 import PQueue from 'p-queue';
 import nodemailer from 'nodemailer';
 import net from 'net';
+import logger from './services/logger';
 
+const clientLogLevel: number = parseInt(process.env.LOGLEVEL_CLIENT || String(logger.LogLevels.INFO));
+
+let counter = 0;
+function generateUniqueId (): string {
+  const timestamp = Date.now().toString(36);
+  const randomPart = Math.random().toString(36).slice(2, 7);
+  const counterPart = (counter++).toString(36).padStart(4, '0');
+
+  return `id-${timestamp}-${randomPart}-${counterPart}`;
+}
 // Custom CORS middleware
 function corsMiddleware (req: Request, res: Response, next: NextFunction) {
   const origin = req.headers.origin ?? '';
@@ -43,12 +54,12 @@ function corsMiddleware (req: Request, res: Response, next: NextFunction) {
   const backendUrl = process.env.BACKEND_URL ?? '';
   // restrict access to localhost and frontendUrl only
   if (origin !== 'localhost' && origin !== '127.0.0.1' && frontendUrl.indexOf(origin) === -1 && backendUrl.indexOf(origin) === -1) {
-    console.log('ACCESS FORBIDDEN', origin);
+    logger.writeWarn('ACCESS FORBIDDEN', origin);
     return res.status(403).json({ error: 'Forbidden' });
   }
   // check for auth header
   if (!auth.isAuthenticated(req)) {
-    console.log('NO AUTH', req.hostname);
+    logger.writeWarn('NO AUTH', req.hostname);
     return res.status(401).json({ error: 'Access denied' });
   }
 
@@ -64,11 +75,11 @@ async function startServer () {
     const start = Date.now();
     const requestId = Math.random().toString(36).substring(7);
 
-    console.log(`[${requestId}] ${req.method} ${req.url} started`);
+    logger.writeDebug(`[${requestId}] ${req.method} ${req.url} started`);
 
     res.on('finish', () => {
       const duration = Date.now() - start;
-      console.log(`[${requestId}] ${req.method} ${req.url} completed in ${duration}ms with status ${res.statusCode}`);
+      logger.writeDebug(`[${requestId}] ${req.method} ${req.url} completed in ${duration}ms with status ${res.statusCode}`);
     });
 
     next();
@@ -76,7 +87,7 @@ async function startServer () {
 
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    console.error('Unhandled error:', err);
+    logger.writeError('Unhandled error:', err);
     res.status(500).json({
       error: 'Internal server error',
       details: process.env.NODE_ENV === 'development' ? err.message : undefined
@@ -107,7 +118,7 @@ async function startServer () {
       html: html
     });
 
-    console.log("Message sent: %s", info.messageId);
+    logger.logger.writeInfo("Message sent: %s", info.messageId);
 
     return true;
   }
@@ -131,7 +142,7 @@ async function startServer () {
 
       res.json({ user, session });
     } catch (error) {
-      console.error('Signup error:', error);
+      logger.writeError('Signup error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -151,7 +162,7 @@ async function startServer () {
 
       res.json(result);
     } catch (error) {
-      console.error('Signin error:', error);
+      logger.writeError('Signin error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -166,7 +177,7 @@ async function startServer () {
       auth.deleteSession(sessionId);
       res.json({ success: true });
     } catch (error) {
-      console.error('Signout error:', error);
+      logger.writeError('Signout error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -197,7 +208,7 @@ async function startServer () {
       await deliverMail(email, 'ReactRadio password reset', 'Go here to reset your password: ' + resetLink, '<p>Click this link to reset your password:<br/><a href="' + resetLink + '">' + resetLink + '</a><p>');
       res.json({ response: 'OK' });
     } catch (error) {
-      console.error('Forgot password error:', error);
+      logger.writeError('Forgot password error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -239,7 +250,7 @@ async function startServer () {
       statements.deletePasswordReset.run(token);
       res.json({ success: true });
     } catch (error) {
-      console.error('Reset password error:', error);
+      logger.writeError('Reset password error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -267,7 +278,7 @@ async function startServer () {
       (req as any).session = session;
       next();
     } catch (error) {
-      console.error('Auth middleware error:', error);
+      logger.writeError('Auth middleware error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   };
@@ -309,19 +320,19 @@ async function startServer () {
         /*
         stations.forEach((station: Station) => {
           station.listen_url = `http://localhost:3001/proxy?url=${encodeURIComponent(station.listen_url)}`;
-          console.error('station url', station.listen_url);
+          logger.writeError('station url', station.listen_url);
         });
         */
         res.json(stations);
       } else {
         // Handle the case where the timeout occurred
-        console.error('Database query timed out');
+        logger.writeError('Database query timed out');
         // You might want to throw an error or handle this case differently
         res.json(result);
       }
 
     } catch (error: any) {
-      console.error('Get stations error:', error);
+      logger.writeError('Get stations error:', error);
 
       if (error.message === 'Request timeout') {
         res.status(504).json({ error: 'Request timeout' });
@@ -341,7 +352,7 @@ async function startServer () {
 
     try {
       const userId = (req as any).user.id;
-      console.log('Station search', userId, req.params.id);
+      logger.writeDebug('Station search', userId, req.params.id);
       const station = statements.getStationById.get(req.params.id, userId);
       clearTimeout(timeout);
 
@@ -353,7 +364,7 @@ async function startServer () {
       res.json(station);
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Get station error:', error);
+      logger.writeError('Get station error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -367,17 +378,19 @@ async function startServer () {
     }, 5000);
 
     try {
-      const { id, name, logo, listen_url } = req.body;
+      const { station_id, name, logo, listen_url } = req.body;
       const userId = (req as any).user.id;
-      console.log('Station upsert', userId, id);
-      statements.upsertStation.run({ station_id: id, user_id: userId, name, logo, listen_url });
-      const station = statements.getStationById.get(id, userId);
-      console.log('station', station);
+      let stationId = station_id;
+      if (!stationId) {
+        stationId = generateUniqueId();
+      }
+      logger.writeInfo('Station upsert', userId, stationId);
+      statements.upsertStation.run({ station_id: stationId, user_id: userId, name, logo, listen_url });
       clearTimeout(timeout);
-      res.json(station);
+      res.status(200).json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Create station error:', error);
+      logger.writeError('Create station error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -397,7 +410,7 @@ async function startServer () {
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Delete station error:', error);
+      logger.writeError('Delete station error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -439,7 +452,7 @@ async function startServer () {
 
       res.json(tracks);
     } catch (error: any) {
-      console.error('Get stations error:', error);
+      logger.writeError('Get stations error:', error);
 
       if (error.message === 'Request timeout') {
         res.status(504).json({ error: 'Request timeout' });
@@ -468,7 +481,7 @@ async function startServer () {
       res.json(track);
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Get user track error:', error);
+      logger.writeError('Get user track error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -493,7 +506,7 @@ async function startServer () {
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Create user track error:', error);
+      logger.writeError('Create user track error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -513,7 +526,7 @@ async function startServer () {
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Delete user track error:', error);
+      logger.writeError('Delete user track error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -532,7 +545,7 @@ async function startServer () {
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Delete user track error:', error);
+      logger.writeError('Delete user track error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -560,7 +573,7 @@ async function startServer () {
       res.json(tracks);
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Get track history error:', error);
+      logger.writeError('Get track history error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -583,7 +596,7 @@ async function startServer () {
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Add track history error:', error);
+      logger.writeError('Add track history error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -602,7 +615,7 @@ async function startServer () {
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Delete track history error:', error);
+      logger.writeError('Delete track history error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -621,7 +634,7 @@ async function startServer () {
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Clear track history error:', error);
+      logger.writeError('Clear track history error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -647,7 +660,7 @@ async function startServer () {
       res.json(history);
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Get listen history error:', error);
+      logger.writeError('Get listen history error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -673,7 +686,7 @@ async function startServer () {
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Add listen history error:', error);
+      logger.writeError('Add listen history error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -692,7 +705,7 @@ async function startServer () {
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Delete listen history error:', error);
+      logger.writeError('Delete listen history error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -711,7 +724,7 @@ async function startServer () {
       res.json({ success: true });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Clear listen history error:', error);
+      logger.writeError('Clear listen history error:', error);
       res.status(500).json({
         error: 'Database error',
         details: error?.message || 'Unknown database error'
@@ -779,13 +792,25 @@ async function startServer () {
       });
 
       client.on('error', (err) => {
-        console.error('Proxy error:', err);
+        logger.writeError('Proxy error:', err);
         res.status(500).send('Proxy error');
       });
     } catch (err) {
-      console.error('Error parsing URL:', err);
+      logger.writeError('Error parsing URL:', err);
       res.status(400).send('Invalid stream URL');
     }
+  });
+  // POST log endpoint
+  app.post('/log', (req, res) => {
+    const { level, message, fileName, context } = req.body;
+    if (level >= clientLogLevel) {
+      let logFile = 'logs/radio-client-info.log';
+      if (level >= logger.LogLevels.ERROR) {
+        logFile = 'logs/radio-client-error.log';
+      }
+      logger.writeLogEntry(message, level, fileName, logFile, context);
+    }
+    res.status(200).send('Log entry created successfully');
   });
 
   // Cache setup
@@ -804,7 +829,7 @@ async function startServer () {
     if ((Date.now() - entry.timestamp) < CACHE_EXPIRATION_MS) {
       return entry;
     }
-    console.log('Deleting lookup cache entry, expired!', entry);
+    logger.writeDebug('Deleting lookup cache entry, expired!', entry);
     cache.delete(key);
     return undefined;
   }
@@ -829,7 +854,7 @@ async function startServer () {
       let controller: AbortController | null = new AbortController();
 
       try {
-        console.log('Fetching metadata for URL:', url);
+        logger.writeDebug('Fetching metadata for URL:', url);
         const streamResponse = await fetch(url, {
           method: 'GET',
           headers: { 'Icy-MetaData': '1' },
@@ -842,12 +867,12 @@ async function startServer () {
 
         const icyMetaInt = parseInt(streamResponse.headers.get('Icy-MetaInt') || '0');
         if (!icyMetaInt) {
-          console.warn('No ICY-MetaInt header found, using default value');
+          logger.writeWarn('No ICY-MetaInt header found, using default value');
         }
 
         const stationMetadata = await getIcecastMetadata(streamResponse, icyMetaInt);
         const stationName = cleanTitleForSearch(stationMetadata.icyName);
-        console.log('Metadata received:', stationMetadata);
+        logger.writeDebug('Metadata received:', stationMetadata);
         const cacheKey = `station:${stationMetadata.title}`;
 
         if (!stationMetadata.title) {
@@ -864,17 +889,17 @@ async function startServer () {
         // Try to find existing track match
         const existingMatch = getCache(cacheKey)?.data?.matchedTrack;
 
-        console.log(`stationName: ${stationName} searchTerm: ${searchTerm}`);
+        logger.writeDebug(`stationName: ${stationName} searchTerm: ${searchTerm}`);
         if (existingMatch) {
           data = { ...data, matchedTrack: existingMatch };
-          console.log('Cache hit', data);
+          logger.writeDebug('Cache hit', data);
         } else if (stationName === searchTerm) {
           data.matchedTrack = undefined;
         } else {
           let matchedTrack = await iTunesSearch(searchTerm);
           const matchedTrack2 = await spotifySearch(searchTerm);
-          console.log('iTunes searchResults', matchedTrack);
-          console.log('Spotify searchResults', matchedTrack2);
+          logger.writeDebug('iTunes searchResults', matchedTrack);
+          logger.writeDebug('Spotify searchResults', matchedTrack2);
 
           if (!matchedTrack) {
             matchedTrack = matchedTrack2 ?? null;
@@ -923,9 +948,9 @@ async function startServer () {
         }
         res.json(data);
       } catch (err) {
-        console.error('Metadata error:', err);
+        logger.writeError('Metadata error:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch metadata';
-        console.error('Metadata error details:', errorMessage);
+        logger.writeError('Metadata error details:', errorMessage);
         res.status(500).json({ error: errorMessage });
       } finally {
         if (controller) {
@@ -957,7 +982,7 @@ async function startServer () {
       });
     } catch (error: any) {
       clearTimeout(timeout);
-      console.error('Health check error:', error);
+      logger.writeError('Health check error:', error);
       res.status(500).json({
         status: 'error',
         database: 'error',
@@ -969,19 +994,19 @@ async function startServer () {
 
   // Start server
   const server = app.listen(port, () => {
-    console.log(`Express server running on port ${port}`);
+    logger.writeInfo(`Express server running on port ${port}`);
   });
 
   // Handle server errors
   server.on('error', (error: any) => {
-    console.error('Server error:', error);
+    logger.writeError('Server error:', error);
   });
 
   // Graceful shutdown
   process.on('SIGTERM', () => {
-    console.log('SIGTERM received, shutting down gracefully');
+    logger.writeInfo('SIGTERM received, shutting down gracefully');
     server.close(() => {
-      console.log('Server closed');
+      logger.writeInfo('Server closed');
       process.exit(0);
     });
   });
@@ -991,7 +1016,7 @@ async function startServer () {
     const now = Date.now();
     for (const [key, entry] of cache.entries()) {
       if (now - entry.timestamp >= CACHE_EXPIRATION_MS) {
-        console.log('Auto-Removing entry from cache', entry);
+        logger.writeDebug('Auto-Removing entry from cache', entry);
         cache.delete(key);
       }
     }
@@ -999,4 +1024,4 @@ async function startServer () {
 }
 
 // Run the server
-startServer().catch(console.error);
+startServer().catch(logger.writeError);

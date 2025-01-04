@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
+import { logToServer, LogLevels } from '../lib/api';
 
 export default function AudioVisualizer({ source, audioCtx, className }: {
     source: AudioNode | undefined,
@@ -16,7 +17,7 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
     // Check if the browser is Safari WebKit and return a boolean
     const isSafariWebkit = Boolean(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
     //const isSafariWebkit = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) && /Apple/i.test(navigator.vendor);
-    console.log('navigator.userAgent', navigator.userAgent, isSafariWebkit);
+    logToServer('navigator.userAgent: ' + navigator.userAgent + 'isSafariWebkit: ' + isSafariWebkit, LogLevels.DEBUG, 'AudioVisualizer.tsx');
 
     useEffect(() => {
         if (!audioCtx || !source || !canvasRef.current) return;
@@ -38,15 +39,15 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
             // Main audio context path
             analyser = audioCtx.createAnalyser();
             source.connect(analyser);
-            console.log('Using main AudioContext');
+            logToServer('Using main AudioContext', LogLevels.DEBUG, 'AudioVisualizer.tsx');
         } else if (playerContext?.status === 'playing') {
             // Create a new audio context for visualization only
             try {
                 fallbackContextRef.current = new AudioContext();
                 analyser = fallbackContextRef.current.createAnalyser();
-                console.log('Using fallback visualization');
+                logToServer('Using fallback visualization', LogLevels.DEBUG, 'AudioVisualizer.tsx');
             } catch (error) {
-                console.error('Failed to create fallback visualization:', error);
+                logToServer('Failed to create fallback visualization:', LogLevels.ERROR, 'AudioVisualizer.tsx', error);
             }
         }
 

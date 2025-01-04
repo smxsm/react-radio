@@ -1,5 +1,6 @@
 import { createContext, PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
+import { logToServer, LogLevels } from '../lib/api';
 
 export type PlayerContextType = {
   station?: RadioStation;
@@ -69,7 +70,8 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
     (station: RadioStation) => {
       audioElementRef.current.play().catch((err) => {
         if (err.name === 'NotSupportedError') {
-          console.log('URL not supported, trying via proxy ...');
+          console.log('err', err);
+          logToServer('URL not supported, trying via proxy ...', LogLevels.INFO, 'PlayerContext.tsx', err);
           resetAudioElements();
           //audioElement2Ref.current.src = station.listenUrl;
           //audioElement2Ref.current.play();
@@ -85,7 +87,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
                 return Promise.resolve();
               })
               .catch((error) => {
-                console.error('Error fetching audio:', error);
+                logToServer('Error fetching audio:', LogLevels.ERROR, 'PlayerContext.tsx', error);
               });
             return;
           } catch (err) {
@@ -133,7 +135,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
       }
       station = stations[index];
     }
-    console.log('Playing station:', station);
+    logToServer('Playing station:', LogLevels.INFO, 'PlayerContext.tsx', station);
     // Check if station is valid before proceeding
     if (!station) return;
 
@@ -164,12 +166,12 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
     } catch (err) {
       if (err instanceof TypeError) {
         // Probably CORS. Try to play anyway and fallback to second audio element (outside AudioContext) on error
-        console.log('Cors error!?', err);
+        logToServer('Cors error!? ' + station.listenUrl, LogLevels.ERROR, 'PlayerContext.tsx', err);
+
         audioElementRef.current.src = station.listenUrl;
         startPlayback(station);
       } else {
-        console.log('Unexpected error!', err);
-        console.log((err as Error).message);
+        logToServer('Unexpected error!', LogLevels.ERROR, 'PlayerContext.tsx', (err as Error).message);
         setStatus('error');
       }
     }

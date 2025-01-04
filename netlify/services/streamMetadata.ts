@@ -1,7 +1,6 @@
 import { IcecastReadableStream } from 'icecast-metadata-js';
 import { IcyAudioInfo, StreamHeaders, StationMetadata, UnicodeConverter } from '../types/mediaTypes';
-
-const debug = false;
+import logger from './logger';
 
 export default async function getIcecastMetadata(response: Response, icyMetaInt: number): Promise<StationMetadata> {
   const icyHeaders = parseHeaders(response.headers);
@@ -11,16 +10,14 @@ export default async function getIcecastMetadata(response: Response, icyMetaInt:
     }, 15000);
 
     try {
-      if (debug) {
-        console.log('Starting metadata stream...');
-        console.log('ICY-MetaInt:', icyMetaInt);
-        console.log('Headers:', {
-          'icy-metaint': response.headers.get('icy-metaint'),
-          'content-type': response.headers.get('content-type'),
-          'icy-name': response.headers.get('icy-name'),
-          'icy-genre': response.headers.get('icy-genre')
-        });
-      }
+      logger.writeDebug('Starting metadata stream...');
+      logger.writeDebug('ICY-MetaInt:', icyMetaInt);
+      logger.writeDebug('Headers:', {
+        'icy-metaint': response.headers.get('icy-metaint'),
+        'content-type': response.headers.get('content-type'),
+        'icy-name': response.headers.get('icy-name'),
+        'icy-genre': response.headers.get('icy-genre')
+      });
 
       // Keep track if we've resolved
       let hasResolved = false;
@@ -44,9 +41,7 @@ export default async function getIcecastMetadata(response: Response, icyMetaInt:
         // Create the Icecast stream and store the reference
         new IcecastReadableStream(response, {
           onMetadata: ({ metadata }) => {
-            if (debug) {
-              console.log('Received metadata:', metadata);
-            }
+            logger.writeDebug('Received metadata:', metadata);
             const title = metadata?.StreamTitle || metadata?.TITLE || '';
             
             // Only process if title has changed and we haven't resolved
@@ -60,7 +55,7 @@ export default async function getIcecastMetadata(response: Response, icyMetaInt:
               
               // Set a new debounce timer
               debounceTimer = setTimeout(() => {
-                console.log('Valid title found:', title);
+                logger.writeDebug('Valid title found:', title);
                 hasResolved = true;
                 clearTimeout(timeout);
                 cleanup();

@@ -1,5 +1,6 @@
 import Fuse from 'fuse.js';
 import { TrackInfo, iTunesItem } from '../types/mediaTypes';
+import logger from './logger';
 
 const options = {
   useExtendedSearch: true,
@@ -32,7 +33,7 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
     );
     // filter items with score >= score_threshold
     searchResults = searchResults.filter((result) => {
-      console.log('iTunes run 1 fuse.js result', result);
+      logger.writeDebug('iTunes run 1 fuse.js result', result);
       return typeof result.score === 'number' && result.score <= score_threshold;
     });
     
@@ -42,7 +43,7 @@ export default async function iTunesSearch(searchTerm: string): Promise<TrackInf
       searchResults = fuse.search(searchTerm);
       // filter items with score >= score_threshold
       searchResults = searchResults.filter((result) => {
-        console.log('iTunes run 2 fuse.js result', result);
+        logger.writeDebug('iTunes run 2 fuse.js result', result);
         return typeof result.score === 'number' && result.score <= score_threshold;
       });
     }

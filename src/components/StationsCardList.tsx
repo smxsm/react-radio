@@ -21,6 +21,8 @@ interface RadioStation {
   name: string;
   logo: string;
   listenUrl: string;
+  stationId: string;
+  isOwner?: boolean;
 }
 
 const parseSearchParams = ({ limit, offset, sort, order, distance }: any) => ({

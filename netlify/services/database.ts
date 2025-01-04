@@ -227,7 +227,8 @@ class DatabaseManager {
         logo TEXT,
         listen_url TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(user_id, station_id)
       );
 
       CREATE TABLE IF NOT EXISTS track_matches (
@@ -328,16 +329,14 @@ class DatabaseManager {
         byName: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? ORDER BY name DESC'),
         byNameAsc: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? ORDER BY name ASC')
       },
-      getStationById: this.db.prepare('SELECT * FROM user_stations WHERE station_id = ? AND user_id = ?'),
+      getStationById: this.db.prepare('SELECT *, station_id AS stationId FROM user_stations WHERE id = ? AND user_id = ?'),
       upsertStation: this.db.prepare(`
         INSERT INTO user_stations (station_id, user_id, name, logo, listen_url)
         VALUES (@station_id, @user_id, @name, @logo, @listen_url)
-        ON CONFLICT(id) DO UPDATE SET
-          station_id=@station_id,
-          name=@name,
-          logo=@logo,
-          listen_url=@listen_url
-          WHERE user_id=@user_id
+        ON CONFLICT(user_id, station_id) DO UPDATE SET
+        name = @name,
+        logo = @logo,
+        listen_url = @listen_url
       `),
       deleteStation: this.db.prepare('DELETE FROM user_stations WHERE id = ? AND user_id = ?'),
 

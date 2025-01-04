@@ -1,5 +1,6 @@
 import Fuse from 'fuse.js';
 import { TrackInfo, SpotifyItem } from '../types/mediaTypes';
+import logger from './logger';
 
 const client_id = process.env.SPOTIFY_CLIENT_ID ?? '';
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET ?? '';
@@ -44,7 +45,7 @@ export default async function spotifySearch(searchTerm: string): Promise<TrackIn
       }
     });
     const data = (await response.json())?.tracks?.items;
-    //console.log('Spotify result', data);
+    //logger.writeDebug('Spotify result', data);
 
     if (!data?.length) {
       return null;
@@ -64,7 +65,7 @@ export default async function spotifySearch(searchTerm: string): Promise<TrackIn
     );
     // filter items with score >= score_threshold    
     searchResults = searchResults.filter((result) => {
-      console.log('Spotify run 1 fuse.js result', result);
+      logger.writeDebug('Spotify run 1 fuse.js result', result);
       return typeof result.score === 'number' && result.score <= score_threshold;
     });
     
@@ -73,7 +74,7 @@ export default async function spotifySearch(searchTerm: string): Promise<TrackIn
       fuse = new Fuse(data.map(({ name, artists }: SpotifyItem) => `${artists.map(artist => artist.name).join(' ')} ${name}`), options);
       searchResults = fuse.search(searchTerm);
       searchResults = searchResults.filter((result) => {
-        console.log('Spotify run 2 fuse.js result', result);
+        logger.writeDebug('Spotify run 2 fuse.js result', result);
         return typeof result.score === 'number' && result.score <= score_threshold;
       });
     }

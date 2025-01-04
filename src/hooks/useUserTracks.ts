@@ -56,12 +56,10 @@ export default function useUserTracks() {
 
   const addUserTrack = useCallback(
     async (track: string) => {
-      console.log('useUserTracks.addUserTrack called with track:', track);
       try {
         setLoading(true);
         const sessionId = localStorage.getItem('sessionId');
         if (!sessionId) {
-          console.error('No session found');
           throw new Error('No session found');
         }
 
