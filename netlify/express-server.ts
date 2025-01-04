@@ -652,9 +652,10 @@ async function startServer () {
       const limit = parseInt(req.query.limit as string) || 50;
       const history = statements.getListenHistory.all((req as any).user.id, limit);
       // set the listenUrl of every history entry for the player context
+      // TODO: add db mapping, too!
       history.forEach((entry: any) => {
         entry.listenUrl = entry.listen_url;
-        //entry.listenUrl = `http://localhost:3001/proxy?url=${encodeURIComponent(entry.listen_url)}`;
+        entry.stationId = entry.station_id;
       });
       clearTimeout(timeout);
       res.json(history);
@@ -675,6 +676,7 @@ async function startServer () {
 
     try {
       const { station_id, name, logo, listen_url } = req.body;
+      console.log('History id', station_id);
       statements.addListenHistory.run({
         station_id,
         user_id: (req as any).user.id,
