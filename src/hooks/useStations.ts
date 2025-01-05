@@ -109,6 +109,7 @@ export function useStations(
             name,
             logo: favicon,
             listenUrl: url_resolved,
+            stationId: stationuuid,
           }))
         );
         if (category === 'search') {
