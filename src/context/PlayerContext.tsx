@@ -70,7 +70,6 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
     (station: RadioStation) => {
       audioElementRef.current.play().catch((err) => {
         if (err.name === 'NotSupportedError') {
-          console.log('err', err);
           logToServer('URL not supported, trying via proxy ...', LogLevels.INFO, 'PlayerContext.tsx', err);
           resetAudioElements();
           //audioElement2Ref.current.src = station.listenUrl;
@@ -83,6 +82,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
                 if (response.ok) {
                   return audioElementRef.current.play();
                 }
+                logToServer('Proxy fetch failed, unable to play audio.', LogLevels.ERROR, 'PlayerContext.tsx', {message: response.statusText, station: station});
                 // If response is not ok, we return a resolved promise
                 return Promise.resolve();
               })
@@ -98,6 +98,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
         }
         // Die silently if station has been changed
         if (station.listenUrl === audioElementRef.current.src) {
+          logToServer('Error - station.listenUrl == audioElementRef.current.src', LogLevels.ERROR, 'PlayerContext.tsx');
           setStatus('error');
         }
       });
