@@ -63,36 +63,42 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
     audioElement2Ref.current.src = window.location.href;
   }, []);
 
+  const playViaProxy = useCallback(async (station: RadioStation) => {
+    try {
+      // only try to play if proxy fetch successful first
+      audioElementRef.current.src = `${process.env.REACT_APP_API_URL}/proxy?url=${encodeURIComponent(station.listenUrl)}`;
+      await fetch(`${process.env.REACT_APP_API_URL}/proxy?url=${encodeURIComponent(station.listenUrl)}`)
+        .then((response) => {
+          if (response.ok) {
+            logToServer('Playing via proxy now:', LogLevels.INFO, 'PlayerContext.tsx', { url: audioElementRef.current.src });
+            return audioElementRef.current.play();
+          }
+          logToServer('Proxy fetch failed, unable to play audio.', LogLevels.ERROR, 'PlayerContext.tsx', { message: response.statusText, station: station });
+          // If response is not ok, we return a resolved promise
+          return Promise.resolve();
+        })
+        .catch((error) => {
+          logToServer('Error fetching audio:', LogLevels.ERROR, 'PlayerContext.tsx', error);
+        });
+      return;
+    } catch (err) {
+      logToServer('Error fetching audio:', LogLevels.ERROR, 'PlayerContext.tsx', err);
+      resetAudioElements();
+    }
+  }, [resetAudioElements]);
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Tries to play the first audio element. Falls back to using the second one (outside AudioContext) on CORS error
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const startPlayback = useCallback(
     (station: RadioStation) => {
-      audioElementRef.current.play().catch((err) => {
+      audioElementRef.current.play().catch(async (err) => {
         if (err.name === 'NotSupportedError') {
           logToServer('URL not supported, trying via proxy ...', LogLevels.INFO, 'PlayerContext.tsx', err);
           resetAudioElements();
           //audioElement2Ref.current.src = station.listenUrl;
           //audioElement2Ref.current.play();
-          try {
-            // only try to play if proxy fetch successful first
-            audioElementRef.current.src = `${process.env.REACT_APP_API_URL}/proxy?url=${encodeURIComponent(station.listenUrl)}`;
-            fetch(`${process.env.REACT_APP_API_URL}/proxy?url=${encodeURIComponent(station.listenUrl)}`)
-              .then((response) => {
-                if (response.ok) {
-                  return audioElementRef.current.play();
-                }
-                logToServer('Proxy fetch failed, unable to play audio.', LogLevels.ERROR, 'PlayerContext.tsx', {message: response.statusText, station: station});
-                // If response is not ok, we return a resolved promise
-                return Promise.resolve();
-              })
-              .catch((error) => {
-                logToServer('Error fetching audio:', LogLevels.ERROR, 'PlayerContext.tsx', error);
-              });
-            return;
-          } catch (err) {
-            resetAudioElements();
-          }
+          await playViaProxy(station);
         } else {
           logToServer('Playback error:', LogLevels.ERROR, 'PlayerContext.tsx', err);
         }
@@ -103,7 +109,7 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
         }
       });
     },
-    [resetAudioElements]
+    [resetAudioElements, playViaProxy]
   );
 
   const stop = () => {
@@ -172,7 +178,8 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
         logToServer('Cors error!? ' + station.listenUrl, LogLevels.ERROR, 'PlayerContext.tsx', err);
 
         audioElementRef.current.src = station.listenUrl;
-        startPlayback(station);
+        //startPlayback(station);
+        playViaProxy(station);
       } else {
         logToServer('Unexpected error!', LogLevels.ERROR, 'PlayerContext.tsx', (err as Error).message);
         setStatus('error');
