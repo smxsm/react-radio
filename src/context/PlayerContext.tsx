@@ -93,6 +93,8 @@ export function PlayerProvider({ children }: PlayerProviderProps) {
           } catch (err) {
             resetAudioElements();
           }
+        } else {
+          logToServer('Playback error:', LogLevels.ERROR, 'PlayerContext.tsx', err);
         }
         // Die silently if station has been changed
         if (station.listenUrl === audioElementRef.current.src) {
