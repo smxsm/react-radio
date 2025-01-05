@@ -676,7 +676,6 @@ async function startServer () {
 
     try {
       const { station_id, name, logo, listen_url } = req.body;
-      console.log('History id', station_id);
       statements.addListenHistory.run({
         station_id,
         user_id: (req as any).user.id,

@@ -22,8 +22,10 @@ function writeLogEntry (
     context: any = null
 ): void {
     const isClient = (logFile !== '' && logFile.indexOf('client') >= 0) ? true : false;
-    //console.log('serverLogLevel', serverLogLevel, level, isClient, message);
-    if ((isClient && level <= clientLogLevel) && (!isClient && level  <= serverLogLevel)) {
+    if (isClient && level < clientLogLevel) {
+        return;
+    }
+    if (!isClient && level < serverLogLevel) {
         return;
     }
 
