@@ -13,7 +13,7 @@
 
 .userMenu {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   align-items: center;
 }
 
@@ -28,7 +28,7 @@
 
 .signout-item {
   color: var(--color-danger);
-  padding: 1rem 1rem;
+  padding: 1rem 0.5rem;
 }
 
 .signout-item:hover {
