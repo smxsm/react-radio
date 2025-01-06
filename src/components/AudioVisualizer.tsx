@@ -25,13 +25,59 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d')!;
 
-        // Set canvas size
-        const resize = () => {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = (canvas.offsetHeight > 120 ? 120 : canvas.offsetHeight) || 40; // Set a default height if offsetHeight is 0
+        let resizeTimeout: number;
+        let lastWidth = 0;
+        let lastHeight = 0;
+
+        const updateCanvasSize = (width: number, height: number) => {
+            // Only update if dimensions changed significantly (more than 1px)
+            if (Math.abs(width - lastWidth) > 1 || Math.abs(height - lastHeight) > 1) {
+                canvas.width = width;
+                canvas.height = Math.min(height, 120) || 40;
+                lastWidth = width;
+                lastHeight = height;
+            }
         };
-        resize();
-        window.addEventListener('resize', resize);
+
+        // Create ResizeObserver for reliable size detection
+        const resizeObserver = new ResizeObserver((entries) => {
+            // Clear any pending timeout
+            if (resizeTimeout) {
+                window.clearTimeout(resizeTimeout);
+            }
+
+            // Debounce the resize callback
+            resizeTimeout = window.setTimeout(() => {
+                for (const entry of entries) {
+                    const width = entry.contentRect.width;
+                    const height = entry.contentRect.height;
+                    if (width > 0 && height > 0) {
+                        updateCanvasSize(width, height);
+                    }
+                }
+            }, 100); // 100ms debounce
+        });
+
+        // Only observe the parent element
+        const parent = canvas.parentElement;
+        if (parent) {
+            resizeObserver.observe(parent);
+            // Initial size update
+            updateCanvasSize(parent.offsetWidth, parent.offsetHeight);
+        }
+
+        // Create IntersectionObserver to detect visibility
+        const intersectionObserver = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.isIntersecting && entry.target.parentElement) {
+                    // Force size update when becoming visible
+                    const parent = entry.target.parentElement;
+                    updateCanvasSize(parent.offsetWidth, parent.offsetHeight);
+                }
+            }
+        });
+
+        intersectionObserver.observe(canvas);
 
         // Try to get audio data from either the main source or create a fallback
         let analyser: AnalyserNode | null = null;
@@ -152,7 +198,11 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
             if (fallbackContextRef.current) {
                 fallbackContextRef.current.close();
             }
-            window.removeEventListener('resize', resize);
+            if (resizeTimeout) {
+                window.clearTimeout(resizeTimeout);
+            }
+            resizeObserver.disconnect();
+            intersectionObserver.disconnect();
         };
     }, [source, audioCtx, playerContext?.status, isSafariWebkit]);
 
