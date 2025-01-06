@@ -87,6 +87,7 @@ function mapDbToFrontend(dbTrack: DbUserTrack): FrontendUserTrack {
 function mapFrontendToDb(frontendTrack: FrontendUserTrack): DbUserTrack {
   return {
     id: frontendTrack.id,
+    track_id: frontendTrack.trackId,
     artist: frontendTrack.artist,
     title: frontendTrack.title,
     artwork: frontendTrack.artwork,

@@ -1,7 +1,7 @@
 import express from 'express';
 import 'dotenv/config';
 import type { Request, Response, NextFunction } from 'express';
-import { CacheEntry, MetadataResponse, Track } from './types/mediaTypes';
+import { CacheEntry, MetadataResponse } from './types/mediaTypes';
 import { randomUUID } from 'crypto';
 import * as auth from './services/auth';
 import { DatabaseFactory, mapDbToFrontend } from './services/database-factory';
