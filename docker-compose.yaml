@@ -22,10 +22,34 @@ services:
     ports:
       - "${BACKEND_PORT}:3001"
     volumes:
+      - ./netlify/express-server.ts:/app/express-server.ts
+      - ./netlify/.env:/app/.env
       - ./netlify/data:/app/data
+      - ./netlify/services:/app/services
+      - ./netlify/types:/app/types
       - ./netlify/dist:/app/dist
+      - ./netlify/logs:/app/logs
     environment:
       # use .env var with default 3001
       - PORT=${BACKEND_PORT}
     restart: unless-stopped
-    network_mode: "host"
+    #network_mode: "host"
+
+  mariadb:
+    container_name: mariadb
+    image: "mariadb:latest"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "3366:3306"
+    # preserve data volume
+    volumes:
+      - ./mariadb_data:/var/lib/mysql
+
+#volumes:
+#  mariadb_data:
+#     driver: local
+       

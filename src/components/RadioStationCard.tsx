@@ -58,7 +58,7 @@ export default function RadioStationCard({
       <div className={styles.actions}>
         {!disabled && (
           <>
-            {user && !station.isOwner && onAdd && (
+            {user && onAdd && (
               <FontAwesomeIcon
                 icon={faPlus}
                 className={styles.actionIcon}

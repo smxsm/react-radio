@@ -37,10 +37,10 @@ export default function CustomStation() {
   }, [user, getCustomStations, sort, order]);
 
   const playHandler = (index: number) => () => playerContext?.play(stations, index);
-  const editHandler = ({ id }: RadioStation) => navigate(`edit/${id}`);
-  const deleteHandler = ({ id, name }: RadioStation) =>
+  const editHandler = ({ stationId }: RadioStation) => navigate(`edit/${stationId}`);
+  const deleteHandler = ({ stationId, name }: RadioStation) =>
     window.confirm(`${translate('info.station.delete')} ${name}?`) &&
-    deleteCustomStation(id).then(() => getCustomStations('', sort, order !== 'desc'));
+    deleteCustomStation(stationId).then(() => getCustomStations('', sort, order !== 'desc'));
 
   if (stationsLoading) {
     return <Spinner className={styles.spinner} />;

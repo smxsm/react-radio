@@ -32,7 +32,7 @@ export default function Home() {
   const playHandler = (station: RadioStation) => playerContext?.play([station]);
 
   const addHandler = (station: RadioStation) =>
-    getCustomStations(station.id)
+    getCustomStations(station.stationId)
       .then((result) =>
         result.length
           ? window.confirm(`${station.name} ${translate('info.tracks.inlibrary')}`)
@@ -138,6 +138,7 @@ export default function Home() {
                   key={station.id}
                   onPlay={playHandler}
                   onDelete={() => removeStationFromHistory(station.id)}
+                  onAdd={addHandler}
                 />
               ))}
             </CardsList>

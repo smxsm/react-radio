@@ -4,7 +4,8 @@ import type { Request, Response, NextFunction } from 'express';
 import { CacheEntry, MetadataResponse, Track } from './types/mediaTypes';
 import { randomUUID } from 'crypto';
 import * as auth from './services/auth';
-import { statements, mapDbToFrontend, type DbUserTrack } from './services/database';
+import { DatabaseFactory, mapDbToFrontend } from './services/database-factory';
+import type { DbUserTrack } from './services/database-interface';
 import getIcecastMetadata from './services/streamMetadata';
 import iTunesSearch from './services/iTunes';
 import spotifySearch from './services/spotify';
@@ -132,7 +133,7 @@ async function startServer () {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      const existingUser = auth.getUserByEmail(email);
+      const existingUser = await auth.getUserByEmail(email);
       if (existingUser) {
         return res.status(409).json({ error: 'Email already exists' });
       }
@@ -167,14 +168,14 @@ async function startServer () {
     }
   });
 
-  app.post('/auth/signout', (req: Request, res: Response) => {
+  app.post('/auth/signout', async (req: Request, res: Response) => {
     try {
       const sessionId = req.headers.authorization?.split(' ')[1];
       if (!sessionId) {
         return res.status(401).json({ error: 'No session provided' });
       }
 
-      auth.deleteSession(sessionId);
+      await auth.deleteSession(sessionId);
       res.json({ success: true });
     } catch (error) {
       logger.writeError('Signout error:', error);
@@ -189,7 +190,7 @@ async function startServer () {
         return res.status(400).json({ error: 'Email is required' });
       }
 
-      const user = auth.getUserByEmail(email);
+      const user = await auth.getUserByEmail(email);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
@@ -197,7 +198,8 @@ async function startServer () {
       const resetToken = randomUUID();
       const expiresAt = new Date(Date.now() + 3600000); // 1 hour expiration
 
-      statements.createPasswordReset.run({
+      const db = await DatabaseFactory.getInstance();
+      await db.createPasswordReset({
         token: resetToken,
         user_id: user.id,
         expires_at: expiresAt.toISOString()
@@ -231,23 +233,20 @@ async function startServer () {
         return res.status(400).json({ error: 'Password must contain at least one special character' });
       }
 
-      const reset = statements.getPasswordReset.get(token) as { user_id: string, expires_at: string } | undefined;
+      const db = await DatabaseFactory.getInstance();
+      const reset = await db.getPasswordReset(token);
       if (!reset) {
         return res.status(404).json({ error: 'Invalid or expired reset token' });
       }
 
       if (new Date(reset.expires_at) < new Date()) {
-        statements.deletePasswordReset.run(token);
+        await db.deletePasswordReset(token);
         return res.status(400).json({ error: 'Reset token has expired' });
       }
 
       const passwordHash = await auth.hashPassword(newPassword);
-      statements.updateUserPassword.run({
-        user_id: reset.user_id,
-        password_hash: passwordHash
-      });
-
-      statements.deletePasswordReset.run(token);
+      await db.updateUserPassword(reset.user_id, passwordHash);
+      await db.deletePasswordReset(token);
       res.json({ success: true });
     } catch (error) {
       logger.writeError('Reset password error:', error);
@@ -263,12 +262,12 @@ async function startServer () {
         return res.status(401).json({ error: 'No session provided' });
       }
 
-      const session = auth.getSession(sessionId);
+      const session = await auth.getSession(sessionId);
       if (!session) {
         return res.status(401).json({ error: 'Invalid or expired session' });
       }
 
-      const user = auth.getUserById(session.userId);
+      const user = await auth.getUserById(session.userId);
       if (!user) {
         return res.status(401).json({ error: 'User not found' });
       }
@@ -303,15 +302,9 @@ async function startServer () {
       const orderBy = (req.query.orderBy as string) || 'created_at';
       const order = (req.query.order as string)?.toUpperCase() || 'DESC';
 
-      let statement;
-      if (orderBy === 'name') {
-        statement = order === 'ASC' ? statements.getAllStations.byNameAsc : statements.getAllStations.byName;
-      } else {
-        statement = order === 'ASC' ? statements.getAllStations.byCreatedAtAsc : statements.getAllStations.byCreatedAt;
-      }
-
+      const db = await DatabaseFactory.getInstance();
       const result = await Promise.race([
-        Promise.resolve(statement.all(userId)),
+        db.getAllStations(userId, orderBy, order === 'ASC'),
         timeoutPromise
       ]);
 
@@ -345,7 +338,7 @@ async function startServer () {
     }
   });
 
-  app.get('/stations/:id', requireAuth, (req: Request, res: Response) => {
+  app.get('/stations/:id', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
@@ -353,7 +346,8 @@ async function startServer () {
     try {
       const userId = (req as any).user.id;
       logger.writeDebug('Station search', {userId, id: req.params.id});
-      const station = statements.getStationById.get(req.params.id, userId);
+      const db = await DatabaseFactory.getInstance();
+      const station = await db.getStationById(req.params.id, userId);
       clearTimeout(timeout);
 
       if (!station) {
@@ -372,7 +366,7 @@ async function startServer () {
     }
   });
 
-  app.post('/stations', requireAuth, (req: Request, res: Response) => {
+  app.post('/stations', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
@@ -385,7 +379,8 @@ async function startServer () {
         stationId = generateUniqueId();
       }
       logger.writeInfo('Station upsert', {userId, stationId});
-      statements.upsertStation.run({ station_id: stationId, user_id: userId, name, logo, listen_url });
+      const db = await DatabaseFactory.getInstance();
+      await db.upsertStation({ station_id: stationId, user_id: userId, name, logo, listen_url });
       clearTimeout(timeout);
       res.status(200).json({ success: true });
     } catch (error: any) {
@@ -398,14 +393,15 @@ async function startServer () {
     }
   });
 
-  app.delete('/stations/:id', requireAuth, (req: Request, res: Response) => {
+  app.delete('/stations/:id', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
       const userId = (req as any).user.id;
-      statements.deleteStation.run(req.params.id, userId);
+      const db = await DatabaseFactory.getInstance();
+      await db.deleteStation(req.params.id, userId);
       clearTimeout(timeout);
       res.json({ success: true });
     } catch (error: any) {
@@ -430,16 +426,9 @@ async function startServer () {
       const orderBy = (req.query.orderBy as string) || 'created_at';
       const order = (req.query.order as string)?.toUpperCase() || 'DESC';
 
-      let statement;
-      if (orderBy === 'name') {
-        statement = order === 'ASC' ? statements.getAllUserTracks.byTitleAsc : statements.getAllUserTracks.byTitle;
-      } else {
-        statement = order === 'ASC' ? statements.getAllUserTracks.byCreatedAtAsc : statements.getAllUserTracks.byCreatedAt;
-      }
-
-      // Get tracks with timeout
+      const db = await DatabaseFactory.getInstance();
       const result = await Promise.race([
-        Promise.resolve(statement.all(userId)),
+        db.getAllUserTracks(userId, orderBy, order === 'ASC'),
         timeoutPromise
       ]);
 
@@ -465,14 +454,15 @@ async function startServer () {
     }
   });
 
-  app.get('/usertracks/:id', requireAuth, (req: Request, res: Response) => {
+  app.get('/usertracks/:id', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
       const userId = (req as any).user.id;
-      const track = statements.getUserTrackById.get(req.params.id, userId);
+      const db = await DatabaseFactory.getInstance();
+      const track = await db.getUserTrackById(req.params.id, userId);
       clearTimeout(timeout);
 
       if (!track) {
@@ -489,7 +479,7 @@ async function startServer () {
     }
   });
 
-  app.post('/usertracks', requireAuth, (req: Request, res: Response) => {
+  app.post('/usertracks', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
@@ -497,10 +487,11 @@ async function startServer () {
     try {
       const { id } = req.body;
       const userId = (req as any).user.id;
-      const track = statements.getUserTrackById.get(id, userId);
+      const db = await DatabaseFactory.getInstance();
+      const track = await db.getUserTrackById(id, userId);
       // only add if not already on user list
       if (!track) {
-        statements.addUserTrack.run({ track_id: id, user_id: userId });
+        await db.addUserTrack(id, userId);
       }
       clearTimeout(timeout);
       res.json({ success: true });
@@ -514,14 +505,15 @@ async function startServer () {
     }
   });
 
-  app.delete('/usertracks/:id', requireAuth, (req: Request, res: Response) => {
+  app.delete('/usertracks/:id', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
       const userId = (req as any).user.id;
-      statements.deleteUserTrack.run(req.params.id, userId);
+      const db = await DatabaseFactory.getInstance();
+      await db.deleteUserTrack(req.params.id, userId);
       clearTimeout(timeout);
       res.json({ success: true });
     } catch (error: any) {
@@ -533,14 +525,15 @@ async function startServer () {
       });
     }
   });
-  app.delete('/usertracks', requireAuth, (req: Request, res: Response) => {
+  app.delete('/usertracks', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
       const userId = (req as any).user.id;
-      statements.clearUserTracks.run(userId);
+      const db = await DatabaseFactory.getInstance();
+      await db.clearUserTracks(userId);
       clearTimeout(timeout);
       res.json({ success: true });
     } catch (error: any) {
@@ -554,14 +547,15 @@ async function startServer () {
   });
 
   // Track history endpoints
-  app.get('/tracks/history', requireAuth, (req: Request, res: Response) => {
+  app.get('/tracks/history', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
       const limit = parseInt(req.query.limit as string) || 50;
-      const tracks = statements.getTrackHistory.all((req as any).user.id, limit);
+      const db = await DatabaseFactory.getInstance();
+      const tracks = await db.getTrackHistory((req as any).user.id, limit);
       // edit some fields for each track
       (tracks as unknown as Track[]).forEach(track => {
         track.heardAt = track.created_at;
@@ -581,17 +575,15 @@ async function startServer () {
     }
   });
 
-  app.post('/tracks/history', requireAuth, (req: Request, res: Response) => {
+  app.post('/tracks/history', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
       const { track_id } = req.body;
-      statements.addTrackHistory.run({
-        track_id,
-        user_id: (req as any).user.id
-      });
+      const db = await DatabaseFactory.getInstance();
+      await db.addTrackHistory(track_id, (req as any).user.id);
       clearTimeout(timeout);
       res.json({ success: true });
     } catch (error: any) {
@@ -604,13 +596,14 @@ async function startServer () {
     }
   });
 
-  app.delete('/tracks/history/:trackId', requireAuth, (req: Request, res: Response) => {
+  app.delete('/tracks/history/:trackId', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
-      statements.deleteTrackHistory.run(req.params.trackId, (req as any).user.id);
+      const db = await DatabaseFactory.getInstance();
+      await db.deleteTrackHistory(req.params.trackId, (req as any).user.id);
       clearTimeout(timeout);
       res.json({ success: true });
     } catch (error: any) {
@@ -623,13 +616,14 @@ async function startServer () {
     }
   });
 
-  app.delete('/tracks/history', requireAuth, (req: Request, res: Response) => {
+  app.delete('/tracks/history', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
-      statements.clearTrackHistory.run((req as any).user.id);
+      const db = await DatabaseFactory.getInstance();
+      await db.clearTrackHistory((req as any).user.id);
       clearTimeout(timeout);
       res.json({ success: true });
     } catch (error: any) {
@@ -643,14 +637,15 @@ async function startServer () {
   });
 
   // Listen history endpoints
-  app.get('/listen/history', requireAuth, (req: Request, res: Response) => {
+  app.get('/listen/history', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
       const limit = parseInt(req.query.limit as string) || 50;
-      const history = statements.getListenHistory.all((req as any).user.id, limit);
+      const db = await DatabaseFactory.getInstance();
+      const history = await db.getListenHistory((req as any).user.id, limit);
       // set the listenUrl of every history entry for the player context
       // TODO: add db mapping, too!
       history.forEach((entry: any) => {
@@ -669,14 +664,26 @@ async function startServer () {
     }
   });
 
-  app.post('/listen/history', requireAuth, (req: Request, res: Response) => {
+  app.post('/listen/history', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
       const { station_id, name, logo, listen_url } = req.body;
-      statements.addListenHistory.run({
+      
+      if (!station_id) {
+        return res.status(400).json({ error: 'station_id is required' });
+      }
+      if (!name) {
+        return res.status(400).json({ error: 'name is required' });
+      }
+      if (!listen_url) {
+        return res.status(400).json({ error: 'listen_url is required' });
+      }
+
+      const db = await DatabaseFactory.getInstance();
+      await db.addListenHistory({
         station_id,
         user_id: (req as any).user.id,
         name,
@@ -695,13 +702,14 @@ async function startServer () {
     }
   });
 
-  app.delete('/listen/history/:stationId', requireAuth, (req: Request, res: Response) => {
+  app.delete('/listen/history/:stationId', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
-      statements.deleteListenHistory.run(req.params.stationId, (req as any).user.id);
+      const db = await DatabaseFactory.getInstance();
+      await db.deleteListenHistory(req.params.stationId, (req as any).user.id);
       clearTimeout(timeout);
       res.json({ success: true });
     } catch (error: any) {
@@ -714,13 +722,14 @@ async function startServer () {
     }
   });
 
-  app.delete('/listen/history', requireAuth, (req: Request, res: Response) => {
+  app.delete('/listen/history', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
 
     try {
-      statements.clearListenHistory.run((req as any).user.id);
+      const db = await DatabaseFactory.getInstance();
+      await db.clearListenHistory((req as any).user.id);
       clearTimeout(timeout);
       res.json({ success: true });
     } catch (error: any) {
@@ -912,7 +921,8 @@ async function startServer () {
             matchedTrack.youTubeUrl = await youTubeSearch(searchTerm) || '';
 
             const trackId = randomUUID();
-            statements.upsertTrackMatch.run({
+            const db = await DatabaseFactory.getInstance();
+            await db.upsertTrackMatch({
               id: trackId,
               artist: matchedTrack.artist,
               title: matchedTrack.title,
@@ -963,34 +973,35 @@ async function startServer () {
   });
 
   // Health check endpoint
-  app.get('/health', (_req: Request, res: Response) => {
-    const timeout = setTimeout(() => {
-      res.status(504).json({ error: 'Health check timeout' });
-    }, 5000);
+app.get('/health', async (_req: Request, res: Response) => {
+  const timeout = setTimeout(() => {
+    res.status(504).json({ error: 'Health check timeout' });
+  }, 5000);
 
-    try {
-      // Test database connection with a simple query
-      const dbTest = statements.getUserById.get('test');
-      const dbStatus = dbTest !== undefined ? 'ok' : 'error';
+  try {
+    // Test database connection with a simple query
+    const db = await DatabaseFactory.getInstance();
+    const dbTest = await db.getUserById('test');
+    const dbStatus = dbTest !== undefined ? 'ok' : 'error';
 
-      clearTimeout(timeout);
-      res.json({
-        status: 'ok',
-        database: dbStatus,
-        uptime: process.uptime(),
-        memory: process.memoryUsage(),
-        timestamp: new Date().toISOString()
-      });
-    } catch (error: any) {
-      clearTimeout(timeout);
-      logger.writeError('Health check error:', error);
-      res.status(500).json({
-        status: 'error',
-        database: 'error',
-        error: error?.message || 'Unknown error',
-        timestamp: new Date().toISOString()
-      });
-    }
+    clearTimeout(timeout);
+    res.json({
+      status: 'ok',
+      database: dbStatus,
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    clearTimeout(timeout);
+    logger.writeError('Health check error:', error);
+    res.status(500).json({
+      status: 'error',
+      database: 'error',
+      error: error?.message || 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
   });
 
   // Start server

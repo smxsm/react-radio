@@ -29,3 +29,6 @@ netlify/node_modules
 netlify/data/radio.db*
 netlify/dist
 netlify/logs/*.log
+!mariadb_data
+mariadb_data/*
+!mariadb_data/.gitkeep

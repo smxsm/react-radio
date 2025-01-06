@@ -53,7 +53,7 @@ export default function StationsCardList() {
   const playHandler = (station: RadioStation) => playerContext?.play([station]);
 
   const addHandler = (station: RadioStation) =>
-    getCustomStations(station.id)
+    getCustomStations(station.stationId)
       .then((result) =>
         result.length
           ? window.confirm(`${station.name} ${translate('info.tracks.inlibrary')}`)
