@@ -14,6 +14,8 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      - app-network
 
   backend:
     build:
@@ -34,6 +36,8 @@ services:
       - PORT=${BACKEND_PORT}
     restart: unless-stopped
     #network_mode: "host"
+    networks:
+      - app-network
 
   mariadb:
     container_name: mariadb
@@ -48,8 +52,12 @@ services:
     # preserve data volume
     volumes:
       - ./mariadb_data:/var/lib/mysql
+    networks:
+      - app-network
 
 #volumes:
 #  mariadb_data:
 #     driver: local
-       
+networks:
+  app-network:
+    driver: bridge
