@@ -17,7 +17,7 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
     // Check if the browser is Safari WebKit and return a boolean
     const isSafariWebkit = Boolean(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
     //const isSafariWebkit = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) && /Apple/i.test(navigator.vendor);
-    logToServer('navigator.userAgent: ' + navigator.userAgent + 'isSafariWebkit: ' + isSafariWebkit, LogLevels.DEBUG, 'AudioVisualizer.tsx');
+    logToServer('navigator.userAgent: ' + navigator.userAgent + 'isSafariWebkit: ' + isSafariWebkit, LogLevels.TRACE, 'AudioVisualizer.tsx');
 
     useEffect(() => {
         if (!audioCtx || !source || !canvasRef.current) return;
@@ -39,7 +39,7 @@ export default function AudioVisualizer({ source, audioCtx, className }: {
             // Main audio context path
             analyser = audioCtx.createAnalyser();
             source.connect(analyser);
-            logToServer('Using main AudioContext', LogLevels.DEBUG, 'AudioVisualizer.tsx');
+            logToServer('Using main AudioContext', LogLevels.TRACE, 'AudioVisualizer.tsx');
         } else if (playerContext?.status === 'playing') {
             // Create a new audio context for visualization only
             try {

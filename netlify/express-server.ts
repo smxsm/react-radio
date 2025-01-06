@@ -821,9 +821,9 @@ async function startServer () {
   const cache = new Map<string, CacheEntry>();
   const CACHE_EXPIRATION_MS = 60 * 60 * 1000; // 1 hour
   const metadataQueue = new PQueue({
-    concurrency: 2, // Limit concurrent metadata processing
+    concurrency: 5, // Limit concurrent metadata processing
     timeout: 15000, // 15 second timeout for each task
-    throwOnTimeout: true // Reject the promise when task times out
+    throwOnTimeout: false // Reject the promise when task times out?
   });
   function getCache (key: string): any | undefined {
     const entry = cache.get(key);

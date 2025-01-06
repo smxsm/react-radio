@@ -32,3 +32,4 @@ netlify/logs/*.log
 !mariadb_data
 mariadb_data/*
 !mariadb_data/.gitkeep
+netlify/data/live/radio.db

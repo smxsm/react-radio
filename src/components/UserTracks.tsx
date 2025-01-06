@@ -19,7 +19,7 @@ export default function UserTracks() {
   const [searchParams] = useSearchParams();
   const { sort, order } = Object.fromEntries(searchParams.entries());
   const { user } = useContext(UserContext)!;
-  const { getUserTracks, deleteUserTrack, userTracks: tracks, userTracksLoading, userTracksError: error, clearUserTracks } = useContext(NowPlayingContext)!;
+  const { getUserTracks, deleteUserTrack, userTracks: tracks, userTracksLoading, clearUserTracks } = useContext(NowPlayingContext)!;
   const { setDocumentTitle } = useContext(DocumentTitleContext)!;
   const { t } = useTranslation();
   const translate = t as (key: string) => string;
