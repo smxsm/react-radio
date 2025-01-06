@@ -27,14 +27,14 @@ export default function useUserTracks() {
           );
         }
 
-        const tracks = data.map<api.TrackInfo>(({ id, track_id, title, artist, artwork, album, spotifyUrl, appleMusicUrl, youTubeUrl, heardAt, releaseDate  }) => ({
+        const tracks = data.map<api.TrackInfo>(({ id, trackId, title, artist, artwork, album, spotifyUrl, appleMusicUrl, youTubeUrl, createdAt, releaseDate  }) => ({
           id,
-          track_id,
+          trackId,
           title,
           artist,
           album,
           releaseDate,
-          heardAt,
+          createdAt,
           artwork,
           appleMusicUrl,
           youTubeUrl,

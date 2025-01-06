@@ -70,7 +70,17 @@ export default function UserTracks() {
             <div className={styles.userTracksTrackInfo}>
               <p className={styles.userTracksCardTitle}>{entry.title}</p>
               <p className={styles.userTracksCardArtist}>{entry.artist}</p>
-              <p className={styles.userTracksCardDate}>{entry.heardAt?.toLocaleString()}</p>
+              <p className={styles.userTracksCardDate}>
+                {entry.createdAt && new Date(entry.createdAt).toLocaleString(undefined, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                })}
+              </p>
             </div>
             <div className={styles.actions}>
               <FontAwesomeIcon

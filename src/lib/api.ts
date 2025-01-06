@@ -271,12 +271,12 @@ export function logToServer (message: string, level: number = 3, fileName: strin
 }
 export interface TrackInfo {
   id: string;
-  track_id: string;
+  trackId: string;
   artist: string;
   title: string;
   album: string | null;
   releaseDate: Date | null;
-  heardAt: Date | null;
+  createdAt: Date | null;
   artwork: string | null;
   appleMusicUrl?: string;
   spotifyUrl?: string;
@@ -284,13 +284,13 @@ export interface TrackInfo {
 }
 
 export interface TrackHistory extends TrackInfo {
-  heardAt: Date;
+  createdAt: Date;
 }
 
 // User track endpoints
 export async function getUserTracks (sessionId: string, orderBy = 'created_at', order = 'DESC', retries = 2) {
   const attempt = async () => {
-    return fetchWithTimeout<{ id: string; track_id: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; heardAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string }[]>(
+    return fetchWithTimeout<{ id: string; trackId: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; createdAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string }[]>(
       `${API_BASE_URL}/usertracks?orderBy=${orderBy}&order=${order}`,
       {
         headers: {
@@ -324,7 +324,7 @@ export async function getUserTrackById (sessionId: string, id: string) {
     },
   });
 
-  return handleResponse<{ id: string; track_id: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; heardAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string }>(response);
+  return handleResponse<{ id: string; trackId: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; createdAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string }>(response);
 }
 
 export async function addUserTrack (sessionId: string, id: string) {

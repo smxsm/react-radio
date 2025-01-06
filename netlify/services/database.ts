@@ -42,12 +42,13 @@ interface DbStation {
 
 interface DbUserTrack {
   id: string;
+  track_id: string;
   artist: string;
   title: string;
   artwork: string | null;
   album: string | null;
   release_date: Date | null;
-  heard_at: Date | null;
+  created_at: Date | null;
   apple_music_url?: string;
   spotify_url?: string;
   youtube_url?: string;
@@ -55,12 +56,13 @@ interface DbUserTrack {
 
 interface FrontendUserTrack {
   id: string;
+  trackId: string;
   artist: string;
   title: string;
   artwork: string | null;
   album: string | null;
   releaseDate: Date | null;
-  heardAt: Date | null;
+  createdAt: Date | null;
   appleMusicUrl?: string;
   spotifyUrl?: string;
   youTubeUrl?: string;
@@ -69,12 +71,13 @@ interface FrontendUserTrack {
 function mapDbToFrontend(dbTrack: DbUserTrack): FrontendUserTrack {
   return {
     id: dbTrack.id,
+    trackId: dbTrack.track_id,
     artist: dbTrack.artist,
     title: dbTrack.title,
     artwork: dbTrack.artwork,
     album: dbTrack.album,
     releaseDate: dbTrack.release_date,
-    heardAt: dbTrack.heard_at,
+    createdAt: dbTrack.created_at,
     appleMusicUrl: dbTrack.apple_music_url,
     spotifyUrl: dbTrack.spotify_url,
     youTubeUrl: dbTrack.youtube_url,
@@ -89,7 +92,7 @@ function mapFrontendToDb(frontendTrack: FrontendUserTrack): DbUserTrack {
     artwork: frontendTrack.artwork,
     album: frontendTrack.album,
     release_date: frontendTrack.releaseDate,
-    heard_at: frontendTrack.heardAt,
+    created_at: frontendTrack.createdAt,
     apple_music_url: frontendTrack.appleMusicUrl,
     spotify_url: frontendTrack.spotifyUrl,
     youtube_url: frontendTrack.youTubeUrl,

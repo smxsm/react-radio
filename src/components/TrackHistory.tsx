@@ -43,7 +43,15 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
           <div className={styles.historyTrackInfo}>
             <p className={styles.historyCardTitle}>{entry.title}</p>
             <p className={styles.historyCardArtist}>{entry.artist}</p>
-            <p className={styles.historyCardDate}>{entry.heardAt?.toLocaleString()}</p>
+            <p className={styles.historyCardDate}>{entry.createdAt && new Date(entry.createdAt).toLocaleString(undefined, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            })}</p>
           </div>
           <div className={styles.actions}>
             <FontAwesomeIcon
@@ -56,7 +64,9 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
               icon={faHeart}
               className={styles.actionIcon}
               title={`Add ${entry.title} to your tracks`}
-              onClick={() => addSongToTracks(entry.track_id)}
+              onClick={async () => {
+                await addSongToTracks(entry.trackId);
+              }}
             />
           </div>
           <div className={styles.streamLinks}>

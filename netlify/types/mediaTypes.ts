@@ -133,7 +133,7 @@ export interface Track {
     spotify_url: string;
     created_at: string | Date;
     // "virtual" properties to convert from db fields
-    heardAt?: string | Date;
+    createdAt?: string | Date;
     appleMusicUrl: string;
     youTubeUrl: string;
     spotifyUrl: string;

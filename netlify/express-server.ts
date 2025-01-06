@@ -76,11 +76,11 @@ async function startServer () {
     const start = Date.now();
     const requestId = Math.random().toString(36).substring(7);
 
-    logger.writeDebug(`[${requestId}] ${req.method} ${req.url} started`);
+    logger.writeTrace(`[${requestId}] ${req.method} ${req.url} started`);
 
     res.on('finish', () => {
       const duration = Date.now() - start;
-      logger.writeDebug(`[${requestId}] ${req.method} ${req.url} completed in ${duration}ms with status ${res.statusCode}`);
+      logger.writeTrace(`[${requestId}] ${req.method} ${req.url} completed in ${duration}ms with status ${res.statusCode}`);
     });
 
     next();
@@ -555,14 +555,8 @@ async function startServer () {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const db = await DatabaseFactory.getInstance();
-      const tracks = await db.getTrackHistory((req as any).user.id, limit);
-      // edit some fields for each track
-      (tracks as unknown as Track[]).forEach(track => {
-        track.heardAt = track.created_at;
-        track.spotifyUrl = track.spotify_url;
-        track.youTubeUrl = track.youtube_url;
-        track.appleMusicUrl = track.apple_music_url;
-      });
+      const tracks = (await db.getTrackHistory((req as any).user.id, limit)).map(track => mapDbToFrontend(track));
+
       clearTimeout(timeout);
       res.json(tracks);
     } catch (error: any) {
@@ -849,7 +843,7 @@ async function startServer () {
     return title
       .match(/[a-zA-Z]+(?![^(]*\))/g)
       ?.filter((term) => !filterTerms.includes(term.toLowerCase()))
-      .join(' ').trim();
+      .join(' ').trim() || '';
   }
 
   // Main endpoint
@@ -912,7 +906,14 @@ async function startServer () {
           logger.writeDebug('Spotify searchResults', matchedTrack2);
 
           if (!matchedTrack) {
-            matchedTrack = matchedTrack2 ?? null;
+            matchedTrack = matchedTrack2 ?? {
+              artist: stationName,
+              title: searchTerm,
+              album: '',
+              releaseDate: null,
+              artwork: stationMetadata.icyLogo || '/sound-wave.png',
+              spotifyUrl: '',
+            };
           } else {
             matchedTrack.spotifyUrl = matchedTrack2?.spotifyUrl || '';
           }
