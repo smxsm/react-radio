@@ -25,13 +25,13 @@ export interface DatabaseInterface {
     youtube_url: string;
     spotify_url: string;
   }): Promise<void>;
-  addTrackHistory(trackId: string, userId: string): Promise<void>;
+  addTrackHistory (trackId: string, userId: string, stationId: string): Promise<void>;
   getTrackHistory(userId: string, limit: number): Promise<any[]>;
   deleteTrackHistory(id: string, userId: string): Promise<void>;
   clearTrackHistory(userId: string): Promise<void>;
   getAllUserTracks(userId: string, orderBy?: string, ascending?: boolean): Promise<DbUserTrack[]>;
   getUserTrackById(trackId: string, userId: string): Promise<DbUserTrack | null>;
-  addUserTrack(trackId: string, userId: string): Promise<void>;
+  addUserTrack(trackId: string, userId: string, stationId: string): Promise<void>;
   getUserTracks(userId: string, limit: number): Promise<any[]>;
   deleteUserTrack(id: string, userId: string): Promise<void>;
   clearUserTracks(userId: string): Promise<void>;

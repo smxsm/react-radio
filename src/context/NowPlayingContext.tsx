@@ -40,7 +40,7 @@ interface NowPlayingContextType {
   userTracksLoading?: boolean;
   userTracksError?: Error | null;
   removeSongFromHistory: (id: string) => Promise<void>;
-  addSongToTracks: (id: string) => Promise<void>;
+  addSongToTracks: (id: string, stationId: string) => Promise<void>;
   clearSongHistory: () => Promise<void>;
   removeStationFromHistory: (id: string) => Promise<void>;
   clearStationHistory: () => Promise<void>;
@@ -126,6 +126,7 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
         setMatchedTrack({
           ...result.matchedTrack,
           releaseDate: new Date(result.matchedTrack.releaseDate),
+          stationId: playerContext?.station?.stationId,
         });
       } catch (err) {}
     };
@@ -174,9 +175,9 @@ export function NowPlayingProvider({ children }: NowPlayingInfoProviderProps) {
   }, [user, loadStationHistory, loadTrackHistory, refreshUserTracks]);
 
   const addSongToTracks = useCallback(
-    async (id: string) => {
+    async (id: string, stationId: string = '') => {
       if (!user || !id) return;
-      await addUserTrack(id);
+      await addUserTrack(id, stationId);
       await refreshUserTracks(); // Refresh the tracks list after adding
     },
     [user, addUserTrack, refreshUserTracks]

@@ -15,6 +15,11 @@ So before starting the ReactJS player, first start the Express backend server:
 cd netlify
 npm install
 npm run dev
+# run migrations if needed, e.g. via docker
+# docker exec -it react-radio-backend-1 /bin/sh
+# node migrations/migrate_stations.js
+# etc. ...
+# AND / OR run the migrations in migrations-mysql/
 ```
 
 This will start the Express server at port 3001 (see __.env.dist__, rename to _.env_ and adjust if needed).

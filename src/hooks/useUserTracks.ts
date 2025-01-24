@@ -27,7 +27,7 @@ export default function useUserTracks() {
           );
         }
 
-        const tracks = data.map<api.TrackInfo>(({ id, trackId, title, artist, artwork, album, spotifyUrl, appleMusicUrl, youTubeUrl, createdAt, releaseDate  }) => ({
+        const tracks = data.map<api.TrackInfo>(({ id, trackId, title, artist, artwork, album, spotifyUrl, appleMusicUrl, youTubeUrl, createdAt, releaseDate, stationId  }) => ({
           id,
           trackId,
           title,
@@ -38,7 +38,8 @@ export default function useUserTracks() {
           artwork,
           appleMusicUrl,
           youTubeUrl,
-          spotifyUrl
+          spotifyUrl,
+          stationId,
         }));
 
         setTracks(tracks);
@@ -55,7 +56,7 @@ export default function useUserTracks() {
   );
 
   const addUserTrack = useCallback(
-    async (track: string) => {
+    async (track: string, stationId: string = '') => {
       try {
         setLoading(true);
         const sessionId = localStorage.getItem('sessionId');
@@ -63,7 +64,7 @@ export default function useUserTracks() {
           throw new Error('No session found');
         }
 
-        await api.addUserTrack(sessionId, track);
+        await api.addUserTrack(sessionId, track, stationId);
         
         // Refresh the tracks list after adding
         await getUserTracks();

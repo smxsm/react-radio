@@ -64,8 +64,8 @@ class SQLiteAdapter implements DatabaseInterface {
     statements.upsertTrackMatch.run(track);
   }
 
-  async addTrackHistory(trackId: string, userId: string): Promise<void> {
-    statements.addTrackHistory.run({ track_id: trackId, user_id: userId });
+  async addTrackHistory(trackId: string, userId: string, stationId: string): Promise<void> {
+    statements.addTrackHistory.run({ track_id: trackId, user_id: userId,  station_id: stationId });
   }
 
   async getTrackHistory(userId: string, limit: number): Promise<any[]> {
@@ -94,8 +94,8 @@ class SQLiteAdapter implements DatabaseInterface {
     return statements.getUserTrackById.get(trackId, userId) || null;
   }
 
-  async addUserTrack(trackId: string, userId: string): Promise<void> {
-    statements.addUserTrack.run({ track_id: trackId, user_id: userId });
+  async addUserTrack(trackId: string, userId: string, stationId: string): Promise<void> {
+    statements.addUserTrack.run({ track_id: trackId, user_id: userId, station_id: stationId });
   }
 
   async getUserTracks(userId: string, limit: number): Promise<any[]> {

@@ -377,30 +377,34 @@ class DatabaseManager implements DatabaseInterface {
     await this.pool.query(query, params);
   }
 
-  async addTrackHistory(trackId: string, userId: string): Promise<void> {
+  async addTrackHistory(trackId: string, userId: string, stationId: string): Promise<void> {
     if (!this.pool) throw new Error('Database not initialized');
     await this.pool.query(
-      'INSERT INTO tracks_history (track_id, user_id) VALUES (?, ?)',
-      [trackId, userId]
+      'INSERT INTO tracks_history (track_id, user_id, station_id) VALUES (?, ?, ?)',
+      [trackId, userId, stationId]
     );
   }
 
   async getTrackHistory(userId: string, limit: number): Promise<any[]> {
     if (!this.pool) throw new Error('Database not initialized');
     const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
-      `SELECT
-        th.*,
-        tm.id as track_id,
-        tm.artist,
-        tm.title,
-        tm.album,
-        tm.release_date,
-        tm.artwork,
-        tm.apple_music_url,
-        tm.youtube_url,
-        tm.spotify_url
+      `SELECT DISTINCT
+          th.*,
+          tm.id as track_id,
+          tm.artist,
+          tm.title,
+          tm.album,
+          tm.release_date,
+          tm.artwork,
+          tm.apple_music_url,
+          tm.youtube_url,
+          tm.spotify_url,
+          lh.name as station_name,
+          lh.logo as station_logo,
+          lh.listen_url as station_url
       FROM tracks_history th
       JOIN track_matches tm ON th.track_id = tm.id
+      LEFT JOIN listen_history lh ON th.station_id = lh.station_id AND th.user_id = lh.user_id
       WHERE th.user_id = ?
       ORDER BY th.created_at DESC
       LIMIT ?`,
@@ -426,7 +430,7 @@ class DatabaseManager implements DatabaseInterface {
     const orderField = orderBy === 'title' ? 'tm.title' : 'ut.created_at';
     
     const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
-      `SELECT
+      `SELECT DISTINCT
         ut.*,
         tm.id as track_id,
         tm.artist,
@@ -440,9 +444,13 @@ class DatabaseManager implements DatabaseInterface {
         tm.release_date as releaseDate,
         tm.spotify_url AS spotifyUrl,
         tm.apple_music_url as appleMusicUrl,
-        tm.youtube_url as youTubeUrl
+        tm.youtube_url as youTubeUrl,
+    	lh.name as station_name,
+    	lh.logo as station_logo,
+    	lh.listen_url as station_url
       FROM user_tracks ut
       JOIN track_matches tm ON ut.track_id = tm.id
+      LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
       WHERE ut.user_id = ?
       ORDER BY ${orderField} ${order}`,
       [userId]
@@ -459,18 +467,18 @@ class DatabaseManager implements DatabaseInterface {
     return rows[0] as DbUserTrack || null;
   }
 
-  async addUserTrack(trackId: string, userId: string): Promise<void> {
+  async addUserTrack(trackId: string, userId: string, stationId: string): Promise<void> {
     if (!this.pool) throw new Error('Database not initialized');
     await this.pool.query(
-      'INSERT INTO user_tracks (track_id, user_id) VALUES (?, ?)',
-      [trackId, userId]
+      'INSERT INTO user_tracks (track_id, user_id, station_id) VALUES (?, ?, ?)',
+      [trackId, userId, stationId]
     );
   }
 
   async getUserTracks(userId: string, limit: number): Promise<any[]> {
     if (!this.pool) throw new Error('Database not initialized');
     const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
-      `SELECT
+      `SELECT DISTINCT
         ut.*,
         tm.id as track_id,
         tm.artist,
@@ -480,9 +488,17 @@ class DatabaseManager implements DatabaseInterface {
         tm.artwork,
         tm.apple_music_url,
         tm.youtube_url,
-        tm.spotify_url
+        tm.spotify_url,
+        tm.release_date as releaseDate,
+        tm.spotify_url AS spotifyUrl,
+        tm.apple_music_url as appleMusicUrl,
+        tm.youtube_url as youTubeUrl,
+    	lh.name as station_name,
+    	lh.logo as station_logo,
+    	lh.listen_url as station_url
       FROM user_tracks ut
       JOIN track_matches tm ON ut.track_id = tm.id
+      LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
       WHERE ut.user_id = ?
       ORDER BY ut.created_at DESC
       LIMIT ?`,

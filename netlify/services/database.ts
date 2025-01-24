@@ -52,6 +52,10 @@ interface DbUserTrack {
   apple_music_url?: string;
   spotify_url?: string;
   youtube_url?: string;
+  station_id?: string;
+  station_name?: string;
+  station_logo?: string;
+  station_url?: string;
 }
 
 interface FrontendUserTrack {
@@ -66,6 +70,10 @@ interface FrontendUserTrack {
   appleMusicUrl?: string;
   spotifyUrl?: string;
   youTubeUrl?: string;
+  stationId?: string;
+  stationName?: string;
+  stationLogo?: string;
+  stationUrl?: string;
 }
 
 function mapDbToFrontend(dbTrack: DbUserTrack): FrontendUserTrack {
@@ -81,6 +89,10 @@ function mapDbToFrontend(dbTrack: DbUserTrack): FrontendUserTrack {
     appleMusicUrl: dbTrack.apple_music_url,
     spotifyUrl: dbTrack.spotify_url,
     youTubeUrl: dbTrack.youtube_url,
+    stationId: dbTrack.station_id,
+    stationName: dbTrack.station_name,
+    stationLogo: dbTrack.station_logo,
+    stationUrl: dbTrack.station_url,
   };
 }
 
@@ -97,6 +109,10 @@ function mapFrontendToDb(frontendTrack: FrontendUserTrack): DbUserTrack {
     apple_music_url: frontendTrack.appleMusicUrl,
     spotify_url: frontendTrack.spotifyUrl,
     youtube_url: frontendTrack.youTubeUrl,
+    station_id: frontendTrack.stationId,
+    station_name: frontendTrack.stationName,
+    station_logo: frontendTrack.stationLogo,
+    station_url: frontendTrack.stationUrl,
   };
 }
 
@@ -131,7 +147,7 @@ type StatementsType = {
 
   // Track management
   upsertTrackMatch: Statement<[{ id: string; artist: string; title: string; album: string | null; release_date: string | null; artwork: string | null; apple_music_url: string; youtube_url: string; spotify_url: string; }], RunResult>;
-  addTrackHistory: Statement<[{ track_id: string; user_id: string; }], RunResult>;
+  addTrackHistory: Statement<[{ track_id: string; user_id: string; station_id: string}], RunResult>;
   getTrackHistory: Statement<[string, number], any[]>;
   deleteTrackHistory: Statement<[string, string], RunResult>;
   clearTrackHistory: Statement<[string], RunResult>;
@@ -143,7 +159,7 @@ type StatementsType = {
     byTitle: Statement<[string], DbUserTrack[]>;
     byTitleAsc: Statement<[string], DbUserTrack[]>;
   };
-  addUserTrack: Statement<[{ track_id: string; user_id: string; }], RunResult>;
+  addUserTrack: Statement<[{ track_id: string; user_id: string; station_id: string}], RunResult>;
   getUserTrackById: Statement<[string, string], DbUserTrack>;
   getUserTracks: Statement<[string, number], any[]>;
   deleteUserTrack: Statement<[string, string], RunResult>;
@@ -365,24 +381,28 @@ class DatabaseManager {
           spotify_url=@spotify_url
       `),
       addTrackHistory: this.db.prepare(`
-        INSERT INTO tracks_history (track_id, user_id)
-        VALUES (@track_id, @user_id)
+        INSERT INTO tracks_history (track_id, user_id, station_id)
+        VALUES (@track_id, @user_id, @station_id)
       `),
       getTrackHistory: this.db.prepare(`
-        SELECT
-          th.*,
-          tm.id as track_id,
-          tm.artist,
-          tm.title,
-          tm.album,
-          tm.release_date,
-          tm.artwork,
-          tm.apple_music_url,
-          tm.youtube_url,
-          tm.spotify_url
-        FROM tracks_history th
-        JOIN track_matches tm ON th.track_id = tm.id
-        WHERE th.user_id = ?
+        SELECT DISTINCT
+        th.*,
+        tm.id as track_id,
+        tm.artist,
+        tm.title,
+        tm.album,
+        tm.release_date,
+        tm.artwork,
+        tm.apple_music_url,
+        tm.youtube_url,
+        tm.spotify_url,
+        lh.name as station_name,
+        lh.logo as station_logo,
+        lh.listen_url as station_url
+    FROM tracks_history th
+    JOIN track_matches tm ON th.track_id = tm.id
+    LEFT JOIN listen_history lh ON th.station_id = lh.station_id AND th.user_id = lh.user_id
+    WHERE th.user_id = ?
         ORDER BY th.created_at DESC
         LIMIT ?
       `),
@@ -391,99 +411,123 @@ class DatabaseManager {
 
       // User tracks
       getAllUserTracks: {
-        byCreatedAt: this.db.prepare(`SELECT
-          ut.*,
-          tm.id as track_id,
-          tm.artist,
-          tm.title,
-          tm.album,
-          tm.release_date,
-          tm.artwork,
-          tm.apple_music_url,
-          tm.youtube_url,
-          tm.spotify_url,
-          tm.release_date as releaseDate,
-          tm.spotify_url AS spotifyUrl,
-          tm.apple_music_url as appleMusicUrl,
-          tm.youtube_url as youTubeUrl
-        FROM user_tracks ut
-        JOIN track_matches tm ON ut.track_id = tm.id
-        WHERE ut.user_id = ? ORDER BY ut.created_at DESC`),
-        byCreatedAtAsc: this.db.prepare(`SELECT
-          ut.*,
-          tm.id as track_id,
-          tm.artist,
-          tm.title,
-          tm.album,
-          tm.release_date,
-          tm.artwork,
-          tm.apple_music_url,
-          tm.youtube_url,
-          tm.spotify_url,
-          tm.release_date as releaseDate,
-          tm.spotify_url AS spotifyUrl,
-          tm.apple_music_url as appleMusicUrl,
-          tm.youtube_url as youTubeUrl
-        FROM user_tracks ut
-        JOIN track_matches tm ON ut.track_id = tm.id
-        WHERE ut.user_id = ? ORDER BY ut.created_at ASC`),
-        byTitle: this.db.prepare(`SELECT
-          ut.*,
-          tm.id as track_id,
-          tm.artist,
-          tm.title,
-          tm.album,
-          tm.release_date,
-          tm.artwork,
-          tm.apple_music_url,
-          tm.youtube_url,
-          tm.spotify_url,
-          tm.release_date as releaseDate,
-          tm.spotify_url AS spotifyUrl,
-          tm.apple_music_url as appleMusicUrl,
-          tm.youtube_url as youTubeUrl
-        FROM user_tracks ut
-        JOIN track_matches tm ON ut.track_id = tm.id
-        WHERE ut.user_id = ? ORDER BY tm.title DESC`),
-        byTitleAsc: this.db.prepare(`SELECT
-          ut.*,
-          tm.id as track_id,
-          tm.artist,
-          tm.title,
-          tm.album,
-          tm.release_date,
-          tm.artwork,
-          tm.apple_music_url,
-          tm.youtube_url,
-          tm.spotify_url,
-          tm.release_date as releaseDate,
-          tm.spotify_url AS spotifyUrl,
-          tm.apple_music_url as appleMusicUrl,
-          tm.youtube_url as youTubeUrl
-        FROM user_tracks ut
-        JOIN track_matches tm ON ut.track_id = tm.id
-        WHERE ut.user_id = ? ORDER BY tm.title ASC`)
+        byCreatedAt: this.db.prepare(`SELECT DISTINCT 
+        ut.*,
+        tm.id as track_id,
+        tm.artist,
+        tm.title,
+        tm.album,
+        tm.release_date,
+        tm.artwork,
+        tm.apple_music_url,
+        tm.youtube_url,
+        tm.spotify_url,
+        tm.release_date as releaseDate,
+        tm.spotify_url AS spotifyUrl,
+        tm.apple_music_url as appleMusicUrl,
+        tm.youtube_url as youTubeUrl,
+    	lh.name as station_name,
+    	lh.logo as station_logo,
+    	lh.listen_url as station_url
+      FROM user_tracks ut
+      JOIN track_matches tm ON ut.track_id = tm.id
+      LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
+      WHERE ut.user_id = ? ORDER BY ut.created_at DESC`),
+        byCreatedAtAsc: this.db.prepare(`SELECT DISTINCT 
+        ut.*,
+        tm.id as track_id,
+        tm.artist,
+        tm.title,
+        tm.album,
+        tm.release_date,
+        tm.artwork,
+        tm.apple_music_url,
+        tm.youtube_url,
+        tm.spotify_url,
+        tm.release_date as releaseDate,
+        tm.spotify_url AS spotifyUrl,
+        tm.apple_music_url as appleMusicUrl,
+        tm.youtube_url as youTubeUrl,
+    	lh.name as station_name,
+    	lh.logo as station_logo,
+    	lh.listen_url as station_url
+      FROM user_tracks ut
+      JOIN track_matches tm ON ut.track_id = tm.id
+      LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
+      WHERE ut.user_id = ? ORDER BY ut.created_at ASC`),
+        byTitle: this.db.prepare(`SELECT DISTINCT 
+        ut.*,
+        tm.id as track_id,
+        tm.artist,
+        tm.title,
+        tm.album,
+        tm.release_date,
+        tm.artwork,
+        tm.apple_music_url,
+        tm.youtube_url,
+        tm.spotify_url,
+        tm.release_date as releaseDate,
+        tm.spotify_url AS spotifyUrl,
+        tm.apple_music_url as appleMusicUrl,
+        tm.youtube_url as youTubeUrl,
+    	lh.name as station_name,
+    	lh.logo as station_logo,
+    	lh.listen_url as station_url
+      FROM user_tracks ut
+      JOIN track_matches tm ON ut.track_id = tm.id
+      LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
+      WHERE ut.user_id = ? ORDER BY tm.title DESC`),
+        byTitleAsc: this.db.prepare(`SELECT DISTINCT 
+        ut.*,
+        tm.id as track_id,
+        tm.artist,
+        tm.title,
+        tm.album,
+        tm.release_date,
+        tm.artwork,
+        tm.apple_music_url,
+        tm.youtube_url,
+        tm.spotify_url,
+        tm.release_date as releaseDate,
+        tm.spotify_url AS spotifyUrl,
+        tm.apple_music_url as appleMusicUrl,
+        tm.youtube_url as youTubeUrl,
+    	lh.name as station_name,
+    	lh.logo as station_logo,
+    	lh.listen_url as station_url
+      FROM user_tracks ut
+      JOIN track_matches tm ON ut.track_id = tm.id
+      LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
+      WHERE ut.user_id = ? ORDER BY tm.title ASC`)
       },
       getUserTrackById: this.db.prepare('SELECT * FROM user_tracks WHERE track_id = ? AND user_id = ?'),
       addUserTrack: this.db.prepare(`
-        INSERT INTO user_tracks (track_id, user_id)
-        VALUES (@track_id, @user_id)
+        INSERT INTO user_tracks (track_id, user_id, station_id)
+        VALUES (@track_id, @user_id, @station_id)
       `),
       getUserTracks: this.db.prepare(`
-        SELECT
-          ut.*,
-          tm.id as track_id,
-          tm.artist,
-          tm.title,
-          tm.album,
-          tm.release_date,
-          tm.artwork,
-          tm.apple_music_url,
-          tm.youtube_url,
-          tm.spotify_url
-        FROM user_tracks ut
-        JOIN track_matches tm ON ut.track_id = tm.id
-        WHERE ut.user_id = ?
+        SELECT DISTINCT 
+        ut.*,
+        tm.id as track_id,
+        tm.artist,
+        tm.title,
+        tm.album,
+        tm.release_date,
+        tm.artwork,
+        tm.apple_music_url,
+        tm.youtube_url,
+        tm.spotify_url,
+        tm.release_date as releaseDate,
+        tm.spotify_url AS spotifyUrl,
+        tm.apple_music_url as appleMusicUrl,
+        tm.youtube_url as youTubeUrl,
+    	lh.name as station_name,
+    	lh.logo as station_logo,
+    	lh.listen_url as station_url
+      FROM user_tracks ut
+      JOIN track_matches tm ON ut.track_id = tm.id
+      LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
+      WHERE ut.user_id = ?
         ORDER BY ut.created_at DESC
         LIMIT ?
       `),

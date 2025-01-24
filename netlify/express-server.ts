@@ -485,13 +485,13 @@ async function startServer () {
     }, 5000);
 
     try {
-      const { id } = req.body;
+      const { id, station_id } = req.body;
       const userId = (req as any).user.id;
       const db = await DatabaseFactory.getInstance();
       const track = await db.getUserTrackById(id, userId);
       // only add if not already on user list
       if (!track) {
-        await db.addUserTrack(id, userId);
+        await db.addUserTrack(id, userId, station_id);
       }
       clearTimeout(timeout);
       res.json({ success: true });
@@ -575,9 +575,9 @@ async function startServer () {
     }, 5000);
 
     try {
-      const { track_id } = req.body;
+      const { track_id, station_id } = req.body;
       const db = await DatabaseFactory.getInstance();
-      await db.addTrackHistory(track_id, (req as any).user.id);
+      await db.addTrackHistory(track_id, (req as any).user.id, station_id);
       clearTimeout(timeout);
       res.json({ success: true });
     } catch (error: any) {

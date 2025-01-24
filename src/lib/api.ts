@@ -281,6 +281,7 @@ export interface TrackInfo {
   appleMusicUrl?: string;
   spotifyUrl?: string;
   youTubeUrl?: string;  
+  stationId?: string;
 }
 
 export interface TrackHistory extends TrackInfo {
@@ -327,7 +328,7 @@ export async function getUserTrackById (sessionId: string, id: string) {
   return handleResponse<{ id: string; trackId: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; createdAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string }>(response);
 }
 
-export async function addUserTrack (sessionId: string, id: string) {
+export async function addUserTrack (sessionId: string, id: string, stationId: string) {
   const response = await fetch(`${API_BASE_URL}/usertracks`, {
     method: 'POST',
     headers: {
@@ -337,6 +338,7 @@ export async function addUserTrack (sessionId: string, id: string) {
     },
     body: JSON.stringify({
       id: id,
+      station_id: stationId,
     }),
   });
 
@@ -387,6 +389,7 @@ export async function addTrackToHistory(sessionId: string, trackInfo: TrackInfo)
     },
     body: JSON.stringify({
       track_id: trackInfo.id,
+      station_id: trackInfo.stationId,
     }),
   });
 

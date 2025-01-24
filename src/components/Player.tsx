@@ -101,7 +101,7 @@ export default function Player(props: any) {
             className={styles.actionIcon}
             title={`Add ${matchedTrack?.title} to your tracks`}
             onClick={async () => {
-              await addSongToTracks(matchedTrack.id);
+              await addSongToTracks(matchedTrack.id, matchedTrack.stationId);
             }}
           />
         )}
