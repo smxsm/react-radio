@@ -403,6 +403,7 @@ class DatabaseManager {
     JOIN track_matches tm ON th.track_id = tm.id
     LEFT JOIN listen_history lh ON th.station_id = lh.station_id AND th.user_id = lh.user_id
     WHERE th.user_id = ?
+      GROUP BY th.track_id
         ORDER BY th.created_at DESC
         LIMIT ?
       `),
@@ -432,7 +433,7 @@ class DatabaseManager {
       FROM user_tracks ut
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
-      WHERE ut.user_id = ? ORDER BY ut.created_at DESC`),
+      WHERE ut.user_id = ? GROUP BY ut.track_id ORDER BY ut.created_at DESC`),
         byCreatedAtAsc: this.db.prepare(`SELECT DISTINCT 
         ut.*,
         tm.id as track_id,
@@ -454,7 +455,7 @@ class DatabaseManager {
       FROM user_tracks ut
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
-      WHERE ut.user_id = ? ORDER BY ut.created_at ASC`),
+      WHERE ut.user_id = ? GROUP BY ut.track_id ORDER BY ut.created_at ASC`),
         byTitle: this.db.prepare(`SELECT DISTINCT 
         ut.*,
         tm.id as track_id,
@@ -476,7 +477,7 @@ class DatabaseManager {
       FROM user_tracks ut
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
-      WHERE ut.user_id = ? ORDER BY tm.title DESC`),
+      WHERE ut.user_id = ? GROUP BY ut.track_id ORDER BY tm.title DESC`),
         byTitleAsc: this.db.prepare(`SELECT DISTINCT 
         ut.*,
         tm.id as track_id,
@@ -498,7 +499,7 @@ class DatabaseManager {
       FROM user_tracks ut
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
-      WHERE ut.user_id = ? ORDER BY tm.title ASC`)
+      WHERE ut.user_id = ? GROUP BY ut.track_id ORDER BY tm.title ASC`)
       },
       getUserTrackById: this.db.prepare('SELECT * FROM user_tracks WHERE track_id = ? AND user_id = ?'),
       addUserTrack: this.db.prepare(`
@@ -528,7 +529,8 @@ class DatabaseManager {
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
       WHERE ut.user_id = ?
-        ORDER BY ut.created_at DESC
+      GROUP BY ut.track_id  
+      ORDER BY ut.created_at DESC
         LIMIT ?
       `),
       deleteUserTrack: this.db.prepare('DELETE FROM user_tracks WHERE id = ? AND user_id = ?'),

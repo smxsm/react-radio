@@ -406,6 +406,7 @@ class DatabaseManager implements DatabaseInterface {
       JOIN track_matches tm ON th.track_id = tm.id
       LEFT JOIN listen_history lh ON th.station_id = lh.station_id AND th.user_id = lh.user_id
       WHERE th.user_id = ?
+      GROUP BY th.track_id
       ORDER BY th.created_at DESC
       LIMIT ?`,
       [userId, limit]
@@ -452,6 +453,7 @@ class DatabaseManager implements DatabaseInterface {
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
       WHERE ut.user_id = ?
+      GROUP BY ut.track_id
       ORDER BY ${orderField} ${order}`,
       [userId]
     );
@@ -500,6 +502,7 @@ class DatabaseManager implements DatabaseInterface {
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
       WHERE ut.user_id = ?
+      GROUP BY ut.track_id
       ORDER BY ut.created_at DESC
       LIMIT ?`,
       [userId, limit]
