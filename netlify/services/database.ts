@@ -302,7 +302,7 @@ class DatabaseManager {
         logo TEXT,
         listen_url TEXT NOT NULL,
         sorting INT(4) NOT NULL DEFAULT '0',
-        UNIQUE KEY unique_station(station_id)
+        UNIQUE (station_id)
       );
     `);
 
