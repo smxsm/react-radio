@@ -291,7 +291,7 @@ export interface TrackHistory extends TrackInfo {
 // User track endpoints
 export async function getUserTracks (sessionId: string, orderBy = 'created_at', order = 'DESC', retries = 2) {
   const attempt = async () => {
-    return fetchWithTimeout<{ id: string; trackId: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; createdAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string }[]>(
+    return fetchWithTimeout<{ id: string; trackId: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; createdAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string; stationId: string; }[]>(
       `${API_BASE_URL}/usertracks?orderBy=${orderBy}&order=${order}`,
       {
         headers: {
@@ -325,7 +325,7 @@ export async function getUserTrackById (sessionId: string, id: string) {
     },
   });
 
-  return handleResponse<{ id: string; trackId: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; createdAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string }>(response);
+  return handleResponse<{ id: string; trackId: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; createdAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string; stationId: string; }>(response);
 }
 
 export async function addUserTrack (sessionId: string, id: string, stationId: string) {

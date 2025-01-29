@@ -65,7 +65,7 @@ export default function TrackHistory({ className }: TrackHistoryProps) {
               className={styles.actionIcon}
               title={`Add ${entry.title} to your tracks`}
               onClick={async () => {
-                await addSongToTracks(entry.trackId, entry.stationId);
+                await addSongToTracks(entry.trackId, entry.stationId || '');
               }}
             />
           </div>
