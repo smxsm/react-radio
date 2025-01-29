@@ -466,9 +466,9 @@ class DatabaseManager implements DatabaseInterface {
       AND tm.artist LIKE ? OR tm.title LIKE ?
       GROUP BY ut.track_id
       ORDER BY ${orderField} ${order}
-      LIMIT ?
+      LIMIT ${limit}
       `,
-      [userId, '%' + searchTerm + '%', '%' + searchTerm + '%', limit]
+      [userId, '%' + searchTerm + '%', '%' + searchTerm + '%']
     );
     return rows as DbUserTrack[];
   }
