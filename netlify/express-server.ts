@@ -425,10 +425,12 @@ async function startServer () {
       const userId = (req as any).user.id;
       const orderBy = (req.query.orderBy as string) || 'created_at';
       const order = (req.query.order as string)?.toUpperCase() || 'DESC';
+      const limit = (req.query.limit as unknown as number) || 50;
+      const searchTerm = (req.query.searchTerm as string) || '';
 
       const db = await DatabaseFactory.getInstance();
       const result = await Promise.race([
-        db.getAllUserTracks(userId, orderBy, order === 'ASC'),
+        db.getAllUserTracks(userId, orderBy, order === 'ASC', limit, searchTerm),
         timeoutPromise
       ]);
 

@@ -30,7 +30,7 @@ export interface DatabaseInterface {
   getRecommendations (/*userId: string, */limit: number): Promise<any[]>;
   deleteTrackHistory(id: string, userId: string): Promise<void>;
   clearTrackHistory(userId: string): Promise<void>;
-  getAllUserTracks(userId: string, orderBy?: string, ascending?: boolean): Promise<DbUserTrack[]>;
+  getAllUserTracks(userId: string, orderBy?: string, ascending?: boolean, limit?: number, seachTerm?: string): Promise<DbUserTrack[]>;
   getUserTrackById(trackId: string, userId: string): Promise<DbUserTrack | null>;
   addUserTrack(trackId: string, userId: string, stationId: string): Promise<void>;
   getUserTracks(userId: string, limit: number): Promise<any[]>;

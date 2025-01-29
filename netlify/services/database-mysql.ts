@@ -435,7 +435,7 @@ class DatabaseManager implements DatabaseInterface {
   }
 
   // User tracks operations
-  async getAllUserTracks(userId: string, orderBy: string = 'created_at', ascending: boolean = false): Promise<DbUserTrack[]> {
+  async getAllUserTracks(userId: string, orderBy: string = 'created_at', ascending: boolean = false, limit: number = 50, searchTerm: string = ''): Promise<DbUserTrack[]> {
     if (!this.pool) throw new Error('Database not initialized');
     const order = ascending ? 'ASC' : 'DESC';
     const orderField = orderBy === 'title' ? 'tm.title' : 'ut.created_at';
@@ -463,9 +463,12 @@ class DatabaseManager implements DatabaseInterface {
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
       WHERE ut.user_id = ?
+      AND tm.artist LIKE ? OR tm.title LIKE ?
       GROUP BY ut.track_id
-      ORDER BY ${orderField} ${order}`,
-      [userId]
+      ORDER BY ${orderField} ${order}
+      LIMIT ?
+      `,
+      [userId, '%' + searchTerm + '%', '%' + searchTerm + '%', limit]
     );
     return rows as DbUserTrack[];
   }

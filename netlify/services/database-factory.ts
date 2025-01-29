@@ -80,12 +80,12 @@ class SQLiteAdapter implements DatabaseInterface {
     statements.clearTrackHistory.run(userId);
   }
 
-  async getAllUserTracks(userId: string, orderBy: string = 'created_at', ascending: boolean = false): Promise<DbUserTrack[]> {
+  async getAllUserTracks(userId: string, orderBy: string = 'created_at', ascending: boolean = false, limit: number = 50, searchTerm: string = ''): Promise<DbUserTrack[]> {
     let result;
     if (orderBy === 'title') {
-      result = ascending ? statements.getAllUserTracks.byTitleAsc.all(userId) : statements.getAllUserTracks.byTitle.all(userId);
+      result = ascending ? statements.getAllUserTracks.byTitleAsc.all(userId, limit, searchTerm) : statements.getAllUserTracks.byTitle.all(userId, limit, searchTerm);
     } else {
-      result = ascending ? statements.getAllUserTracks.byCreatedAtAsc.all(userId) : statements.getAllUserTracks.byCreatedAt.all(userId);
+      result = ascending ? statements.getAllUserTracks.byCreatedAtAsc.all(userId, limit, searchTerm) : statements.getAllUserTracks.byCreatedAt.all(userId, limit, searchTerm);
     }
     return result as unknown as DbUserTrack[];
   }
