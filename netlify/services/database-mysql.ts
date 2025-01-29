@@ -132,6 +132,16 @@ class DatabaseManager implements DatabaseInterface {
         FOREIGN KEY (user_id) REFERENCES users(id)
       )`,
 
+      `CREATE TABLE IF NOT EXISTS recommendations (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        station_id VARCHAR(255),
+        name VARCHAR(255) NOT NULL,
+        logo TEXT,
+        listen_url TEXT NOT NULL,
+        sorting INT(4) NOT NULL DEFAULT '0',
+        UNIQUE KEY unique_station (station_id)
+      )`,
+
       // Indexes - MySQL doesn't support IF NOT EXISTS for indexes, so we'll handle duplicates in the catch block
       'CREATE INDEX idx_password_resets_token ON password_resets(token)',
       'CREATE INDEX idx_tracks_history_user_id ON tracks_history(user_id)',
@@ -537,6 +547,18 @@ class DatabaseManager implements DatabaseInterface {
        ORDER BY created_at DESC
        LIMIT ?`,
       [userId, limit]
+    );
+    return rows;
+  }
+
+  async getRecommendations (/*userId: string, */limit: number): Promise<any[]> {
+    if (!this.pool) throw new Error('Database not initialized');
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
+      `SELECT * FROM recommendations
+       WHERE 1
+       ORDER BY sorting ASC
+       LIMIT ?`,
+      [limit]
     );
     return rows;
   }

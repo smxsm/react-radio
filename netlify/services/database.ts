@@ -165,6 +165,8 @@ type StatementsType = {
   deleteUserTrack: Statement<[string, string], RunResult>;
   clearUserTracks: Statement<[string], RunResult>;
 
+  getRecommendations: Statement<[number], any[]>;
+
   // Listen history
   addListenHistory: Statement<[{ station_id: string; user_id: string; name: string; logo: string | null; listen_url: string; }], RunResult>;
   getListenHistory: Statement<[string, number], any[]>;
@@ -291,6 +293,16 @@ class DatabaseManager {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (track_id) REFERENCES track_matches(id),
         FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS recommendations(
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        station_id VARCHAR(255),
+        name VARCHAR(255) NOT NULL,
+        logo TEXT,
+        listen_url TEXT NOT NULL,
+        sorting INT(4) NOT NULL DEFAULT '0',
+        UNIQUE KEY unique_station(station_id)
       );
     `);
 
@@ -548,7 +560,14 @@ class DatabaseManager {
         LIMIT ?
       `),
       deleteListenHistory: this.db.prepare('DELETE FROM listen_history WHERE id = ? AND user_id = ?'),
-      clearListenHistory: this.db.prepare('DELETE FROM listen_history WHERE user_id = ?')
+      clearListenHistory: this.db.prepare('DELETE FROM listen_history WHERE user_id = ?'),
+
+      getRecommendations: this.db.prepare(`
+        SELECT * FROM recommendations
+        WHERE 1
+        ORDER BY sorting ASC
+        LIMIT ?
+      `),
     };
   }
 

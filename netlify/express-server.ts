@@ -630,6 +630,27 @@ async function startServer () {
     }
   });
 
+  app.get('/recommendations', async (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const db = await DatabaseFactory.getInstance();
+      const rec = await db.getRecommendations(limit);
+      clearTimeout(timeout);
+      res.json(rec);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      logger.writeError('Get recommendations error:', error);
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
+      });
+    }
+  });
+
   // Listen history endpoints
   app.get('/listen/history', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {

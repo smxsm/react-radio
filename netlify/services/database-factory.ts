@@ -102,6 +102,10 @@ class SQLiteAdapter implements DatabaseInterface {
     return statements.getUserTracks.all(userId, limit);
   }
 
+  async getRecommendations (/*userId: string, */limit: number): Promise<any[]> {
+    return statements.getRecommendations.all(limit);
+  }
+
   async deleteUserTrack(id: string, userId: string): Promise<void> {
     statements.deleteUserTrack.run(id, userId);
   }
