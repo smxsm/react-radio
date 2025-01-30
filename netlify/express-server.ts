@@ -301,21 +301,17 @@ async function startServer () {
       const userId = (req as any).user.id;
       const orderBy = (req.query.orderBy as string) || 'created_at';
       const order = (req.query.order as string)?.toUpperCase() || 'DESC';
+      const limit = (req.query.limit as unknown as number) || 50;
+      const searchTerm = (req.query.searchTerm as string) || '';
 
       const db = await DatabaseFactory.getInstance();
       const result = await Promise.race([
-        db.getAllStations(userId, orderBy, order === 'ASC'),
+        db.getAllStations(userId, orderBy, order === 'ASC', limit, searchTerm),
         timeoutPromise
       ]);
 
       if (Array.isArray(result)) {
         const stations: Station[] = result;
-        /*
-        stations.forEach((station: Station) => {
-          station.listen_url = `http://localhost:3001/proxy?url=${encodeURIComponent(station.listen_url)}`;
-          logger.writeError('station url', station.listen_url);
-        });
-        */
         res.json(stations);
       } else {
         // Handle the case where the timeout occurred
@@ -556,8 +552,9 @@ async function startServer () {
 
     try {
       const limit = parseInt(req.query.limit as string) || 50;
+      const searchTerm = (req.query.searchTerm as string) || '';
       const db = await DatabaseFactory.getInstance();
-      const tracks = (await db.getTrackHistory((req as any).user.id, limit)).map(track => mapDbToFrontend(track));
+      const tracks = (await db.getTrackHistory((req as any).user.id, limit, searchTerm)).map(track => mapDbToFrontend(track));
 
       clearTimeout(timeout);
       res.json(tracks);
@@ -661,8 +658,9 @@ async function startServer () {
 
     try {
       const limit = parseInt(req.query.limit as string) || 50;
+      const searchTerm = (req.query.searchTerm as string) || '';
       const db = await DatabaseFactory.getInstance();
-      const history = await db.getListenHistory((req as any).user.id, limit);
+      const history = await db.getListenHistory((req as any).user.id, limit, searchTerm);
       // set the listenUrl of every history entry for the player context
       // TODO: add db mapping, too!
       history.forEach((entry: any) => {

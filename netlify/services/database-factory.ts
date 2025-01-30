@@ -38,12 +38,12 @@ class SQLiteAdapter implements DatabaseInterface {
     statements.deleteUserSessions.run(userId);
   }
 
-  async getAllStations(userId: string, orderBy: string = 'created_at', ascending: boolean = false): Promise<DbStation[]> {
+  async getAllStations (userId: string, orderBy: string = 'created_at', ascending: boolean = false, limit: number = 50, searchTerm: string = ''): Promise<DbStation[]> {
     let result;
     if (orderBy === 'name') {
-      result = ascending ? statements.getAllStations.byNameAsc.all(userId) : statements.getAllStations.byName.all(userId);
+      result = ascending ? statements.getAllStations.byNameAsc.all(userId, '%' + searchTerm + '%', limit) : statements.getAllStations.byName.all(userId, '%' + searchTerm + '%', limit);
     } else {
-      result = ascending ? statements.getAllStations.byCreatedAtAsc.all(userId) : statements.getAllStations.byCreatedAt.all(userId);
+      result = ascending ? statements.getAllStations.byCreatedAtAsc.all(userId, '%' + searchTerm + '%', limit) : statements.getAllStations.byCreatedAt.all(userId, '%' + searchTerm + '%', limit);
     }
     return result as unknown as DbStation[];
   }
@@ -68,8 +68,8 @@ class SQLiteAdapter implements DatabaseInterface {
     statements.addTrackHistory.run({ track_id: trackId, user_id: userId,  station_id: stationId });
   }
 
-  async getTrackHistory(userId: string, limit: number): Promise<any[]> {
-    return statements.getTrackHistory.all(userId, limit);
+  async getTrackHistory(userId: string, limit: number, searchTerm: string): Promise<any[]> {
+    return statements.getTrackHistory.all(userId, '%' + searchTerm + '%', limit);
   }
 
   async deleteTrackHistory(id: string, userId: string): Promise<void> {
@@ -83,9 +83,9 @@ class SQLiteAdapter implements DatabaseInterface {
   async getAllUserTracks(userId: string, orderBy: string = 'created_at', ascending: boolean = false, limit: number = 50, searchTerm: string = ''): Promise<DbUserTrack[]> {
     let result;
     if (orderBy === 'title') {
-      result = ascending ? statements.getAllUserTracks.byTitleAsc.all(userId, limit, searchTerm) : statements.getAllUserTracks.byTitle.all(userId, limit, searchTerm);
+      result = ascending ? statements.getAllUserTracks.byTitleAsc.all(userId, '%' + searchTerm + '%', limit) : statements.getAllUserTracks.byTitle.all(userId, '%' + searchTerm + '%', limit);
     } else {
-      result = ascending ? statements.getAllUserTracks.byCreatedAtAsc.all(userId, limit, searchTerm) : statements.getAllUserTracks.byCreatedAt.all(userId, limit, searchTerm);
+      result = ascending ? statements.getAllUserTracks.byCreatedAtAsc.all(userId, '%' + searchTerm + '%', limit) : statements.getAllUserTracks.byCreatedAt.all(userId, '%' + searchTerm + '%', limit);
     }
     return result as unknown as DbUserTrack[];
   }
@@ -118,8 +118,8 @@ class SQLiteAdapter implements DatabaseInterface {
     statements.addListenHistory.run(history);
   }
 
-  async getListenHistory(userId: string, limit: number): Promise<any[]> {
-    return statements.getListenHistory.all(userId, limit);
+  async getListenHistory(userId: string, limit: number, searchTerm: string): Promise<any[]> {
+    return statements.getListenHistory.all(userId, '%' + searchTerm + '%', limit);
   }
 
   async deleteListenHistory(id: string, userId: string): Promise<void> {

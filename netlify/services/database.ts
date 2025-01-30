@@ -136,10 +136,10 @@ type StatementsType = {
 
   // Custom stations
   getAllStations: {
-    byCreatedAt: Statement<[string], DbStation[]>;
-    byCreatedAtAsc: Statement<[string], DbStation[]>;
-    byName: Statement<[string], DbStation[]>;
-    byNameAsc: Statement<[string], DbStation[]>;
+    byCreatedAt: Statement<[user_id: string, searchTerm: string, limit: number], DbStation[]>;
+    byCreatedAtAsc: Statement<[user_id: string, searchTerm: string, limit: number], DbStation[]>;
+    byName: Statement<[user_id: string, searchTerm: string, limit: number], DbStation[]>;
+    byNameAsc: Statement<[user_id: string, searchTerm: string, limit: number], DbStation[]>;
   };
   getStationById: Statement<[string, string], DbStation>;
   upsertStation: Statement<[{ station_id: string; user_id: string; name: string; logo: string | null; listen_url: string; }], RunResult>;
@@ -148,16 +148,16 @@ type StatementsType = {
   // Track management
   upsertTrackMatch: Statement<[{ id: string; artist: string; title: string; album: string | null; release_date: string | null; artwork: string | null; apple_music_url: string; youtube_url: string; spotify_url: string; }], RunResult>;
   addTrackHistory: Statement<[{ track_id: string; user_id: string; station_id: string}], RunResult>;
-  getTrackHistory: Statement<[string, number], any[]>;
+  getTrackHistory: Statement<[user_id: string, searchTerm: string, limit: number], any[]>;
   deleteTrackHistory: Statement<[string, string], RunResult>;
   clearTrackHistory: Statement<[string], RunResult>;
 
   // User tracks managment
   getAllUserTracks: {
-    byCreatedAt: Statement<[user_id: string, limit: number, searchTerm: string], DbUserTrack[]>;
-    byCreatedAtAsc: Statement<[user_id: string, limit: number, searchTerm: string], DbUserTrack[]>;
-    byTitle: Statement<[user_id: string, limit: number, searchTerm: string], DbUserTrack[]>;
-    byTitleAsc: Statement<[user_id: string, limit: number, searchTerm: string], DbUserTrack[]>;
+    byCreatedAt: Statement<[user_id: string, searchTerm: string, limit: number], DbUserTrack[]>;
+    byCreatedAtAsc: Statement<[user_id: string, searchTerm: string, limit: number], DbUserTrack[]>;
+    byTitle: Statement<[user_id: string, searchTerm: string, limit: number], DbUserTrack[]>;
+    byTitleAsc: Statement<[user_id: string, searchTerm: string, limit: number], DbUserTrack[]>;
   };
   addUserTrack: Statement<[{ track_id: string; user_id: string; station_id: string}], RunResult>;
   getUserTrackById: Statement<[string, string], DbUserTrack>;
@@ -169,7 +169,7 @@ type StatementsType = {
 
   // Listen history
   addListenHistory: Statement<[{ station_id: string; user_id: string; name: string; logo: string | null; listen_url: string; }], RunResult>;
-  getListenHistory: Statement<[string, number], any[]>;
+  getListenHistory: Statement<[user_id: string, searchTerm: string, limit: number], any[]>;
   deleteListenHistory: Statement<[string, string], RunResult>;
   clearListenHistory: Statement<[string], RunResult>;
 };
@@ -356,10 +356,10 @@ class DatabaseManager {
 
       // Custom stations
       getAllStations: {
-        byCreatedAt: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? ORDER BY created_at DESC'),
-        byCreatedAtAsc: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? ORDER BY created_at ASC'),
-        byName: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? ORDER BY name DESC'),
-        byNameAsc: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? ORDER BY name ASC')
+        byCreatedAt: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? AND name LIKE ? ORDER BY created_at DESC LIMIT ?'),
+        byCreatedAtAsc: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? AND name LIKE ? ORDER BY created_at ASC LIMIT ?'),
+        byName: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? AND name LIKE ? ORDER BY name DESC LIMIT ?'),
+        byNameAsc: this.db.prepare('SELECT * FROM user_stations WHERE user_id = ? AND name LIKE ? ORDER BY name ASC LIMIT ?')
       },
       getStationById: this.db.prepare('SELECT *, station_id AS stationId FROM user_stations WHERE station_id = ? AND user_id = ?'),
       upsertStation: this.db.prepare(`
@@ -415,6 +415,7 @@ class DatabaseManager {
     JOIN track_matches tm ON th.track_id = tm.id
     LEFT JOIN listen_history lh ON th.station_id = lh.station_id AND th.user_id = lh.user_id
     WHERE th.user_id = ?
+    AND tm.artist LIKE ? OR tm.title LIKE ?
       GROUP BY th.track_id
         ORDER BY th.created_at DESC
         LIMIT ?
@@ -564,6 +565,7 @@ class DatabaseManager {
       getListenHistory: this.db.prepare(`
         SELECT * FROM listen_history
         WHERE user_id = ?
+        AND name LIKE ?
         ORDER BY created_at DESC
         LIMIT ?
       `),

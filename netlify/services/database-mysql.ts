@@ -294,12 +294,15 @@ class DatabaseManager implements DatabaseInterface {
   }
 
   // Station operations
-  async getAllStations(userId: string, orderBy: string = 'created_at', ascending: boolean = false): Promise<DbStation[]> {
+  async getAllStations(userId: string, orderBy: string = 'created_at', ascending: boolean = false, limit: number = 50, searchTerm: string = ''): Promise<DbStation[]> {
     if (!this.pool) throw new Error('Database not initialized');
     const order = ascending ? 'ASC' : 'DESC';
     const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
-      `SELECT * FROM user_stations WHERE user_id = ? ORDER BY ${orderBy} ${order}`,
-      [userId]
+      `SELECT * FROM user_stations WHERE user_id = ? 
+      AND name like ?      
+      ORDER BY ${orderBy} ${order} 
+      LIMIT ${limit}`,
+      [userId, '%' + searchTerm + '%']
     );
     return rows as DbStation[];
   }
@@ -395,7 +398,7 @@ class DatabaseManager implements DatabaseInterface {
     );
   }
 
-  async getTrackHistory(userId: string, limit: number): Promise<any[]> {
+  async getTrackHistory(userId: string, limit: number, searchTerm: string): Promise<any[]> {
     if (!this.pool) throw new Error('Database not initialized');
     const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
       `SELECT DISTINCT
@@ -416,10 +419,11 @@ class DatabaseManager implements DatabaseInterface {
       JOIN track_matches tm ON th.track_id = tm.id
       LEFT JOIN listen_history lh ON th.station_id = lh.station_id AND th.user_id = lh.user_id
       WHERE th.user_id = ?
+      AND tm.artist LIKE ? OR tm.title LIKE ?
       GROUP BY th.track_id
       ORDER BY th.created_at DESC
-      LIMIT ?`,
-      [userId, limit]
+      LIMIT ${limit}`,
+      [userId, '%' + searchTerm + '%', '%' + searchTerm + '%']
     );
     return rows;
   }
@@ -542,14 +546,15 @@ class DatabaseManager implements DatabaseInterface {
     );
   }
 
-  async getListenHistory(userId: string, limit: number): Promise<any[]> {
+  async getListenHistory(userId: string, limit: number, searchTerm: string): Promise<any[]> {
     if (!this.pool) throw new Error('Database not initialized');
     const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
       `SELECT * FROM listen_history
        WHERE user_id = ?
+       AND name LIKE ?
        ORDER BY created_at DESC
-       LIMIT ?`,
-      [userId, limit]
+       LIMIT ${limit}`,
+      [userId, '%' + searchTerm + '%']
     );
     return rows;
   }

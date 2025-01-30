@@ -10,7 +10,7 @@ export interface DatabaseInterface {
   getSession(id: string): Promise<DbSession | null>;
   deleteSession(id: string): Promise<void>;
   deleteUserSessions(userId: string): Promise<void>;
-  getAllStations(userId: string, orderBy?: string, ascending?: boolean): Promise<DbStation[]>;
+  getAllStations (userId: string, orderBy?: string, ascending?: boolean, limit?: number, seachTerm?: string): Promise<DbStation[]>;
   getStationById(id: string, userId: string): Promise<DbStation | null>;
   upsertStation(station: { station_id: string; user_id: string; name: string; logo: string | null; listen_url: string }): Promise<void>;
   deleteStation(id: string, userId: string): Promise<void>;
@@ -26,7 +26,7 @@ export interface DatabaseInterface {
     spotify_url: string;
   }): Promise<void>;
   addTrackHistory (trackId: string, userId: string, stationId: string): Promise<void>;
-  getTrackHistory(userId: string, limit: number): Promise<any[]>;
+  getTrackHistory(userId: string, limit: number, searchTerm: string): Promise<any[]>;
   getRecommendations (/*userId: string, */limit: number): Promise<any[]>;
   deleteTrackHistory(id: string, userId: string): Promise<void>;
   clearTrackHistory(userId: string): Promise<void>;
@@ -37,7 +37,7 @@ export interface DatabaseInterface {
   deleteUserTrack(id: string, userId: string): Promise<void>;
   clearUserTracks(userId: string): Promise<void>;
   addListenHistory(history: { station_id: string; user_id: string; name: string; logo: string | null; listen_url: string }): Promise<void>;
-  getListenHistory(userId: string, limit: number): Promise<any[]>;
+  getListenHistory(userId: string, limit: number, searchTerm?: string): Promise<any[]>;
   deleteListenHistory(id: string, userId: string): Promise<void>;
   clearListenHistory(userId: string): Promise<void>;
   close(): Promise<void>;
