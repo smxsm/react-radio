@@ -5,7 +5,7 @@ import { CacheEntry, MetadataResponse } from './types/mediaTypes';
 import { randomUUID } from 'crypto';
 import * as auth from './services/auth';
 import { DatabaseFactory, mapDbToFrontend } from './services/database-factory';
-import type { DbUserTrack } from './services/database-interface';
+import type { DbUserTrack, DbUserTracksResult } from './services/database-interface';
 import getIcecastMetadata from './services/streamMetadata';
 import iTunesSearch from './services/iTunes';
 import spotifySearch from './services/spotify';
@@ -410,6 +410,9 @@ async function startServer () {
     }
   });
 
+  function isDbUserTracksResult (obj: any): obj is DbUserTracksResult {
+    return 'data' in obj && 'totalCount' in obj;
+  }
   // Custom stations endpoints
   app.get('/usertracks', requireAuth, async (req: Request, res: Response) => {
     // Create a timeout promise
@@ -422,22 +425,25 @@ async function startServer () {
       const orderBy = (req.query.orderBy as string) || 'created_at';
       const order = (req.query.order as string)?.toUpperCase() || 'DESC';
       const limit = (req.query.limit as unknown as number) || 50;
+      const offset = (req.query.offset as unknown as number) || 0;
       const searchTerm = (req.query.searchTerm as string) || '';
 
       const db = await DatabaseFactory.getInstance();
+      console.log('Getting usertracks for ' + userId);
       const result = await Promise.race([
-        db.getAllUserTracks(userId, orderBy, order === 'ASC', limit, searchTerm),
+        db.getAllUserTracks(userId, orderBy, order === 'ASC', limit, searchTerm, offset),
         timeoutPromise
       ]);
 
-      if (!Array.isArray(result)) {
+      if (!isDbUserTracksResult(result)) {
         throw new Error('Request timeout');
       }
 
       // Map database tracks to frontend format
-      const tracks = (result as DbUserTrack[]).map(track => mapDbToFrontend(track));
+      const tracks = (result.data as DbUserTrack[]).map(track => mapDbToFrontend(track));
+      const numTracks = result.totalCount;
 
-      res.json(tracks);
+      res.json({data: tracks, totalCount: numTracks});
     } catch (error: any) {
       logger.writeError('Get stations error:', error);
 
@@ -981,7 +987,7 @@ async function startServer () {
         }
         res.json(data);
       } catch (err) {
-        logger.writeError('Metadata error:', err);
+        logger.writeError('Metadata error for URL: ' + req.query.url, err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch metadata';
         logger.writeError('Metadata error details:', errorMessage);
         res.status(500).json({ error: errorMessage });

@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 import { DatabaseInterface } from './database-interface';
-import type { DbUser, DbSession, DbStation, DbUserTrack } from './database-interface';
+import type { DbUser, DbSession, DbStation, DbUserTrack, DbUserTracksResult } from './database-interface';
 import logger from './logger';
 
 dotenv.config();
@@ -439,42 +439,71 @@ class DatabaseManager implements DatabaseInterface {
   }
 
   // User tracks operations
-  async getAllUserTracks(userId: string, orderBy: string = 'created_at', ascending: boolean = false, limit: number = 50, searchTerm: string = ''): Promise<DbUserTrack[]> {
+  async getAllUserTracks (
+    userId: string,
+    orderBy: string = 'created_at',
+    ascending: boolean = false,
+    limit: number = 50,
+    searchTerm: string = '',
+    offset: number = 0,
+  ): Promise<DbUserTracksResult> {
     if (!this.pool) throw new Error('Database not initialized');
     const order = ascending ? 'ASC' : 'DESC';
     const orderField = orderBy === 'title' ? 'tm.title' : 'ut.created_at';
-    
-    const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
-      `SELECT DISTINCT
-        ut.*,
-        tm.id as track_id,
-        tm.artist,
-        tm.title,
-        tm.album,
-        tm.release_date,
-        tm.artwork,
-        tm.apple_music_url,
-        tm.youtube_url,
-        tm.spotify_url,
-        tm.release_date as releaseDate,
-        tm.spotify_url AS spotifyUrl,
-        tm.apple_music_url as appleMusicUrl,
-        tm.youtube_url as youTubeUrl,
-    	lh.name as station_name,
-    	lh.logo as station_logo,
-    	lh.listen_url as station_url
-      FROM user_tracks ut
-      JOIN track_matches tm ON ut.track_id = tm.id
-      LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
-      WHERE ut.user_id = ?
-      AND tm.artist LIKE ? OR tm.title LIKE ?
-      GROUP BY ut.track_id
-      ORDER BY ${orderField} ${order}
-      LIMIT ${limit}
-      `,
-      [userId, '%' + searchTerm + '%', '%' + searchTerm + '%']
-    );
-    return rows as DbUserTrack[];
+
+    // Prepare the search query
+    const searchQuery = '%' + searchTerm + '%';
+
+    // Data query
+    const dataQuery = `SELECT DISTINCT
+    ut.*,
+    tm.id as track_id,
+    tm.artist,
+    tm.title,
+    tm.album,
+    tm.release_date,
+    tm.artwork,
+    tm.apple_music_url,
+    tm.youtube_url,
+    tm.spotify_url,
+    tm.release_date as releaseDate,
+    tm.spotify_url AS spotifyUrl,
+    tm.apple_music_url as appleMusicUrl,
+    tm.youtube_url as youTubeUrl,
+    lh.name as station_name,
+    lh.logo as station_logo,
+    lh.listen_url as station_url
+  FROM user_tracks ut
+  JOIN track_matches tm ON ut.track_id = tm.id
+  LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
+  WHERE ut.user_id = ?
+  AND (tm.artist LIKE ? OR tm.title LIKE ?)
+  GROUP BY ut.track_id
+  ORDER BY ${orderField} ${order}
+  LIMIT ${offset}, ${limit}`;
+
+    // Count query
+    const countQuery = `SELECT COUNT(DISTINCT ut.track_id) as totalCount
+  FROM user_tracks ut
+  JOIN track_matches tm ON ut.track_id = tm.id
+  LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
+  WHERE ut.user_id = ?
+  AND (tm.artist LIKE ? OR tm.title LIKE ?)`;
+
+    // Execute both queries in parallel
+    const [dataResult, countResult] = await Promise.all([
+      this.pool.query<mysql.RowDataPacket[]>(dataQuery, [userId, searchQuery, searchQuery]),
+      this.pool.query<mysql.RowDataPacket[]>(countQuery, [userId, searchQuery, searchQuery])
+    ]);
+
+    const rows = dataResult[0] as DbUserTrack[];
+    const totalCount = countResult[0][0]?.totalCount || 0;
+    console.log('numTracks', totalCount);
+
+    return {
+      data: rows,
+      totalCount: totalCount
+    };
   }
 
   async getUserTrackById(trackId: string, userId: string): Promise<DbUserTrack | null> {

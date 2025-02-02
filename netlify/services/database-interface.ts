@@ -1,4 +1,4 @@
-import type { DbUser, DbSession, DbStation, DbUserTrack, FrontendUserTrack } from './database';
+import type { DbUser, DbSession, DbStation, DbUserTrack, FrontendUserTrack, DbUserTracksResult } from './database';
 
 // Define the interface that both SQLite and MySQL implementations must follow
 export interface DatabaseInterface {
@@ -30,7 +30,7 @@ export interface DatabaseInterface {
   getRecommendations (/*userId: string, */limit: number): Promise<any[]>;
   deleteTrackHistory(id: string, userId: string): Promise<void>;
   clearTrackHistory(userId: string): Promise<void>;
-  getAllUserTracks(userId: string, orderBy?: string, ascending?: boolean, limit?: number, seachTerm?: string): Promise<DbUserTrack[]>;
+  getAllUserTracks (userId: string, orderBy?: string, ascending?: boolean, limit?: number, seachTerm?: string, offset?: number): Promise<DbUserTracksResult>;
   getUserTrackById(trackId: string, userId: string): Promise<DbUserTrack | null>;
   addUserTrack(trackId: string, userId: string, stationId: string): Promise<void>;
   getUserTracks(userId: string, limit: number): Promise<any[]>;
@@ -53,5 +53,6 @@ export type {
   DbSession,
   DbStation,
   DbUserTrack,
-  FrontendUserTrack
+  FrontendUserTrack,
+  DbUserTracksResult,
 };

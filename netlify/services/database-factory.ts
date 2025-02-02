@@ -1,4 +1,4 @@
-import { DatabaseInterface, DbUser, DbSession, DbStation, DbUserTrack } from './database-interface';
+import { DatabaseInterface, DbUser, DbSession, DbStation, DbUserTrack, DbUserTracksResult } from './database-interface';
 import { statements, getDb, mapDbToFrontend, mapFrontendToDb } from './database';
 import logger from './logger';
 
@@ -80,14 +80,14 @@ class SQLiteAdapter implements DatabaseInterface {
     statements.clearTrackHistory.run(userId);
   }
 
-  async getAllUserTracks(userId: string, orderBy: string = 'created_at', ascending: boolean = false, limit: number = 50, searchTerm: string = ''): Promise<DbUserTrack[]> {
+  async getAllUserTracks (userId: string, orderBy: string = 'created_at', ascending: boolean = false, limit: number = 50, searchTerm: string = '', offset: number = 0): Promise<DbUserTracksResult> {
     let result;
     if (orderBy === 'title') {
-      result = ascending ? statements.getAllUserTracks.byTitleAsc.all(userId, '%' + searchTerm + '%', limit) : statements.getAllUserTracks.byTitle.all(userId, '%' + searchTerm + '%', limit);
+      result = ascending ? statements.getAllUserTracks.byTitleAsc.all(userId, '%' + searchTerm + '%', limit, offset) : statements.getAllUserTracks.byTitle.all(userId, '%' + searchTerm + '%', limit, offset);
     } else {
-      result = ascending ? statements.getAllUserTracks.byCreatedAtAsc.all(userId, '%' + searchTerm + '%', limit) : statements.getAllUserTracks.byCreatedAt.all(userId, '%' + searchTerm + '%', limit);
+      result = ascending ? statements.getAllUserTracks.byCreatedAtAsc.all(userId, '%' + searchTerm + '%', limit, offset) : statements.getAllUserTracks.byCreatedAt.all(userId, '%' + searchTerm + '%', limit, offset);
     }
-    return result as unknown as DbUserTrack[];
+    return result as unknown as DbUserTracksResult;
   }
 
   async getUserTrackById(trackId: string, userId: string): Promise<DbUserTrack | null> {

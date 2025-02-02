@@ -75,7 +75,10 @@ interface FrontendUserTrack {
   stationLogo?: string;
   stationUrl?: string;
 }
-
+interface DbUserTracksResult {
+  data: DbUserTrack[];
+  totalCount: number;
+}
 function mapDbToFrontend(dbTrack: DbUserTrack): FrontendUserTrack {
   return {
     id: dbTrack.id,
@@ -154,10 +157,10 @@ type StatementsType = {
 
   // User tracks managment
   getAllUserTracks: {
-    byCreatedAt: Statement<[user_id: string, searchTerm: string, limit: number], DbUserTrack[]>;
-    byCreatedAtAsc: Statement<[user_id: string, searchTerm: string, limit: number], DbUserTrack[]>;
-    byTitle: Statement<[user_id: string, searchTerm: string, limit: number], DbUserTrack[]>;
-    byTitleAsc: Statement<[user_id: string, searchTerm: string, limit: number], DbUserTrack[]>;
+    byCreatedAt: Statement<[user_id: string, searchTerm: string, limit: number, offset: number], DbUserTracksResult>;
+    byCreatedAtAsc: Statement<[user_id: string, searchTerm: string, limit: number, offset: number], DbUserTracksResult>;
+    byTitle: Statement<[user_id: string, searchTerm: string, limit: number, offset: number], DbUserTracksResult>;
+    byTitleAsc: Statement<[user_id: string, searchTerm: string, limit: number, offset: number], DbUserTracksResult>;
   };
   addUserTrack: Statement<[{ track_id: string; user_id: string; station_id: string}], RunResult>;
   getUserTrackById: Statement<[string, string], DbUserTrack>;
@@ -687,5 +690,6 @@ export {
   type DbStation,
   type DbUserTrack,
   type FrontendUserTrack,
-  type StatementsType
+  type StatementsType,
+  type DbUserTracksResult,
 };
