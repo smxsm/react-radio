@@ -656,7 +656,7 @@ async function startServer () {
     }
   });
 
-  app.get('/userrights', async (req: Request, res: Response) => {
+  app.get('/userrights', async (_req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });
     }, 5000);
