@@ -28,6 +28,7 @@ export interface DatabaseInterface {
   addTrackHistory (trackId: string, userId: string, stationId: string): Promise<void>;
   getTrackHistory(userId: string, limit: number, searchTerm: string): Promise<any[]>;
   getRecommendations (/*userId: string, */limit: number): Promise<any[]>;
+  getUserRights (): Promise<any[]>;
   deleteTrackHistory(id: string, userId: string): Promise<void>;
   clearTrackHistory(userId: string): Promise<void>;
   getAllUserTracks (userId: string, orderBy?: string, ascending?: boolean, limit?: number, seachTerm?: string, offset?: number): Promise<DbUserTracksResult>;

@@ -24,6 +24,7 @@ interface DbUser {
   password_hash: string;
   first_name: string;
   last_name: string;
+  access_level: number;
 }
 
 interface DbSession {
@@ -170,6 +171,8 @@ type StatementsType = {
 
   getRecommendations: Statement<[number], any[]>;
 
+  getUserRights: Statement<[], any[]>;
+
   // Listen history
   addListenHistory: Statement<[{ station_id: string; user_id: string; name: string; logo: string | null; listen_url: string; }], RunResult>;
   getListenHistory: Statement<[user_id: string, searchTerm: string, limit: number], any[]>;
@@ -307,6 +310,17 @@ class DatabaseManager {
         sorting INT(4) NOT NULL DEFAULT '0',
         UNIQUE (station_id)
       );
+
+      CREATE TABLE IF NOT EXISTS user_rights(
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        access_level INT(4) NOT NULL DEFAULT '0',
+        ident VARCHAR(255) NOT NULL,
+        info VARCHAR(255) NOT NULL,
+        info_1 VARCHAR(255) NOT NULL,
+        reason VARCHAR(255) NOT NULL,
+        reason_1 VARCHAR(255) NOT NULL,
+        UNIQUE (access_level, ident)
+      );
     `);
 
     // Create indexes
@@ -320,6 +334,8 @@ class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_user_tracks_created_at ON user_tracks(created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_user_stations_user_id ON user_stations(user_id);
       CREATE INDEX IF NOT EXISTS idx_user_stations_created_at ON user_stations(created_at DESC);
+
+      CREATE INDEX IF NOT EXISTS idx_user_rights_ident ON user_rights(ident);
     `);
   }
 
@@ -580,6 +596,11 @@ class DatabaseManager {
         WHERE 1
         ORDER BY sorting ASC
         LIMIT ?
+      `),
+      getUserRights: this.db.prepare(`
+        SELECT * FROM user_rights
+        WHERE 1
+        ORDER BY ident ASC
       `),
     };
   }

@@ -656,6 +656,26 @@ async function startServer () {
     }
   });
 
+  app.get('/userrights', async (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
+    try {
+      const db = await DatabaseFactory.getInstance();
+      const rights = await db.getUserRights();
+      clearTimeout(timeout);
+      res.json(rights);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      logger.writeError('Get user rights error:', error);
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
+      });
+    }
+  });
+
   // Listen history endpoints
   app.get('/listen/history', requireAuth, async (req: Request, res: Response) => {
     const timeout = setTimeout(() => {

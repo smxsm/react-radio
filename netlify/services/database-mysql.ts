@@ -599,6 +599,17 @@ class DatabaseManager implements DatabaseInterface {
     );
     return rows;
   }
+  async getUserRights (): Promise<any[]> {
+    if (!this.pool) throw new Error('Database not initialized');
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
+      `SELECT * FROM user_rights
+       WHERE 1
+       ORDER BY ident ASC
+       `,
+      []
+    );
+    return rows;
+  }
 
   async deleteListenHistory(id: string, userId: string): Promise<void> {
     if (!this.pool) throw new Error('Database not initialized');
