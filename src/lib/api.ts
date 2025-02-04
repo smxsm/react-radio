@@ -6,6 +6,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  accessLevel: number;
 }
 
 export interface Session {

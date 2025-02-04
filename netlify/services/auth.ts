@@ -11,6 +11,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  accessLevel: number;
 }
 
 export interface Session {
@@ -50,6 +51,7 @@ export async function createUser(
     email,
     firstName,
     lastName,
+    accessLevel: 0,
   };
 }
 
@@ -87,6 +89,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     email: user.email,
     firstName: user.first_name,
     lastName: user.last_name,
+    accessLevel: user.access_level,
   };
 }
 
@@ -100,6 +103,7 @@ export async function getUserById(id: string): Promise<User | null> {
     email: user.email,
     firstName: user.first_name,
     lastName: user.last_name,
+    accessLevel: user.access_level,
   };
 }
 
@@ -159,6 +163,7 @@ export async function signIn(
     email: dbUser.email,
     firstName: dbUser.first_name,
     lastName: dbUser.last_name,
+    accessLevel: dbUser.access_level,
   };
 
   const session = await createSession(user.id);
