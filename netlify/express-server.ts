@@ -896,6 +896,7 @@ async function startServer () {
   // Main endpoint
   app.get('/station-metadata', async (req: Request, res: Response) => {
     const url = req.query.url as string | undefined;
+    const spotifyEnabled = req.query.spotify === 'true';
 
     if (!url) {
       return res.status(400).json({ error: 'URL parameter is required' });
@@ -948,7 +949,7 @@ async function startServer () {
           data.matchedTrack = undefined;
         } else {
           let matchedTrack = await iTunesSearch(searchTerm);
-          const matchedTrack2 = await spotifySearch(searchTerm);
+          const matchedTrack2 = spotifyEnabled ? await spotifySearch(searchTerm) : null;
           logger.writeDebug('iTunes searchResults', matchedTrack);
           logger.writeDebug('Spotify searchResults', matchedTrack2);
 
