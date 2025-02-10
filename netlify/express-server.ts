@@ -656,6 +656,27 @@ async function startServer () {
     }
   });
 
+  app.get('/news', async (req: Request, res: Response) => {
+    const timeout = setTimeout(() => {
+      res.status(504).json({ error: 'Request timeout' });
+    }, 5000);
+
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const db = await DatabaseFactory.getInstance();
+      const news = await db.getNews(limit);
+      clearTimeout(timeout);
+      res.json(news);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      logger.writeError('Get news error:', error);
+      res.status(500).json({
+        error: 'Database error',
+        details: error?.message || 'Unknown database error'
+      });
+    }
+  });
+
   app.get('/userrights', async (_req: Request, res: Response) => {
     const timeout = setTimeout(() => {
       res.status(504).json({ error: 'Request timeout' });

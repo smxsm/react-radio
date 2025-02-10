@@ -171,6 +171,8 @@ type StatementsType = {
 
   getRecommendations: Statement<[number], any[]>;
 
+  getNews: Statement<[number], any[]>;
+
   getUserRights: Statement<[], any[]>;
 
   // Listen history
@@ -309,6 +311,23 @@ class DatabaseManager {
         listen_url TEXT NOT NULL,
         sorting INT(4) NOT NULL DEFAULT '0',
         UNIQUE (station_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS news(
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        headline VARCHAR(255) NOT NULL,
+        headline_1 VARCHAR(255) NOT NULL,
+        tags VARCHAR(255) DEFAULT '',
+        tags_1 VARCHAR(255) DEFAULT '',
+        content TEXT,
+        content_1 TEXT,
+        url TEXT DEFAULT '',
+        url_1 TEXT DEFAULT '',
+        imageurl TEXT DEFAULT '',
+        newsdate VARCHAR(255) NOT NULL DEFAULT '',
+        newsdate_1 VARCHAR(255) NOT NULL DEFAULT '',
+        active INT(1) NOT NULL DEFAULT '1',
+        sorting INT(4) NOT NULL DEFAULT '0'
       );
 
       CREATE TABLE IF NOT EXISTS user_rights(
@@ -593,6 +612,12 @@ class DatabaseManager {
 
       getRecommendations: this.db.prepare(`
         SELECT * FROM recommendations
+        WHERE 1
+        ORDER BY sorting ASC
+        LIMIT ?
+      `),
+      getNews: this.db.prepare(`
+        SELECT * FROM news
         WHERE 1
         ORDER BY sorting ASC
         LIMIT ?

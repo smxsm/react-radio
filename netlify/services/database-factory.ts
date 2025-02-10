@@ -105,6 +105,11 @@ class SQLiteAdapter implements DatabaseInterface {
   async getRecommendations (/*userId: string, */limit: number): Promise<any[]> {
     return statements.getRecommendations.all(limit);
   }
+
+  async getNews (/*userId: string, */limit: number): Promise<any[]> {
+    return statements.getNews.all(limit);
+  }
+
   async getUserRights (): Promise<any[]> {
     return statements.getUserRights.all();
   }

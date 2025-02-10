@@ -142,6 +142,23 @@ class DatabaseManager implements DatabaseInterface {
         UNIQUE KEY unique_station (station_id)
       )`,
 
+      `CREATE TABLE IF NOT EXISTS news (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        headline VARCHAR(255) NOT NULL,
+        headline_1 VARCHAR(255) NOT NULL,
+        tags VARCHAR(255) DEFAULT '',
+        tags_1 VARCHAR(255) DEFAULT '',
+        content TEXT,
+        content_1 TEXT,
+        url TEXT DEFAULT '',
+        url_1 TEXT DEFAULT '',
+        imageurl TEXT DEFAULT '',
+        newsdate VARCHAR(255) NOT NULL DEFAULT '',
+        newsdate_1 VARCHAR(255) NOT NULL DEFAULT '',
+        active INT(1) NOT NULL DEFAULT '1',
+        sorting INT(4) NOT NULL DEFAULT '0'
+      )`,
+
       // Indexes - MySQL doesn't support IF NOT EXISTS for indexes, so we'll handle duplicates in the catch block
       'CREATE INDEX idx_password_resets_token ON password_resets(token)',
       'CREATE INDEX idx_tracks_history_user_id ON tracks_history(user_id)',
@@ -592,6 +609,18 @@ class DatabaseManager implements DatabaseInterface {
     if (!this.pool) throw new Error('Database not initialized');
     const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
       `SELECT * FROM recommendations
+       WHERE 1
+       ORDER BY sorting ASC
+       LIMIT ?`,
+      [limit]
+    );
+    return rows;
+  }
+
+  async getNews (/*userId: string, */limit: number): Promise<any[]> {
+    if (!this.pool) throw new Error('Database not initialized');
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
+      `SELECT * FROM news
        WHERE 1
        ORDER BY sorting ASC
        LIMIT ?`,
