@@ -283,16 +283,24 @@ export interface TrackInfo {
   spotifyUrl?: string;
   youTubeUrl?: string;  
   stationId?: string;
+  stationName?: string;
+  stationLogo?: string;
+  stationUrl?: string;
 }
 
 export interface TrackHistory extends TrackInfo {
   createdAt: Date;
 }
+export interface DbUserTracksResult {
+  data: TrackInfo[];
+  totalCount: number;
+}
+
 
 // User track endpoints
 export async function getUserTracks (sessionId: string, orderBy = 'created_at', order = 'DESC', retries = 2) {
   const attempt = async () => {
-    return fetchWithTimeout<{ id: string; trackId: string; title: string; artist: string; artwork: string; album: string; releaseDate: Date; createdAt: Date; spotifyUrl: string; appleMusicUrl: string; youTubeUrl: string; stationId: string; }[]>(
+    return fetchWithTimeout<DbUserTracksResult>(
       `${API_BASE_URL}/usertracks?orderBy=${orderBy}&order=${order}`,
       {
         headers: {

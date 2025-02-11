@@ -14,33 +14,43 @@ export default function useUserTracks() {
         if (!sessionId) {
           throw new Error('No session found');
         }
+        console.log('useUserTracks.ts: getUserTracks', sessionId);
 
         let data;
         if (id) {
           data = [await api.getUserTrackById(sessionId, id)];
         } else {
-          data = await api.getUserTracks(
+          const results = await api.getUserTracks(
             sessionId,
             sort,
             ascending ? 'ASC' : 'DESC',
             limit
           );
+          data = results.data;
         }
 
-        const tracks = data.map<api.TrackInfo>(({ id, trackId, title, artist, artwork, album, spotifyUrl, appleMusicUrl, youTubeUrl, createdAt, releaseDate, stationId  }) => ({
-          id,
-          trackId,
-          title,
-          artist,
-          album,
-          releaseDate,
-          createdAt,
-          artwork,
-          appleMusicUrl,
-          youTubeUrl,
-          spotifyUrl,
-          stationId,
-        }));
+        const tracks = data.map((track) => {
+          console.log('Mapping track:', track);
+          const { id, trackId, title, artist, artwork, album, spotifyUrl, appleMusicUrl, youTubeUrl, createdAt, releaseDate, stationId } = track as api.TrackInfo;
+          return {
+            id,
+            trackId,
+            title,
+            artist,
+            album,
+            releaseDate,
+            createdAt,
+            artwork,
+            appleMusicUrl,
+            youTubeUrl,
+            spotifyUrl,
+            stationId,
+            //stationName,
+            //stationLogo,
+            //stationUrl,
+          };
+        });
+        console.log('useUserTracks.ts: tracks', tracks);
 
         setTracks(tracks);
         setLoading(false);

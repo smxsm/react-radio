@@ -30,7 +30,7 @@ export default function UserTracks() {
 
   // Initial fetch and route change handler
   useEffect(() => {
-    getUserTracks('', sort, order !== 'desc');
+    getUserTracks('', sort, order !== 'desc', 200);
   }, [user, getUserTracks, sort, order]);
 
   const deleteHandler = (id: string, title: string) =>
