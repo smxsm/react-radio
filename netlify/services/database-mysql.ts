@@ -436,7 +436,7 @@ class DatabaseManager implements DatabaseInterface {
       JOIN track_matches tm ON th.track_id = tm.id
       LEFT JOIN listen_history lh ON th.station_id = lh.station_id AND th.user_id = lh.user_id
       WHERE th.user_id = ?
-      AND tm.artist LIKE ? OR tm.title LIKE ?
+      AND (tm.artist LIKE ? OR tm.title LIKE ?)
       GROUP BY th.track_id
       ORDER BY th.created_at DESC
       LIMIT ${limit}`,

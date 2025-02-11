@@ -453,7 +453,7 @@ class DatabaseManager {
     JOIN track_matches tm ON th.track_id = tm.id
     LEFT JOIN listen_history lh ON th.station_id = lh.station_id AND th.user_id = lh.user_id
     WHERE th.user_id = ?
-    AND tm.artist LIKE ? OR tm.title LIKE ?
+    AND (tm.artist LIKE ? OR tm.title LIKE ?)
       GROUP BY th.track_id
         ORDER BY th.created_at DESC
         LIMIT ?
@@ -485,7 +485,7 @@ class DatabaseManager {
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
       WHERE ut.user_id = ? 
-      AND tm.artist LIKE ? OR tm.title LIKE ?
+      AND (tm.artist LIKE ? OR tm.title LIKE ?)
       GROUP BY ut.track_id ORDER BY ut.created_at DESC LIMIT ?`),
         byCreatedAtAsc: this.db.prepare(`SELECT DISTINCT 
         ut.*,
@@ -509,7 +509,7 @@ class DatabaseManager {
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
       WHERE ut.user_id = ? 
-      AND tm.artist LIKE ? OR tm.title LIKE ?
+      AND (tm.artist LIKE ? OR tm.title LIKE ?)
       GROUP BY ut.track_id ORDER BY ut.created_at ASC LIMIT ?`),
         byTitle: this.db.prepare(`SELECT DISTINCT 
         ut.*,
@@ -533,7 +533,7 @@ class DatabaseManager {
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
       WHERE ut.user_id = ? 
-      AND tm.artist LIKE ? OR tm.title LIKE ?
+      AND (tm.artist LIKE ? OR tm.title LIKE ?)
       GROUP BY ut.track_id ORDER BY tm.title DESC LIMIT ?`),
         byTitleAsc: this.db.prepare(`SELECT DISTINCT 
         ut.*,
@@ -557,7 +557,7 @@ class DatabaseManager {
       JOIN track_matches tm ON ut.track_id = tm.id
       LEFT JOIN listen_history lh ON ut.station_id = lh.station_id AND ut.user_id = lh.user_id
       WHERE ut.user_id = ? 
-      AND tm.artist LIKE ? OR tm.title LIKE ?
+      AND (tm.artist LIKE ? OR tm.title LIKE ?)
       GROUP BY ut.track_id ORDER BY tm.title ASC LIMIT ?`)
       },
       getUserTrackById: this.db.prepare('SELECT * FROM user_tracks WHERE track_id = ? AND user_id = ?'),
