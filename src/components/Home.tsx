@@ -76,7 +76,7 @@ export default function Home() {
       {user && (
         <section className={styles.heroSection}>
           <figure className={`${styles.heroImg} ${styles.heroImgUser}`}>
-            <img src="/main.svg" alt="React Radio"></img>
+            <img src="/main.svg" alt="Radio Hero"></img>
           </figure>
           <header className={styles.header}>
             <h1 className={styles.heroTitle}>{translate('home.h1.user')}</h1>

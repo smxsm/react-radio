@@ -515,7 +515,6 @@ class DatabaseManager implements DatabaseInterface {
 
     const rows = dataResult[0] as DbUserTrack[];
     const totalCount = countResult[0][0]?.totalCount || 0;
-    console.log('numTracks', totalCount);
 
     return {
       data: rows,

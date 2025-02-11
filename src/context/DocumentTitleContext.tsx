@@ -24,7 +24,7 @@ export function DocumentTitleProvider({ children }: DocumentTitleProviderProps) 
 
   useEffect(() => {
     const title = locationTitle[locationKey];
-    let newTitle = (title && `${title} | React Radio`) || 'React Radio';
+    let newTitle = (title && `${title} | Radio Hero`) || 'Radio Hero';
     if (status === 'playing') {
       const stationName = stationMetadata?.icyName || station?.name;
       if (matchedTrack?.artist && matchedTrack.title) {
