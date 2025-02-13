@@ -59,7 +59,9 @@ class DatabaseManager implements DatabaseInterface {
         password_hash TEXT NOT NULL,
         first_name VARCHAR(255) NOT NULL,
         last_name VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        access_level INT(4) DEFAULT 0,
+        delete_me TINYINT(1) DEFAULT 0
       )`,
 
       `CREATE TABLE IF NOT EXISTS password_resets (
@@ -308,6 +310,11 @@ class DatabaseManager implements DatabaseInterface {
   async deletePasswordReset(token: string): Promise<void> {
     if (!this.pool) throw new Error('Database not initialized');
     await this.pool.query('DELETE FROM password_resets WHERE token = ?', [token]);
+  }
+
+  async markUserDeletion (userId: string): Promise<void> {
+    if (!this.pool) throw new Error('Database not initialized');
+    await this.pool.query('UPDATE users SET delete_me = 1 WHERE id = ?', [userId]);
   }
 
   // Station operations

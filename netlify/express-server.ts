@@ -207,10 +207,71 @@ async function startServer () {
 
       // send an email here
       const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/change-password/${resetToken}`;
-      await deliverMail(email, 'ReactRadio password reset', 'Go here to reset your password: ' + resetLink, '<p>Click this link to reset your password:<br/><a href="' + resetLink + '">' + resetLink + '</a><p>');
+      await deliverMail(email, 'Radio Hero password reset', 'Go here to reset your password: ' + resetLink, '<p>Click this link to reset your password:<br/><a href="' + resetLink + '">' + resetLink + '</a><p>');
       res.json({ response: 'OK' });
     } catch (error) {
       logger.writeError('Forgot password error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/auth/request-delete', async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+      }
+
+      const user = await auth.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const resetToken = randomUUID();
+      const expiresAt = new Date(Date.now() + 3600000); // 1 hour expiration
+
+      const db = await DatabaseFactory.getInstance();
+      await db.createPasswordReset({
+        token: resetToken,
+        user_id: user.id,
+        expires_at: expiresAt.toISOString()
+      });
+
+      // send an email here
+      const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/delete-data/${resetToken}`;
+      await deliverMail(email, 'Radio Hero deletion request', 'Go here to request account deletion: ' + resetLink, '<p>Click this link to request account deletion:<br/><a href="' + resetLink + '">' + resetLink + '</a><p>');
+      res.json({ response: 'OK' });
+    } catch (error) {
+      logger.writeError('Account deletion request error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/auth/delete-data', async (req: Request, res: Response) => {
+    try {
+      const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ error: 'Token is required' });
+      }
+
+      const db = await DatabaseFactory.getInstance();
+      const reset = await db.getPasswordReset(token);
+      if (!reset) {
+        return res.status(404).json({ error: 'Invalid or expired reset token' });
+      }
+
+      if (new Date(reset.expires_at) < new Date()) {
+        await db.deletePasswordReset(token);
+        return res.status(400).json({ error: 'Reset token has expired' });
+      }
+
+      // mark user for deletion!
+      await db.markUserDeletion(reset.user_id);
+
+      await db.deletePasswordReset(token);
+      res.json({ success: true });
+    } catch (error) {
+      logger.writeError('Delete data error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });

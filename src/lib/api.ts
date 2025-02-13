@@ -101,6 +101,32 @@ export async function signout(sessionId: string) {
   return handleResponse<{ success: boolean }>(response);
 }
 
+export async function requestDelete (email: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/request-delete`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  return handleResponse<{ resetLink: string }>(response);
+}
+export async function deleteDataNow (token: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/delete-data`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Authentication-Token': `Bearer ${SERVER_SECRET_TOKEN}`,
+    },
+    body: JSON.stringify({ token }),
+  });
+
+  return handleResponse<{ success: boolean }>(response);
+}
+
+
 export async function forgotPassword(email: string) {
   const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
     method: 'POST',

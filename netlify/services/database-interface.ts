@@ -48,6 +48,8 @@ export interface DatabaseInterface {
   createPasswordReset(reset: { token: string; user_id: string; expires_at: string }): Promise<void>;
   getPasswordReset(token: string): Promise<{ user_id: string; expires_at: string } | null>;
   deletePasswordReset(token: string): Promise<void>;
+
+  markUserDeletion (userId: string): Promise<void>;
 }
 
 export type {

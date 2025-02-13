@@ -27,6 +27,8 @@ import { useState } from 'react';
 import styles from './App.module.css';
 import ForgotPwd from './components/ForgotPwd';
 import ChangePwd from './components/ChangePwd';
+import RequestDelete from './components/RequestDelete';
+import DeleteData from './components/DeleteData';
 
 function App() {
   const [mobilePlayerActive, setMobilePlayerActive] = useState(false);
@@ -55,6 +57,8 @@ function App() {
                       <Route path="/stations/music/genres" element={<GenresList />} />
                       <Route path="/stations/music/:category?/:value?" element={<StationsCardList />} />
                       <Route path="/stations/:category?/:value?" element={<StationsCardList />} />
+                      <Route path="/auth/request-delete" element={<RequestDelete />} />
+                      <Route path="/delete-data/:token" element={<DeleteData />} />
                       <Route element={<ProtectedRoute hasUser={true} redirectTo={'/auth/signin'} />}>
                         <Route path="/stations/custom" element={<CustomStations />} />
                         <Route path="/user/tracks" element={<UserTracks />} />

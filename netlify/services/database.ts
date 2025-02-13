@@ -132,7 +132,6 @@ type StatementsType = {
   getPasswordReset: Statement<[string], { user_id: string; expires_at: string; }>;
   deletePasswordReset: Statement<[string], RunResult>;
 
-  // Session management
   createSession: Statement<[{ id: string; user_id: string; expires_at: string; }], RunResult>;
   getSession: Statement<[string], DbSession>;
   deleteSession: Statement<[string], RunResult>;
@@ -180,6 +179,8 @@ type StatementsType = {
   getListenHistory: Statement<[user_id: string, searchTerm: string, limit: number], any[]>;
   deleteListenHistory: Statement<[string, string], RunResult>;
   clearListenHistory: Statement<[string], RunResult>;
+
+  markUserDeletion: Statement<[string], RunResult>;
 };
 
 class DatabaseManager {
@@ -230,7 +231,9 @@ class DatabaseManager {
         password_hash TEXT NOT NULL,
         first_name TEXT NOT NULL,
         last_name TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        access_level INTEGER NOT NULL DEFAULT 0,
+        delete_me INTEGER NOT NULL DEFAULT 0
       );
 
       CREATE TABLE IF NOT EXISTS password_resets (
@@ -304,7 +307,7 @@ class DatabaseManager {
       );
 
       CREATE TABLE IF NOT EXISTS recommendations(
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id INTEGER AUTO_INCREMENT PRIMARY KEY,
         station_id VARCHAR(255),
         name VARCHAR(255) NOT NULL,
         logo TEXT,
@@ -314,7 +317,7 @@ class DatabaseManager {
       );
 
       CREATE TABLE IF NOT EXISTS news(
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id INTEGER AUTO_INCREMENT PRIMARY KEY,
         headline VARCHAR(255) NOT NULL,
         headline_1 VARCHAR(255) NOT NULL,
         tags VARCHAR(255) DEFAULT '',
@@ -331,7 +334,7 @@ class DatabaseManager {
       );
 
       CREATE TABLE IF NOT EXISTS user_rights(
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id INTEGER AUTO_INCREMENT PRIMARY KEY,
         access_level INT(4) NOT NULL DEFAULT '0',
         ident VARCHAR(255) NOT NULL,
         info VARCHAR(255) NOT NULL,
@@ -382,6 +385,12 @@ class DatabaseManager {
       `),
       getPasswordReset: this.db.prepare('SELECT user_id, expires_at FROM password_resets WHERE token = ?'),
       deletePasswordReset: this.db.prepare('DELETE FROM password_resets WHERE token = ?'),
+
+      markUserDeletion: this.db.prepare(`
+        UPDATE users 
+        SET delete_me = 1 
+        WHERE id = @user_id
+      `),
 
       // Session management
       createSession: this.db.prepare(`

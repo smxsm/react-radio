@@ -76,6 +76,14 @@ const resources = {
       'user.form.confirmpassword': 'Confirm password',
       'user.changepwdaction': 'Change password',
       'user.forgotpwd': 'Forgot password',
+
+      'user.form.requestdeleteheader': 'Request Deletion',
+      'user.form.requestdeletetext': 'If you want your Radio Hero account to be deleted, please enter your email here to get a link via Email to confirm the deletion. Your account will then be deleted within the next 24 hours! We are sad to see you go, though!',
+      'user.form.requestdeletesuccessmsg': 'If an account exists for this email address, you will receive an account deletion link.',
+      'user.requestdeleteaction': 'Request account deletion',
+      'user.form.confirmdeleteheader': 'Confirm deletion',
+      'user.confirmdeleteaction': 'Confirm your account deletion',
+
       // home
       'home.h1': 'Hear the world',
       'home.h1.user': 'Radio Hero Web',
@@ -186,6 +194,15 @@ const resources = {
       'user.form.confirmpassword': 'Passwort bestätigen',
       'user.changepwdaction': 'Passwort ändern',
       'user.forgotpwd': 'Password vergessen',
+
+      'user.form.requestdeleteheader': 'Löschung anfordern',
+      // If you want your Radio Hero account to be deleted, please enter your email here to get a link via Email to confirm the deletion. Your account will then be deleted within the next 24 hours! We are sad to see you go, though!
+      'user.form.requestdeletetext': 'Wenn Du willst, dass Dein Radio Hero Account gelöscht wird, trage hier deine Email-Adresse ein, um einen Link zum Bestätigen der Löschung per Email zu bekommen. Dein Account wird innerhalb der nächsten 24 Stunden gelöscht! Wir sind traurig, Dich gehen zu sehen!',
+      'user.form.requestdeletesuccessmsg': 'Falls es einen Account für diese Email-Adresse gibt, wirst Du einen Link zum Löschen deines Accounts erhalten.',
+      'user.requestdeleteaction': 'Account Löschung anfordern',
+      'user.form.confirmdeleteheader': 'Löschung bestätigen',
+      'user.confirmdeleteaction': 'Account Löschung bestätigen',
+
       // home
       'home.h1': 'Die Welt im Ohr',
       'home.h1.user': 'Radio Hero Web',

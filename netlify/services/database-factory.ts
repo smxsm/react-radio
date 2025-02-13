@@ -154,6 +154,11 @@ class SQLiteAdapter implements DatabaseInterface {
   async deletePasswordReset(token: string): Promise<void> {
     statements.deletePasswordReset.run(token);
   }
+
+  async markUserDeletion (userId: string): Promise<void> {
+    statements.markUserDeletion.run(userId);
+  }
+
 }
 
 class DatabaseFactory {
