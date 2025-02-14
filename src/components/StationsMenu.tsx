@@ -7,6 +7,7 @@ import {
   faTableTennis,
   faListUl,
   faGlobeAmericas,
+  faShieldHalved
 } from '@fortawesome/free-solid-svg-icons';
 
 import Menu from './ui/Menu';
@@ -51,6 +52,12 @@ export default function StationsMenu({ className }: StationsMenuProps) {
         <FontAwesomeIcon icon={faGlobeAmericas} title={translate('nav.countries')} />
         <span className={styles.menuItemText}>{translate('nav.countries')}</span>
       </MenuItem>
+
+      <MenuItem href="/privacy">
+        <FontAwesomeIcon icon={faShieldHalved} title={translate('nav.privacy')} />
+        <span className={styles.menuItemText}>{translate('nav.privacy')}</span>
+      </MenuItem>
+
     </Menu>
   );
 }

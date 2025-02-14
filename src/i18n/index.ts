@@ -29,6 +29,7 @@ const resources = {
       'nav.distance.all': 'All',
       'nav.previous': 'Previous',
       'nav.next': 'Next',
+      'nav.privacy': 'Privacy',
       // Stations Menu
       'stations.all': 'All Stations',
       'stations.favorites': 'Favorites',
@@ -118,6 +119,7 @@ const resources = {
       'info.station.delete': 'Are you sure you want to delete',
       'info.track.delete': 'Are you sure you want to delete',
       'info.track.deleteall': 'Are you sure you want to delete all your songs?',
+      'info.privacy.headline': 'Privacy Policy',
     }
   },
   de: {
@@ -147,6 +149,7 @@ const resources = {
       'nav.distance.all': 'Alle',
       'nav.previous': 'Zurück',
       'nav.next': 'Weiter',
+      'nav.privacy': 'Datenschutz',
       // Stations Menu
       'stations.all': 'Alle Sender',
       'stations.favorites': 'Favoriten',
@@ -237,6 +240,8 @@ const resources = {
       'info.station.delete': 'Willst du diese Station wirklich löschen:',
       'info.track.delete': 'Willst Du diesen Song wirklich löschen:',
       'info.track.deleteall': 'Willst Du wirklich alle Deine Songs löschen?',
+
+      'info.privacy.headline': 'Datenschutzerklärung',
     }
   }
 };

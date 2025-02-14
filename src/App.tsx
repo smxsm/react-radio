@@ -29,6 +29,7 @@ import ForgotPwd from './components/ForgotPwd';
 import ChangePwd from './components/ChangePwd';
 import RequestDelete from './components/RequestDelete';
 import DeleteData from './components/DeleteData';
+import Privacy from './components/Privacy';
 
 function App() {
   const [mobilePlayerActive, setMobilePlayerActive] = useState(false);
@@ -52,6 +53,7 @@ function App() {
                   <main className={styles.content}>
                     <Routes>
                       <Route path="/" element={<Home />} />
+                      <Route path="/privacy" element={<Privacy />} />
                       <Route path="/stations/all" element={<StationsCardList />} />
                       <Route path="/stations/countries" element={<CountriesList />} />
                       <Route path="/stations/music/genres" element={<GenresList />} />
