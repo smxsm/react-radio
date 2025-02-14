@@ -1058,7 +1058,7 @@ async function startServer () {
               artist: matchedTrack.artist,
               title: matchedTrack.title,
               album: matchedTrack.album,
-              artwork: matchedTrack.artwork || process.env.FRONTEND_URL + '/sound-wave.png',
+              artwork: matchedTrack.artwork || stationMetadata.icyLogo || process.env.FRONTEND_URL + '/sound-wave.png',
               release_date: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
               apple_music_url: matchedTrack.appleMusicUrl || '',
               youtube_url: matchedTrack.youTubeUrl || '',
@@ -1071,7 +1071,7 @@ async function startServer () {
               title: matchedTrack.title,
               album: matchedTrack.album,
               releaseDate: matchedTrack.releaseDate ? new Date(matchedTrack.releaseDate).toISOString() : null,
-              artwork: matchedTrack.artwork || process.env.FRONTEND_URL + '/sound-wave.png',
+              artwork: matchedTrack.artwork || stationMetadata.icyLogo || process.env.FRONTEND_URL + '/sound-wave.png',
               appleMusicUrl: matchedTrack.appleMusicUrl || '',
               youTubeUrl: matchedTrack.youTubeUrl || '',
               spotifyUrl: matchedTrack.spotifyUrl || ''
