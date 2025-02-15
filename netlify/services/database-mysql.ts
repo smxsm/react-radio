@@ -61,7 +61,8 @@ class DatabaseManager implements DatabaseInterface {
         last_name VARCHAR(255) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         access_level INT(4) DEFAULT 0,
-        delete_me TINYINT(1) DEFAULT 0
+        delete_me TINYINT(1) DEFAULT 0,
+        external_ident VARCHAR(255) NOT NULL DEFAULT ''
       )`,
 
       `CREATE TABLE IF NOT EXISTS password_resets (
@@ -232,17 +233,17 @@ class DatabaseManager implements DatabaseInterface {
   }
 
   // User operations
-  async createUser(user: { id: string; email: string; password_hash: string; first_name: string; last_name: string }): Promise<void> {
+  async createUser(user: { id: string; email: string; password_hash: string; first_name: string; last_name: string; external_ident: string }): Promise<void> {
     if (!this.pool) throw new Error('Database not initialized');
     await this.pool.query(
-      'INSERT INTO users (id, email, password_hash, first_name, last_name) VALUES (?, ?, ?, ?, ?)',
-      [user.id, user.email, user.password_hash, user.first_name, user.last_name]
+      'INSERT INTO users (id, email, password_hash, first_name, last_name, external_ident) VALUES (?, ?, ?, ?, ?, ?)',
+      [user.id, user.email, user.password_hash, user.first_name, user.last_name, user.external_ident]
     );
   }
 
   async getUserByEmail(email: string): Promise<DbUser | null> {
     if (!this.pool) throw new Error('Database not initialized');
-    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [email]);
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM users WHERE (email = ? OR external_ident = ?)', [email, email]);
     return rows[0] as DbUser || null;
   }
 

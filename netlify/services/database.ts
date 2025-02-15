@@ -122,7 +122,7 @@ function mapFrontendToDb(frontendTrack: FrontendUserTrack): DbUserTrack {
 
 type StatementsType = {
   // User management
-  createUser: Statement<[{ id: string; email: string; password_hash: string; first_name: string; last_name: string; }], RunResult>;
+  createUser: Statement<[{ id: string; email: string; password_hash: string; first_name: string; last_name: string; external_ident: string; }], RunResult>;
   getUserByEmail: Statement<[string], DbUser>;
   getUserById: Statement<[string], DbUser>;
   updateUserPassword: Statement<[{ user_id: string; password_hash: string; }], RunResult>;
@@ -233,7 +233,8 @@ class DatabaseManager {
         last_name TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         access_level INTEGER NOT NULL DEFAULT 0,
-        delete_me INTEGER NOT NULL DEFAULT 0
+        delete_me INTEGER NOT NULL DEFAULT 0,
+        external_ident TEXT
       );
 
       CREATE TABLE IF NOT EXISTS password_resets (
@@ -367,10 +368,10 @@ class DatabaseManager {
     this.statements = {
       // User management
       createUser: this.db.prepare(`
-        INSERT INTO users (id, email, password_hash, first_name, last_name)
-        VALUES (@id, @email, @password_hash, @first_name, @last_name)
+        INSERT INTO users (id, email, password_hash, first_name, last_name, external_ident)
+        VALUES (@id, @email, @password_hash, @first_name, @last_name, @external_ident)
       `),
-      getUserByEmail: this.db.prepare('SELECT * FROM users WHERE email = ?'),
+      getUserByEmail: this.db.prepare('SELECT * FROM users WHERE (email = ? OR external_ident = ?)'),
       getUserById: this.db.prepare('SELECT * FROM users WHERE id = ?'),
       updateUserPassword: this.db.prepare(`
         UPDATE users 

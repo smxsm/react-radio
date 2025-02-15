@@ -2,7 +2,7 @@ import type { DbUser, DbSession, DbStation, DbUserTrack, FrontendUserTrack, DbUs
 
 // Define the interface that both SQLite and MySQL implementations must follow
 export interface DatabaseInterface {
-  createUser(user: { id: string; email: string; password_hash: string; first_name: string; last_name: string }): Promise<void>;
+  createUser(user: { id: string; email: string; password_hash: string; first_name: string; last_name: string; external_ident: string }): Promise<void>;
   getUserByEmail(email: string): Promise<DbUser | null>;
   getUserById(id: string): Promise<DbUser | null>;
   updateUserPassword(userId: string, passwordHash: string): Promise<void>;

@@ -127,7 +127,7 @@ async function startServer () {
   // Auth endpoints
   app.post('/auth/signup', async (req: Request, res: Response) => {
     try {
-      const { email, password, firstName, lastName } = req.body;
+      const { email, password, firstName, lastName, externalIdent } = req.body;
 
       if (!email || !password || !firstName || !lastName) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -138,7 +138,7 @@ async function startServer () {
         return res.status(409).json({ error: 'Email already exists' });
       }
 
-      const user = await auth.createUser(email, firstName, lastName, password);
+      const user = await auth.createUser(email, firstName, lastName, password, externalIdent);
       const session = await auth.createSession(user.id);
 
       res.json({ user, session });

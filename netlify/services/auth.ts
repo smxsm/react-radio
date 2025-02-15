@@ -32,7 +32,9 @@ export async function createUser(
   email: string,
   firstName: string,
   lastName: string,
-  password: string
+  password: string,
+  externalIdent: string
+
 ): Promise<User> {
   const id = randomUUID();
   const passwordHash = await hashPassword(password);
@@ -44,6 +46,7 @@ export async function createUser(
     password_hash: passwordHash,
     first_name: firstName,
     last_name: lastName,
+    external_ident: externalIdent,
   });
 
   return {
