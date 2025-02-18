@@ -641,8 +641,23 @@ async function startServer () {
     }, 5000);
 
     try {
-      const { track_id, station_id } = req.body;
+      const { track_id, station_id, track_info, upsert } = req.body;
       const db = await DatabaseFactory.getInstance();
+
+      if (upsert) {
+        await db.upsertTrackMatch({
+          id: track_info.id,
+          artist: track_info.artist,
+          title: track_info.title,
+          album: track_info.album,
+          artwork: track_info.artwork || process.env.FRONTEND_URL + '/sound-wave.png',
+          release_date: track_info.releaseDate ? new Date(track_info.releaseDate).toISOString() : null,
+          apple_music_url: track_info.appleMusicUrl || '',
+          youtube_url: track_info.youTubeUrl || '',
+          spotify_url: track_info.spotifyUrl || ''
+        });
+      }
+
       await db.addTrackHistory(track_id, (req as any).user.id, station_id);
       clearTimeout(timeout);
       res.json({ success: true });
